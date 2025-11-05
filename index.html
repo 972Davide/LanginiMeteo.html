@@ -16,16 +16,43 @@
   --sky-tw-1:#ffa452;--sky-tw-2:#3456a0;
   --sky-night-1:#001028;--sky-night-2:#002a4f;
 }
-html,body{margin:0;padding:0;height:100%;font-family:Arial,Helvetica,sans-serif;color:#fff;text-align:center;background:var(--sky-night-1);}
-header{background:rgba(153,152,168,.9);padding:12px 0;font-weight:700;font-size:1.6em;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-#sky{position:relative;height:45vh;min-height:260px;overflow:hidden;transition:background 1.5s}
+html,body{
+  margin:0;padding:0;height:100%;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#fff;text-align:center;
+  background:var(--sky-night-1);
+}
+header{
+  background:rgba(153,152,168,.9);
+  padding:12px 0;font-weight:700;font-size:1.6em;
+  box-shadow:0 2px 6px rgba(0,0,0,.3)
+}
+#sky{
+  position:relative;height:45vh;min-height:260px;
+  overflow:hidden;transition:background 1.5s
+}
 #stars{position:absolute;inset:0;pointer-events:none}
-.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0;animation:twinkle 4s infinite}
+.star{
+  position:absolute;width:2px;height:2px;
+  background:#fff;border-radius:50%;
+  opacity:0;animation:twinkle 4s infinite
+}
 @keyframes twinkle{0%,100%{opacity:0}50%{opacity:1}}
 
-.body{position:absolute;width:130px;height:130px;border-radius:50%;top:50%;left:-20%;transform:translate(-50%,-50%);will-change:transform,opacity}
-#sun{background:radial-gradient(circle at 30% 30%,#fff68d 10%,#ffb400 60%,#ff6600 100%);box-shadow:0 0 60px 18px rgba(255,200,50,.6)}
-#moon{background:radial-gradient(circle at 40% 40%,#e0f0ff 25%,#7fa9ff 100%);box-shadow:0 0 40px 12px rgba(120,160,255,.28);opacity:.95}
+.body{
+  position:absolute;width:130px;height:130px;border-radius:50%;
+  top:50%;left:-20%;transform:translate(-50%,-50%);
+  will-change:transform,opacity
+}
+#sun{
+  background:radial-gradient(circle at 30% 30%,#fff68d 10%,#ffb400 60%,#ff6600 100%);
+  box-shadow:0 0 60px 18px rgba(255,200,50,.6)
+}
+#moon{
+  background:radial-gradient(circle at 40% 40%,#e0f0ff 25%,#7fa9ff 100%);
+  box-shadow:0 0 40px 12px rgba(120,160,255,.28);
+  opacity:.95
+}
 
 #astroCountdown{
   background:rgba(0,0,0,0.35);
@@ -38,14 +65,41 @@ header{background:rgba(153,152,168,.9);padding:12px 0;font-weight:700;font-size:
   box-shadow:0 0 10px rgba(0,0,0,0.3);
 }
 
-#gauges{display:flex;flex-wrap:wrap;justify-content:center;gap:25px;padding:15px 0 60px;background:linear-gradient(to bottom,#001a33,#000c1a);border-top:3px solid #0a66cc}
-.gaugeBox{background:linear-gradient(to bottom,#f6f8fb,#e7ecf3);border-radius:14px;width:270px;height:280px;padding:10px;box-shadow:0 0 15px rgba(0,0,0,.25);color:#003366}
-.label{font-size:1.15em;font-weight:700;margin-top:6px;color:#003366}
-.value{font-size:1.15em;font-weight:700;color:#000}
-.mean{font-size:.95em;color:#555}
-a.btn{color:#fff;background:#0a66cc;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:700;margin:16px auto 0;display:inline-block}
+#gauges{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:25px;
+  padding:15px 0 60px;
+  background:linear-gradient(to bottom,#001a33,#000c1a);
+  border-top:3px solid #0a66cc;
+}
+
+/* G A U G E  senza sfondo */
+.gaugeBox{
+  background:none;
+  border:none;
+  border-radius:0;
+  box-shadow:none;
+  width:270px;
+  height:260px;
+  padding:10px;
+  color:#fff;
+}
+.label{font-size:1.15em;font-weight:700;margin-top:6px;color:#a8d8ff}
+.value{font-size:1.1em;font-weight:700;color:#fff}
+.mean{font-size:.95em;color:#aad}
+a.btn{
+  color:#fff;background:#0a66cc;
+  padding:10px 18px;border-radius:10px;
+  text-decoration:none;font-weight:700;
+  margin:16px auto 0;display:inline-block;
+  transition:.3s;
+}
 a.btn:hover{background:#1795ff}
-footer{font-size:.9em;color:#a9c9ff;background:#001b3a;padding:10px}
+footer{
+  font-size:.9em;color:#a9c9ff;background:#001b3a;padding:10px
+}
 @media (max-width:768px){.gaugeBox{width:44vw;min-width:260px}}
 </style>
 </head>
@@ -58,7 +112,7 @@ footer{font-size:.9em;color:#a9c9ff;background:#001b3a;padding:10px}
   <div id="moon" class="body" style="display:none;"></div>
 </div>
 
-<!-- 🔆 Riga con conto alla rovescia -->
+<!-- 🔆 Riga conto alla rovescia -->
 <div id="astroCountdown">...</div>
 
 <div id="gauges">
@@ -90,12 +144,15 @@ footer{font-size:.9em;color:#a9c9ff;background:#001b3a;padding:10px}
 
 <a href="grafici.html" class="btn">📊 Vedi Grafici Dettagliati</a>
 
-<footer>Aggiornamento automatico ogni 30 s • © 2025 Langini Meteo • ThingSpeak API live</footer>
+<footer>
+Aggiornamento automatico ogni 30 s • © 2025 Langini Meteo • ThingSpeak API live
+</footer>
 
 <script>
 const LAT=41.8933,LON=12.4829;
 const CHANNEL_ID=3149218,API_KEY="4EGG4DXUFDU6FUGN";
 
+// stelle
 (function makeStars(){
   const N=80,box=document.getElementById('stars');
   for(let i=0;i<N;i++){
@@ -118,7 +175,10 @@ function computeTimes(){
   timesTomorrow=SunCalc.getTimes(d1,LAT,LON);
 }
 computeTimes();
-setInterval(()=>{let n=new Date();if(n.getHours()===0&&n.getMinutes()<2)computeTimes();},60000);
+setInterval(()=>{
+  let n=new Date();
+  if(n.getHours()===0&&n.getMinutes()<2)computeTimes();
+},60000);
 
 function lerp(a,b,t){return a+(b-a)*t}
 function clamp01(x){return Math.max(0,Math.min(1,x))}
@@ -148,7 +208,7 @@ function updateSky(){
   }else if(now>=new Date(sunset-TW)&&now<new Date(sunset+TW)){
     const p=timeProgress(sunset-TW,sunset+TW,now);
     bg1=`#${mixColor([0x7e,0xc9,0xff],[0xff,0xa4,0x52],p)}`;
-    bg2=`#${mixColor([0x2b,0x77,0xd0],[0x34,0x56,0xa0],p)}`;
+    bg2=`#${mixColor([0x2b,0x77,0xd0],[0x34,0x56,a0],p)}`;
   }else if(isDay){bg1='7ec9ff';bg2='2b77d0';}
   else{bg1='001028';bg2='002a4f';}
   sky.style.background=`linear-gradient(to bottom,#${bg1},#${bg2})`;
@@ -170,7 +230,7 @@ function updateSky(){
     moon.style.left=x+'%';moon.style.top=y+'%';
   }
 
-  // 🔆 conto alla rovescia
+  // conto alla rovescia
   const out=document.getElementById('astroCountdown');
   let target,label,icon;
   if(isDay){target=sunset;label="al tramonto";icon="☀️";}
@@ -180,11 +240,10 @@ function updateSky(){
   const m=Math.floor((diff%3600000)/60000);
   out.innerHTML=`${icon} ${isDay?"Tramonto":"Alba"} tra <b>${h}h ${m}min</b>`;
 }
-
 updateSky();
 setInterval(updateSky,60000);
 
-// ==== Gauge ====
+// gauge
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#00ccff","#00ff99","#ffcc00","#ff3300"]});
 const g2=new JustGage({id:"g2",value:0,min:-10,max:50,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#3399ff","#00ccff","#ffcc00","#ff3300"]});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#ff3300","#ffcc00","#00cc66","#0099ff"]});
