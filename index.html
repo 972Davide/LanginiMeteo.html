@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Langini Meteo Online</title>
 
-<!-- Librerie -->
-<script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
+<!-- Librerie per gauge -->
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
 
 <style>
 body {
@@ -33,22 +33,22 @@ header {
   margin: 25px;
 }
 .gaugeBox {
-  background: rgba(255,255,255,0.95);
+  background: linear-gradient(to bottom, #f6f8fb, #e7ecf3);
   border-radius: 14px;
   width: 270px;
-  height: 270px;
-  padding-top: 10px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
-  color: #111;
+  height: 280px;
+  padding: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.25);
+  color: #003366;
 }
 .label {
-  font-size: 1.1em;
+  font-size: 1.2em;
   font-weight: bold;
   margin-top: 5px;
   color: #003366;
 }
 .value {
-  font-size: 1.3em;
+  font-size: 1.2em;
   font-weight: bold;
   color: #000;
 }
@@ -83,25 +83,25 @@ a:hover {
 
 <div id="gauges">
   <div class="gaugeBox">
-    <div id="g1"></div>
+    <div id="g1" style="height:160px"></div>
     <div class="label">Pressione (hPa)</div>
     <div class="value">Live: <span id="v1">--</span></div>
     <div class="mean">Media oraria: <span id="m1">--</span></div>
   </div>
   <div class="gaugeBox">
-    <div id="g2"></div>
+    <div id="g2" style="height:160px"></div>
     <div class="label">Temperatura (°C)</div>
     <div class="value">Live: <span id="v2">--</span></div>
     <div class="mean">Media oraria: <span id="m2">--</span></div>
   </div>
   <div class="gaugeBox">
-    <div id="g3"></div>
+    <div id="g3" style="height:160px"></div>
     <div class="label">Umidità (%)</div>
     <div class="value">Live: <span id="v3">--</span></div>
     <div class="mean">Media oraria: <span id="m3">--</span></div>
   </div>
   <div class="gaugeBox">
-    <div id="g4"></div>
+    <div id="g4" style="height:160px"></div>
     <div class="label">Qualità Aria (MQ135)</div>
     <div class="value">Live: <span id="v4">--</span></div>
     <div class="mean">Media oraria: <span id="m4">--</span></div>
@@ -120,14 +120,26 @@ const CHANNEL_ID = 3149218;
 const API_KEY = "4EGG4DXUFDU6FUGN";
 
 // === Gauge ===
-const g1 = new JustGage({ id: "g1", value: 0, min: 950, max: 1050, gaugeWidthScale: 0.8,
-  levelColors: ["#00ffcc","#00cc66","#ff9933","#ff3300"], pointer: true });
-const g2 = new JustGage({ id: "g2", value: 0, min: -10, max: 50, gaugeWidthScale: 0.8,
-  levelColors: ["#3399ff","#00ccff","#ffcc00","#ff3300"], pointer: true });
-const g3 = new JustGage({ id: "g3", value: 0, min: 0, max: 100, gaugeWidthScale: 0.8,
-  levelColors: ["#ff3300","#ffcc00","#00cc66","#0099ff"], pointer: true });
-const g4 = new JustGage({ id: "g4", value: 0, min: 0, max: 500, gaugeWidthScale: 0.8,
-  levelColors: ["#00cc66","#ffcc00","#ff6600","#ff0000"], pointer: true });
+const g1 = new JustGage({
+  id: "g1", value: 0, min: 950, max: 1050, title: "",
+  gaugeWidthScale: 0.8, counter: true, pointer: true,
+  levelColors: ["#00ccff","#00ff99","#ffcc00","#ff3300"]
+});
+const g2 = new JustGage({
+  id: "g2", value: 0, min: -10, max: 50, title: "",
+  gaugeWidthScale: 0.8, counter: true, pointer: true,
+  levelColors: ["#3399ff","#00ccff","#ffcc00","#ff3300"]
+});
+const g3 = new JustGage({
+  id: "g3", value: 0, min: 0, max: 100, title: "",
+  gaugeWidthScale: 0.8, counter: true, pointer: true,
+  levelColors: ["#ff3300","#ffcc00","#00cc66","#0099ff"]
+});
+const g4 = new JustGage({
+  id: "g4", value: 0, min: 0, max: 500, title: "",
+  gaugeWidthScale: 0.8, counter: true, pointer: true,
+  levelColors: ["#00cc66","#ffcc00","#ff6600","#ff0000"]
+});
 
 async function aggiorna() {
   try {
@@ -156,20 +168,22 @@ async function aggiorna() {
     };
 
     // Aggiorna gauge
-    g1.refresh(ultimo.f1); g2.refresh(ultimo.f2); g3.refresh(ultimo.f3); g4.refresh(ultimo.f4);
+    g1.refresh(ultimo.f1);
+    g2.refresh(ultimo.f2);
+    g3.refresh(ultimo.f3);
+    g4.refresh(ultimo.f4);
 
     // Aggiorna testi
     document.getElementById("v1").textContent = ultimo.f1.toFixed(1);
     document.getElementById("v2").textContent = ultimo.f2.toFixed(1);
     document.getElementById("v3").textContent = ultimo.f3.toFixed(1);
     document.getElementById("v4").textContent = ultimo.f4.toFixed(1);
-
     document.getElementById("m1").textContent = medie.m1;
     document.getElementById("m2").textContent = medie.m2;
     document.getElementById("m3").textContent = medie.m3;
     document.getElementById("m4").textContent = medie.m4;
   } catch (e) {
-    console.error("Errore:", e);
+    console.error("Errore durante aggiornamento:", e);
   }
 }
 
