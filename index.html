@@ -78,18 +78,25 @@ header h1{
   opacity:.95;
 }
 
-/* ======= CONTO ALLA ROVESCIA ======= */
+/* ======= Riquadro ALBA/TRAMONTO che segue sole/luna ======= */
 #astroCountdown{
-  position:relative;
-  z-index:2;
-  background:rgba(0,0,0,0.55);
-  padding:10px 20px;
+  position:absolute;
+  z-index:3;
+  background:rgba(0,0,0,0.6);
+  padding:8px 20px;
   border-radius:12px;
-  display:inline-block;
-  font-size:1.2em;
+  font-size:1.1em;
   font-weight:600;
-  margin-top:220px;
-  box-shadow:0 0 10px rgba(0,0,0,0.4);
+  color:#fff;
+  text-shadow:0 0 5px #000;
+  transform:translate(-50%, -130%);
+  box-shadow:0 0 8px rgba(0,0,0,0.4);
+  pointer-events:none;
+  animation:float 3s ease-in-out infinite alternate;
+}
+@keyframes float {
+  from { transform:translate(-50%, -130%) translateY(0px); }
+  to   { transform:translate(-50%, -130%) translateY(-3px); }
 }
 
 /* ======= GAUGE ======= */
@@ -137,7 +144,6 @@ footer{font-size:.9em;color:#a9c9ff;padding:10px;margin-bottom:15px;}
   <div id="stars"></div>
   <div id="sun" class="body" style="display:none;"></div>
   <div id="moon" class="body" style="display:none;"></div>
-
   <div id="astroCountdown">...</div>
 
   <div id="gauges">
@@ -201,7 +207,7 @@ function computeTimes(){
 computeTimes();
 setInterval(()=>{let n=new Date();if(n.getHours()===0&&n.getMinutes()<2)computeTimes();},60000);
 
-// Utilità
+// Utility
 function lerp(a,b,t){return a+(b-a)*t}
 function clamp01(x){return Math.max(0,Math.min(1,x))}
 function timeProgress(t1,t2,n){return clamp01((n-t1)/(t2-t1))}
@@ -212,7 +218,7 @@ function mixColor(c1,c2,p){
   return r+g+b;
 }
 
-// Aggiornamento cielo
+// Aggiornamento cielo + movimento riquadro
 function updateSky(){
   const now=new Date();
   const sunrise=timesToday.sunrise;
@@ -238,6 +244,8 @@ function updateSky(){
   const sun=document.getElementById('sun');
   const moon=document.getElementById('moon');
   const stars=document.getElementById('stars');
+  const label=document.getElementById('astroCountdown');
+
   if(isDay){
     sun.style.display='block';moon.style.display='none';stars.style.display='none';
     const p=timeProgress(sunrise,sunset,now);
@@ -245,6 +253,8 @@ function updateSky(){
     const y=35-15*Math.sin(Math.PI*p);
     sun.style.left=x+'%';
     sun.style.top=y+'%';
+    label.style.left=x+'%';
+    label.style.top=(y-5)+'%';
   }else{
     sun.style.display='none';moon.style.display='block';stars.style.display='block';
     const moonStart=sunset,moonEnd=nextSunrise;
@@ -253,17 +263,18 @@ function updateSky(){
     const y=40-10*Math.sin(Math.PI*p);
     moon.style.left=x+'%';
     moon.style.top=y+'%';
+    label.style.left=x+'%';
+    label.style.top=(y-6)+'%';
   }
 
   // Countdown
-  const out=document.getElementById('astroCountdown');
   let target,icon;
   if(isDay){target=sunset;icon="☀️";}
   else{target=sunrise>now?sunrise:nextSunrise;icon="🌙";}
   const diff=target-now;
   const h=Math.floor(diff/3600000);
   const m=Math.floor((diff%3600000)/60000);
-  out.innerHTML=`${icon} ${isDay?"Tramonto":"Alba"} tra <b>${h}h ${m}min</b>`;
+  label.innerHTML=`${icon} ${isDay?"Tramonto":"Alba"} tra <b>${h}h ${m}min</b>`;
 }
 updateSky();
 setInterval(updateSky,60000);
