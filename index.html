@@ -49,9 +49,13 @@ header h1{
   height:100vh;
   overflow:hidden;
   background:linear-gradient(to bottom,#001028,#002a4f);
-  transition:background 5s ease;    /* 🔆 transizione graduale del cielo */
+  transition:background 5s ease;
 }
-#stars{position:absolute;inset:0;pointer-events:none;z-index:1}
+#stars{
+  position:absolute;inset:0;
+  pointer-events:none;z-index:1;
+  opacity:0;transition:opacity 5s ease;
+}
 .star{
   position:absolute;width:2px;height:2px;
   background:#fff;border-radius:50%;
@@ -136,15 +140,6 @@ header h1{
   text-align:center;
   z-index:6;
 }
-#underGauges .btn{
-  color:#fff;background:rgba(0,0,0,0.35);
-  padding:10px 18px;border-radius:10px;
-  text-decoration:none;font-weight:700;
-  margin-bottom:10px;
-  display:inline-block;
-  backdrop-filter:blur(5px);
-}
-#underGauges .btn:hover{background:rgba(0,0,0,0.5);}
 #underGauges footer{
   font-size:.9em;
   color:#a9c9ff;
@@ -199,7 +194,6 @@ header h1{
   </div>
 
   <div id="underGauges">
-    <a href="grafici.html" class="btn">📊 Vedi Grafici Dettagliati</a>
     <footer>© 2025 Langini Meteo • Aggiornamento automatico ogni 30 s</footer>
   </div>
 </div>
@@ -244,7 +238,7 @@ function mixColor(c1,c2,p){
   return r+g+b;
 }
 
-// Aggiorna cielo gradualmente
+// Aggiorna cielo + stelle
 function updateSky(){
   const now=new Date();
   const sunrise=timesToday.sunrise;
@@ -253,7 +247,7 @@ function updateSky(){
   const isDay=(now>=sunrise&&now<sunset);
   const sky=document.getElementById('sky');
 
-  const TW=60*60000; // durata crepuscolo: 1 ora
+  const TW=60*60000; // 1 ora di crepuscolo
   let bg1,bg2;
   if(now>=new Date(sunrise-TW)&&now<new Date(sunrise+TW)){
     const p=timeProgress(sunrise-TW,sunrise+TW,now);
@@ -272,25 +266,24 @@ function updateSky(){
   const stars=document.getElementById('stars');
   const label=document.getElementById('astroCountdown');
 
+  // Stelle con dissolvenza
+  stars.style.opacity = isDay ? '0' : '1';
+
   if(isDay){
-    sun.style.display='block';moon.style.display='none';stars.style.display='none';
+    sun.style.display='block';moon.style.display='none';
     const p=timeProgress(sunrise,sunset,now);
     const x=lerp(-10,110,p);
     const y=30-15*Math.sin(Math.PI*p);
-    sun.style.left=x+'%';
-    sun.style.top=y+'%';
-    label.style.left=x+'%';
-    label.style.top=(y-5)+'%';
+    sun.style.left=x+'%'; sun.style.top=y+'%';
+    label.style.left=x+'%'; label.style.top=(y-5)+'%';
   }else{
-    sun.style.display='none';moon.style.display='block';stars.style.display='block';
+    sun.style.display='none';moon.style.display='block';
     const moonStart=sunset,moonEnd=nextSunrise;
     const p=timeProgress(moonStart,moonEnd,now);
     const x=lerp(-10,110,p);
     const y=35-10*Math.sin(Math.PI*p);
-    moon.style.left=x+'%';
-    moon.style.top=y+'%';
-    label.style.left=x+'%';
-    label.style.top=(y-6)+'%';
+    moon.style.left=x+'%'; moon.style.top=y+'%';
+    label.style.left=x+'%'; label.style.top=(y-6)+'%';
   }
 
   // Countdown
@@ -303,7 +296,7 @@ function updateSky(){
   label.innerHTML=`${icon} ${isDay?"Tramonto":"Alba"} tra <b>${h}h ${m}min</b>`;
 }
 updateSky();
-setInterval(updateSky,30000); // ogni 30s aggiorna colore gradualmente
+setInterval(updateSky,30000);
 
 // Gauges
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,gaugeWidthScale:.8,counter:true,pointer:true});
