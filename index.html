@@ -15,7 +15,7 @@ html,body{
   margin:0;padding:0;height:100%;
   font-family:Arial,Helvetica,sans-serif;
   color:#fff;text-align:center;
-  overflow-x:hidden;
+  overflow:hidden;
 }
 
 /* ======= TITOLO SCORREVOLE ======= */
@@ -26,6 +26,7 @@ header{
   padding:10px 0;
   height:50px;
   backdrop-filter:blur(6px);
+  z-index:10;
 }
 header h1{
   position:absolute;
@@ -44,12 +45,10 @@ header h1{
 /* ======= CIELO ======= */
 #sky{
   position:relative;
-  min-height:100vh;
+  width:100%;
+  height:100vh;
   overflow:hidden;
   transition:background 1.5s;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
 }
 #stars{position:absolute;inset:0;pointer-events:none;z-index:1}
 .star{
@@ -63,10 +62,10 @@ header h1{
   position:absolute;
   width:130px;height:130px;
   border-radius:50%;
-  top:25%;left:-20%;
+  top:30%;left:-20%;
   transform:translate(-50%,-50%);
   will-change:transform,opacity;
-  z-index:1;
+  z-index:2;
 }
 #sun{
   background:radial-gradient(circle at 30% 30%,#fff68d 10%,#ffb400 60%,#ff6600 100%);
@@ -78,7 +77,7 @@ header h1{
   opacity:.95;
 }
 
-/* ======= Riquadro ALBA/TRAMONTO che segue sole/luna ======= */
+/* ======= ALBA/TRAMONTO (segue sole/luna) ======= */
 #astroCountdown{
   position:absolute;
   z-index:3;
@@ -101,25 +100,28 @@ header h1{
 
 /* ======= GAUGE ======= */
 #gauges{
-  position:relative;
-  z-index:3;
+  position:absolute;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  z-index:5;
   display:flex;
   flex-wrap:wrap;
   justify-content:center;
   gap:25px;
-  padding:100px 0 80px;
+  background:linear-gradient(to top,rgba(0,0,40,0.85) 0%,rgba(0,0,40,0.0) 100%);
+  padding:25px 0 35px;
 }
 .gaugeBox{
   background:none;
   border:none;
-  border-radius:0;
   box-shadow:none;
   width:270px;
-  height:260px;
-  padding:10px;
+  height:240px;
   color:#fff;
 }
-.label{font-size:1.15em;font-weight:700;margin-top:6px;color:#cce6ff}
+.label{font-size:1.15em;font-weight:700;margin-top:4px;color:#cce6ff}
 .value{font-size:1.1em;font-weight:700;color:#fff}
 .mean{font-size:.95em;color:#a0c4ff}
 
@@ -127,11 +129,11 @@ a.btn{
   color:#fff;background:rgba(0,0,0,0.35);
   padding:10px 18px;border-radius:10px;
   text-decoration:none;font-weight:700;
-  margin:10px auto 40px;display:inline-block;
+  margin:5px auto 15px;display:inline-block;
   backdrop-filter:blur(5px);
 }
 a.btn:hover{background:rgba(0,0,0,0.5);}
-footer{font-size:.9em;color:#a9c9ff;padding:10px;margin-bottom:15px;}
+footer{font-size:.9em;color:#a9c9ff;padding:10px;margin-bottom:10px;}
 </style>
 </head>
 
@@ -148,25 +150,25 @@ footer{font-size:.9em;color:#a9c9ff;padding:10px;margin-bottom:15px;}
 
   <div id="gauges">
     <div class="gaugeBox">
-      <div id="g1" style="height:160px"></div>
+      <div id="g1" style="height:150px"></div>
       <div class="label">Pressione (hPa)</div>
       <div class="value">Live: <span id="v1">--</span></div>
       <div class="mean">Media oraria: <span id="m1">--</span></div>
     </div>
     <div class="gaugeBox">
-      <div id="g2" style="height:160px"></div>
+      <div id="g2" style="height:150px"></div>
       <div class="label">Temperatura (°C)</div>
       <div class="value">Live: <span id="v2">--</span></div>
       <div class="mean">Media oraria: <span id="m2">--</span></div>
     </div>
     <div class="gaugeBox">
-      <div id="g3" style="height:160px"></div>
+      <div id="g3" style="height:150px"></div>
       <div class="label">Umidità (%)</div>
       <div class="value">Live: <span id="v3">--</span></div>
       <div class="mean">Media oraria: <span id="m3">--</span></div>
     </div>
     <div class="gaugeBox">
-      <div id="g4" style="height:160px"></div>
+      <div id="g4" style="height:150px"></div>
       <div class="label">Qualità Aria (MQ135)</div>
       <div class="value">Live: <span id="v4">--</span></div>
       <div class="mean">Media oraria: <span id="m4">--</span></div>
@@ -195,7 +197,7 @@ const CHANNEL_ID=3149218,API_KEY="4EGG4DXUFDU6FUGN";
   }
 })();
 
-// Alba / tramonto
+// Alba/tramonto
 let timesToday=null,timesTomorrow=null;
 function computeTimes(){
   const now=new Date();
@@ -207,7 +209,6 @@ function computeTimes(){
 computeTimes();
 setInterval(()=>{let n=new Date();if(n.getHours()===0&&n.getMinutes()<2)computeTimes();},60000);
 
-// Utility
 function lerp(a,b,t){return a+(b-a)*t}
 function clamp01(x){return Math.max(0,Math.min(1,x))}
 function timeProgress(t1,t2,n){return clamp01((n-t1)/(t2-t1))}
@@ -218,7 +219,7 @@ function mixColor(c1,c2,p){
   return r+g+b;
 }
 
-// Aggiornamento cielo + movimento riquadro
+// Aggiorna cielo
 function updateSky(){
   const now=new Date();
   const sunrise=timesToday.sunrise;
@@ -250,7 +251,7 @@ function updateSky(){
     sun.style.display='block';moon.style.display='none';stars.style.display='none';
     const p=timeProgress(sunrise,sunset,now);
     const x=lerp(-10,110,p);
-    const y=35-15*Math.sin(Math.PI*p);
+    const y=30-15*Math.sin(Math.PI*p);
     sun.style.left=x+'%';
     sun.style.top=y+'%';
     label.style.left=x+'%';
@@ -260,7 +261,7 @@ function updateSky(){
     const moonStart=sunset,moonEnd=nextSunrise;
     const p=timeProgress(moonStart,moonEnd,now);
     const x=lerp(-10,110,p);
-    const y=40-10*Math.sin(Math.PI*p);
+    const y=35-10*Math.sin(Math.PI*p);
     moon.style.left=x+'%';
     moon.style.top=y+'%';
     label.style.left=x+'%';
@@ -279,11 +280,11 @@ function updateSky(){
 updateSky();
 setInterval(updateSky,60000);
 
-// Gauge live
-const g1=new JustGage({id:"g1",value:0,min:950,max:1050,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#00ccff","#00ff99","#ffcc00","#ff3300"]});
-const g2=new JustGage({id:"g2",value:0,min:-10,max:50,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#3399ff","#00ccff","#ffcc00","#ff3300"]});
-const g3=new JustGage({id:"g3",value:0,min:0,max:100,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#ff3300","#ffcc00","#00cc66","#0099ff"]});
-const g4=new JustGage({id:"g4",value:0,min:0,max:500,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#00cc66","#ffcc00","#ff6600","#ff0000"]});
+// Gauges
+const g1=new JustGage({id:"g1",value:0,min:950,max:1050,gaugeWidthScale:.8,counter:true,pointer:true});
+const g2=new JustGage({id:"g2",value:0,min:-10,max:50,gaugeWidthScale:.8,counter:true,pointer:true});
+const g3=new JustGage({id:"g3",value:0,min:0,max:100,gaugeWidthScale:.8,counter:true,pointer:true});
+const g4=new JustGage({id:"g4",value:0,min:0,max:500,gaugeWidthScale:.8,counter:true,pointer:true});
 
 async function updateGauges(){
   try{
