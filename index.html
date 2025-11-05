@@ -5,44 +5,48 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>Langini Meteo Online</title>
 
-<!-- Gauges -->
+<!-- Librerie -->
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
-<!-- Sun/Moon times -->
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
 
 <style>
-  :root{
-    --sky-day-1:#7ec9ff;  --sky-day-2:#2b77d0;
-    --sky-tw-1:#ffa452;   --sky-tw-2:#3456a0;
-    --sky-night-1:#001028;--sky-night-2:#002a4f;
-  }
-  html,body{margin:0;padding:0;height:100%;font-family:Arial,Helvetica,sans-serif;color:#fff;text-align:center;background:var(--sky-night-1);}
-  header{background:rgba(153,152,168,.9);padding:12px 0;font-weight:700;font-size:1.6em;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-  #sky{position:relative;height:45vh;min-height:260px;overflow:hidden;transition:background 1.5s}
-  #stars{position:absolute;inset:0;pointer-events:none}
-  .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0;animation:twinkle 4s infinite}
-  @keyframes twinkle{0%,100%{opacity:0}50%{opacity:1}}
+:root{
+  --sky-day-1:#7ec9ff;--sky-day-2:#2b77d0;
+  --sky-tw-1:#ffa452;--sky-tw-2:#3456a0;
+  --sky-night-1:#001028;--sky-night-2:#002a4f;
+}
+html,body{margin:0;padding:0;height:100%;font-family:Arial,Helvetica,sans-serif;color:#fff;text-align:center;background:var(--sky-night-1);}
+header{background:rgba(153,152,168,.9);padding:12px 0;font-weight:700;font-size:1.6em;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+#sky{position:relative;height:45vh;min-height:260px;overflow:hidden;transition:background 1.5s}
+#stars{position:absolute;inset:0;pointer-events:none}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0;animation:twinkle 4s infinite}
+@keyframes twinkle{0%,100%{opacity:0}50%{opacity:1}}
 
-  /* corpi celesti */
-  .body{position:absolute;width:130px;height:130px;border-radius:50%;top:50%;left:-20%;transform:translate(-50%,-50%);will-change:transform,opacity}
-  #sun{background:radial-gradient(circle at 30% 30%,#fff68d 10%,#ffb400 60%,#ff6600 100%);box-shadow:0 0 60px 18px rgba(255,200,50,.6)}
-  #moon{background:radial-gradient(circle at 40% 40%,#e0f0ff 25%,#7fa9ff 100%);box-shadow:0 0 40px 12px rgba(120,160,255,.28);opacity:.95}
+.body{position:absolute;width:130px;height:130px;border-radius:50%;top:50%;left:-20%;transform:translate(-50%,-50%);will-change:transform,opacity}
+#sun{background:radial-gradient(circle at 30% 30%,#fff68d 10%,#ffb400 60%,#ff6600 100%);box-shadow:0 0 60px 18px rgba(255,200,50,.6)}
+#moon{background:radial-gradient(circle at 40% 40%,#e0f0ff 25%,#7fa9ff 100%);box-shadow:0 0 40px 12px rgba(120,160,255,.28);opacity:.95}
 
-  /* barra gauge in basso */
-  #gauges{display:flex;flex-wrap:wrap;justify-content:center;gap:25px;padding:30px 0 60px;background:linear-gradient(to bottom,#001a33,#000c1a);border-top:3px solid #0a66cc}
-  .gaugeBox{background:linear-gradient(to bottom,#f6f8fb,#e7ecf3);border-radius:14px;width:270px;height:280px;padding:10px;box-shadow:0 0 15px rgba(0,0,0,.25);color:#003366}
-  .label{font-size:1.15em;font-weight:700;margin-top:6px;color:#003366}
-  .value{font-size:1.15em;font-weight:700;color:#000}
-  .mean{font-size:.95em;color:#555}
-  a.btn{color:#fff;background:#0a66cc;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:700;margin:16px auto 0;display:inline-block}
-  a.btn:hover{background:#1795ff}
-  footer{font-size:.9em;color:#a9c9ff;background:#001b3a;padding:10px}
+#astroCountdown{
+  background:rgba(0,0,0,0.35);
+  padding:10px 20px;
+  border-radius:12px;
+  display:inline-block;
+  font-size:1.2em;
+  font-weight:600;
+  margin:10px auto 0;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
+}
 
-  @media (max-width:768px){
-    #gauges{gap:16px;padding-bottom:40px}
-    .gaugeBox{width:44vw;min-width:260px}
-  }
+#gauges{display:flex;flex-wrap:wrap;justify-content:center;gap:25px;padding:15px 0 60px;background:linear-gradient(to bottom,#001a33,#000c1a);border-top:3px solid #0a66cc}
+.gaugeBox{background:linear-gradient(to bottom,#f6f8fb,#e7ecf3);border-radius:14px;width:270px;height:280px;padding:10px;box-shadow:0 0 15px rgba(0,0,0,.25);color:#003366}
+.label{font-size:1.15em;font-weight:700;margin-top:6px;color:#003366}
+.value{font-size:1.15em;font-weight:700;color:#000}
+.mean{font-size:.95em;color:#555}
+a.btn{color:#fff;background:#0a66cc;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:700;margin:16px auto 0;display:inline-block}
+a.btn:hover{background:#1795ff}
+footer{font-size:.9em;color:#a9c9ff;background:#001b3a;padding:10px}
+@media (max-width:768px){.gaugeBox{width:44vw;min-width:260px}}
 </style>
 </head>
 <body>
@@ -53,6 +57,9 @@
   <div id="sun" class="body" style="display:none;"></div>
   <div id="moon" class="body" style="display:none;"></div>
 </div>
+
+<!-- 🔆 Riga con conto alla rovescia -->
+<div id="astroCountdown">...</div>
 
 <div id="gauges">
   <div class="gaugeBox">
@@ -86,159 +93,124 @@
 <footer>Aggiornamento automatico ogni 30 s • © 2025 Langini Meteo • ThingSpeak API live</footer>
 
 <script>
-  /* ==== CONFIG ==== */
-  const LAT = 41.8933, LON = 12.4829;      // Roma
-  const CHANNEL_ID = 3149218;              // ThingSpeak
-  const API_KEY = "4EGG4DXUFDU6FUGN";
+const LAT=41.8933,LON=12.4829;
+const CHANNEL_ID=3149218,API_KEY="4EGG4DXUFDU6FUGN";
 
-  /* ==== STELLE ==== */
-  (function makeStars(){
-    const N=80, box=document.getElementById('stars');
-    for(let i=0;i<N;i++){
-      const s=document.createElement('div');
-      s.className='star';
-      s.style.left = (Math.random()*100)+'%';
-      s.style.top  = (Math.random()*100)+'%';
-      s.style.animationDelay = (Math.random()*4)+'s';
-      s.style.opacity = (0.4+Math.random()*0.6).toFixed(2);
-      box.appendChild(s);
-    }
-  })();
-
-  /* ==== SOLE/LUNA su arco e cielo graduale ==== */
-  let todayTimes=null, tomorrowTimes=null;
-
-  function computeTimes(){
-    const now = new Date();
-    const d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const d1 = new Date(d0.getTime()+86400000);
-    todayTimes    = SunCalc.getTimes(d0, LAT, LON);
-    tomorrowTimes = SunCalc.getTimes(d1, LAT, LON);
+(function makeStars(){
+  const N=80,box=document.getElementById('stars');
+  for(let i=0;i<N;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    s.style.left=(Math.random()*100)+'%';
+    s.style.top=(Math.random()*100)+'%';
+    s.style.animationDelay=(Math.random()*4)+'s';
+    s.style.opacity=(0.4+Math.random()*0.6).toFixed(2);
+    box.appendChild(s);
   }
-  computeTimes();
-  // ricomputa poco dopo la mezzanotte locale
-  setInterval(()=>{
-    const n=new Date();
-    if(n.getHours()===0 && n.getMinutes()<2) computeTimes();
-  }, 60000);
+})();
 
-  function lerp(a,b,t){return a+(b-a)*t}
-  function clamp01(x){return Math.max(0,Math.min(1,x))}
-  // mappa tempo -> progress 0..1 per [tStart, tEnd]
-  function timeProgress(tStart, tEnd, now){
-    const ts=tStart.getTime(), te=tEnd.getTime(), tn=now.getTime();
-    return clamp01((tn-ts)/(te-ts));
-  }
+let timesToday=null,timesTomorrow=null;
+function computeTimes(){
+  const now=new Date();
+  const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const d1=new Date(d0.getTime()+86400000);
+  timesToday=SunCalc.getTimes(d0,LAT,LON);
+  timesTomorrow=SunCalc.getTimes(d1,LAT,LON);
+}
+computeTimes();
+setInterval(()=>{let n=new Date();if(n.getHours()===0&&n.getMinutes()<2)computeTimes();},60000);
 
-  function updateSkyAndBodies(){
-    const now = new Date();
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp01(x){return Math.max(0,Math.min(1,x))}
+function timeProgress(t1,t2,n){return clamp01((n-t1)/(t2-t1))}
+function mixColor(c1,c2,p){
+  const r=Math.round(lerp(c1[0],c2[0],p)).toString(16).padStart(2,'0');
+  const g=Math.round(lerp(c1[1],c2[1],p)).toString(16).padStart(2,'0');
+  const b=Math.round(lerp(c1[2],c2[2],p)).toString(16).padStart(2,'0');
+  return r+g+b;
+}
 
-    // intervalli giorno/notte (da alba a tramonto, e viceversa)
-    const sunrise = todayTimes.sunrise;
-    const sunset  = todayTimes.sunset;
-    // notte: se prima dell'alba odierno, l'intervallo parte dal tramonto di ieri;
-    // dopo il tramonto, notte fino all'alba di domani
-    const lastSunset   = new Date(sunrise.getTime()- (todayTimes.sunrise - todayTimes.sunset)); // approx, not used
-    const moonStart = (now < sunrise) ? (new Date(sunset.getTime()-86400000)) : sunset; // start notte
-    const moonEnd   = (now < sunrise) ? sunrise : tomorrowTimes.sunrise;
+function updateSky(){
+  const now=new Date();
+  const sunrise=timesToday.sunrise;
+  const sunset=timesToday.sunset;
+  const nextSunrise=timesTomorrow.sunrise;
+  const isDay=(now>=sunrise&&now<sunset);
+  const sky=document.getElementById('sky');
 
-    const isDay = now >= sunrise && now < sunset;
+  // sfondo
+  const TW=45*60000;
+  let bg1,bg2;
+  if(now>=new Date(sunrise-TW)&&now<new Date(sunrise+TW)){
+    const p=timeProgress(sunrise-TW,sunrise+TW,now);
+    bg1=`#${mixColor([0x00,0x10,0x28],[0xff,0xa4,0x52],p)}`;
+    bg2=`#${mixColor([0x00,0x2a,0x4f],[0x34,0x56,0xa0],p)}`;
+  }else if(now>=new Date(sunset-TW)&&now<new Date(sunset+TW)){
+    const p=timeProgress(sunset-TW,sunset+TW,now);
+    bg1=`#${mixColor([0x7e,0xc9,0xff],[0xff,0xa4,0x52],p)}`;
+    bg2=`#${mixColor([0x2b,0x77,0xd0],[0x34,0x56,0xa0],p)}`;
+  }else if(isDay){bg1='7ec9ff';bg2='2b77d0';}
+  else{bg1='001028';bg2='002a4f';}
+  sky.style.background=`linear-gradient(to bottom,#${bg1},#${bg2})`;
 
-    // sfondo graduale (twilight 45 min)
-    const TW = 45*60000;
-    let bg1, bg2;
-    if(now >= new Date(sunrise.getTime()-TW) && now < new Date(sunrise.getTime()+TW)){
-      // alba
-      const p = timeProgress(new Date(sunrise.getTime()-TW), new Date(sunrise.getTime()+TW), now);
-      bg1 = `#${mixColor([0x00,0x10,0x28],[0xff,0xa4,0x52], p)}`;
-      bg2 = `#${mixColor([0x00,0x2a,0x4f],[0x34,0x56,0xa0], p)}`;
-    } else if(now >= new Date(sunset.getTime()-TW) && now < new Date(sunset.getTime()+TW)){
-      // tramonto
-      const p = timeProgress(new Date(sunset.getTime()-TW), new Date(sunset.getTime()+TW), now);
-      bg1 = `#${mixColor([0x7e,0xc9,0xff],[0xff,0xa4,0x52], p)}`;
-      bg2 = `#${mixColor([0x2b,0x77,0xd0],[0x34,0x56,0xa0], p)}`;
-    } else if(isDay){
-      bg1 = '7ec9ff'; bg2 = '2b77d0';
-    } else {
-      bg1 = '001028'; bg2 = '002a4f';
-    }
-    document.getElementById('sky').style.background = `linear-gradient(to bottom,#${bg1},#${bg2})`;
-
-    // SOLE: visibile tra alba e tramonto, entra da SX (x:-10%) → DX (x:110%)
-    const sun = document.getElementById('sun');
-    if(isDay){
-      sun.style.display='block';
-      const p = timeProgress(sunrise, sunset, now); // 0..1
-      const x = lerp(-10, 110, p);                 // percento schermo
-      const y = 60 - 40*Math.sin(Math.PI*p);       // arco (60% -> 20% -> 60%)
-      sun.style.left = x + '%';
-      sun.style.top  = y + '%';
-    } else {
-      sun.style.display='none';
-    }
-
-    // LUNA: visibile tra tramonto e alba successiva, ENTRA ANCHE LEI DA SINISTRA
-    const moon = document.getElementById('moon');
-    const nightNow = !(isDay);
-    if(nightNow){
-      moon.style.display='block';
-      const p = timeProgress(moonStart, moonEnd, now);
-      const x = lerp(-10, 110, p);
-      const y = 70 - 30*Math.sin(Math.PI*p); // arco più basso
-      moon.style.left = x + '%';
-      moon.style.top  = y + '%';
-      document.getElementById('stars').style.display='block';
-    } else {
-      moon.style.display='none';
-      document.getElementById('stars').style.display='none';
-    }
+  // sole e luna
+  const sun=document.getElementById('sun');
+  const moon=document.getElementById('moon');
+  const stars=document.getElementById('stars');
+  if(isDay){
+    sun.style.display='block';moon.style.display='none';stars.style.display='none';
+    const p=timeProgress(sunrise,sunset,now);
+    const x=lerp(-10,110,p),y=60-40*Math.sin(Math.PI*p);
+    sun.style.left=x+'%';sun.style.top=y+'%';
+  }else{
+    sun.style.display='none';moon.style.display='block';stars.style.display='block';
+    const moonStart=sunset,moonEnd=nextSunrise;
+    const p=timeProgress(moonStart,moonEnd,now);
+    const x=lerp(-10,110,p),y=70-30*Math.sin(Math.PI*p);
+    moon.style.left=x+'%';moon.style.top=y+'%';
   }
 
-  function mixColor(c1,c2,p){
-    const r=Math.round(lerp(c1[0],c2[0],p)).toString(16).padStart(2,'0');
-    const g=Math.round(lerp(c1[1],c2[1],p)).toString(16).padStart(2,'0');
-    const b=Math.round(lerp(c1[2],c2[2],p)).toString(16).padStart(2,'0');
-    return r+g+b;
-  }
+  // 🔆 conto alla rovescia
+  const out=document.getElementById('astroCountdown');
+  let target,label,icon;
+  if(isDay){target=sunset;label="al tramonto";icon="☀️";}
+  else{target=sunrise>now?sunrise:nextSunrise;label="all’alba";icon="🌙";}
+  const diff=target-now;
+  const h=Math.floor(diff/3600000);
+  const m=Math.floor((diff%3600000)/60000);
+  out.innerHTML=`${icon} ${isDay?"Tramonto":"Alba"} tra <b>${h}h ${m}min</b>`;
+}
 
-  updateSkyAndBodies();
-  // aggiorna posizione e cielo ogni 30s
-  setInterval(updateSkyAndBodies, 30000);
+updateSky();
+setInterval(updateSky,60000);
 
-  /* ==== GAUGE ThingSpeak (LIVE + media oraria) ==== */
-  const g1 = new JustGage({ id:"g1", value:0, min:950, max:1050, gaugeWidthScale:.8, counter:true, pointer:true, levelColors:["#00ccff","#00ff99","#ffcc00","#ff3300"]});
-  const g2 = new JustGage({ id:"g2", value:0, min:-10, max:50,  gaugeWidthScale:.8, counter:true, pointer:true, levelColors:["#3399ff","#00ccff","#ffcc00","#ff3300"]});
-  const g3 = new JustGage({ id:"g3", value:0, min:0,   max:100, gaugeWidthScale:.8, counter:true, pointer:true, levelColors:["#ff3300","#ffcc00","#00cc66","#0099ff"]});
-  const g4 = new JustGage({ id:"g4", value:0, min:0,   max:500, gaugeWidthScale:.8, counter:true, pointer:true, levelColors:["#00cc66","#ffcc00","#ff6600","#ff0000"]});
+// ==== Gauge ====
+const g1=new JustGage({id:"g1",value:0,min:950,max:1050,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#00ccff","#00ff99","#ffcc00","#ff3300"]});
+const g2=new JustGage({id:"g2",value:0,min:-10,max:50,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#3399ff","#00ccff","#ffcc00","#ff3300"]});
+const g3=new JustGage({id:"g3",value:0,min:0,max:100,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#ff3300","#ffcc00","#00cc66","#0099ff"]});
+const g4=new JustGage({id:"g4",value:0,min:0,max:500,gaugeWidthScale:.8,counter:true,pointer:true,levelColors:["#00cc66","#ffcc00","#ff6600","#ff0000"]});
 
-  async function updateGauges(){
-    try{
-      const url = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&results=60`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if(!data.feeds || !data.feeds.length) return;
-
-      const feeds = data.feeds.map(f=>({
-        f1: parseFloat(f.field1), f2: parseFloat(f.field2),
-        f3: parseFloat(f.field3), f4: parseFloat(f.field4)
-      }));
-      const last = feeds[feeds.length-1];
-      const mean = arr => (arr.reduce((a,b)=>a+(isFinite(b)?b:0),0)/arr.filter(x=>isFinite(x)).length).toFixed(1);
-
-      g1.refresh(last.f1); g2.refresh(last.f2); g3.refresh(last.f3); g4.refresh(last.f4);
-      document.getElementById('v1').textContent = (last.f1??'--').toFixed ? last.f1.toFixed(1) : '--';
-      document.getElementById('v2').textContent = (last.f2??'--').toFixed ? last.f2.toFixed(1) : '--';
-      document.getElementById('v3').textContent = (last.f3??'--').toFixed ? last.f3.toFixed(1) : '--';
-      document.getElementById('v4').textContent = (last.f4??'--').toFixed ? last.f4.toFixed(1) : '--';
-
-      document.getElementById('m1').textContent = mean(feeds.map(x=>x.f1));
-      document.getElementById('m2').textContent = mean(feeds.map(x=>x.f2));
-      document.getElementById('m3').textContent = mean(feeds.map(x=>x.f3));
-      document.getElementById('m4').textContent = mean(feeds.map(x=>x.f4));
-    }catch(e){ console.error(e); }
-  }
-  updateGauges();
-  setInterval(updateGauges, 30000);
+async function updateGauges(){
+  try{
+    const res=await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&results=60`);
+    const data=await res.json();
+    if(!data.feeds||!data.feeds.length)return;
+    const f=data.feeds.map(x=>({f1:+x.field1,f2:+x.field2,f3:+x.field3,f4:+x.field4}));
+    const last=f[f.length-1];
+    const mean=a=>(a.reduce((s,v)=>s+(isFinite(v)?v:0),0)/a.filter(x=>isFinite(x)).length).toFixed(1);
+    g1.refresh(last.f1);g2.refresh(last.f2);g3.refresh(last.f3);g4.refresh(last.f4);
+    document.getElementById("v1").textContent=last.f1.toFixed(1);
+    document.getElementById("v2").textContent=last.f2.toFixed(1);
+    document.getElementById("v3").textContent=last.f3.toFixed(1);
+    document.getElementById("v4").textContent=last.f4.toFixed(1);
+    document.getElementById("m1").textContent=mean(f.map(x=>x.f1));
+    document.getElementById("m2").textContent=mean(f.map(x=>x.f2));
+    document.getElementById("m3").textContent=mean(f.map(x=>x.f3));
+    document.getElementById("m4").textContent=mean(f.map(x=>x.f4));
+  }catch(e){console.error(e);}
+}
+updateGauges();
+setInterval(updateGauges,30000);
 </script>
 </body>
 </html>
