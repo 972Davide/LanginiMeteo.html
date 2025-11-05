@@ -1,126 +1,142 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Langini Meteo - Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Langini Meteo Online</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      color: #222;
-      text-align: center;
-      transition: background 1s;
-    }
-    header {
-      padding: 10px;
-      font-size: 1.6em;
-      font-weight: bold;
-      background: rgba(255,255,255,0.6);
-      backdrop-filter: blur(6px);
-    }
-    #gauges {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      padding: 20px;
-    }
-    canvas {
-      max-width: 320px;
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    footer {
-      margin-top: 25px;
-      font-size: 0.9em;
-      opacity: 0.7;
-    }
-    .day { background: linear-gradient(to bottom, #aee1ff, #fefefe); }
-    .night { background: linear-gradient(to bottom, #020024, #090979, #00d4ff); color: #fff; }
-  </style>
+<!-- Librerie Chart.js e Luxon -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.0/build/global/luxon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+  text-align: center;
+  transition: background 2s;
+}
+header {
+  background: #9998a8;
+  color: white;
+  font-weight: bold;
+  padding: 12px 0;
+  font-size: 1.5em;
+}
+#contenitore {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+}
+.chartBox {
+  background: rgba(255,255,255,0.9);
+  border-radius: 12px;
+  padding: 15px;
+  width: 320px;
+  height: 260px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+footer {
+  margin-top: 20px;
+  font-size: 0.9em;
+  color: #a9c9ff;
+}
+@media (max-width: 768px) {
+  #contenitore {
+    flex-direction: column;
+    align-items: center;
+  }
+  .chartBox {
+    width: 90%;
+  }
+}
+</style>
 </head>
+
 <body>
-  <header>🌤️ Langini Meteo Online</header>
-  <section id="gauges">
-    <canvas id="tempChart"></canvas>
-    <canvas id="humChart"></canvas>
-    <canvas id="presChart"></canvas>
-    <canvas id="airChart"></canvas>
-  </section>
+<header>🌤️ Langini Meteo Online</header>
+<div id="contenitore">
+  <div class="chartBox"><canvas id="chartPressione"></canvas></div>
+  <div class="chartBox"><canvas id="chartTemperatura"></canvas></div>
+  <div class="chartBox"><canvas id="chartUmidita"></canvas></div>
+  <div class="chartBox"><canvas id="chartAria"></canvas></div>
+</div>
 
-  <footer>
-    Aggiornamento automatico ogni 60 secondi<br>
-    © 2025 Langini Meteo | ThingSpeak API live
-  </footer>
+<footer>
+  Aggiornamento automatico ogni 30 s<br>
+  © 2025 Langini Meteo • ThingSpeak API live
+</footer>
 
-  <script>
-  const apiKey = "4EGG4DXUFDU6FUGN";
-  const channelID = "3149218"; // Canale Langini Meteo
+<script>
+const CHANNEL_ID = 3149218;  // tuo ID canale
+const API_KEY = "4EGG4DXUFDU6FUGN"; // chiave lettura
+const VENEGONO_LAT = 45.77;
+const VENEGONO_LON = 8.88;
 
-  async function getData() {
-    const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?results=10&api_key=${apiKey}`;
+const grafici = {
+  chartPressione: { field: 1, label: "Pressione (hPa)", color: "#3498db" },
+  chartTemperatura: { field: 2, label: "Temperatura (°C)", color: "#e67e22" },
+  chartUmidita: { field: 3, label: "Umidità (%)", color: "#2ecc71" },
+  chartAria: { field: 4, label: "Qualità Aria (MQ135)", color: "#9b59b6" }
+};
+
+function aggiornaSfondo() {
+  const now = new Date();
+  const h = now.getHours();
+  const giorno = h >= 7 && h < 18;
+  document.body.style.background = giorno ?
+    "linear-gradient(#7ec9ff, #0055aa)" :
+    "linear-gradient(#000033, #004477)";
+}
+
+function creaGrafico(id, etichetta, colore) {
+  const ctx = document.getElementById(id).getContext("2d");
+  return new Chart(ctx, {
+    type: "line",
+    data: { datasets: [{ label: etichetta, data: [], borderColor: colore, fill: false, tension: 0.2 }] },
+    options: {
+      scales: {
+        x: { type: "time", time: { unit: "minute" }, ticks: { color: "#333" } },
+        y: { ticks: { color: "#333" } }
+      },
+      plugins: {
+        legend: { display: true, labels: { color: "#333" } }
+      },
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  });
+}
+
+const charts = {};
+for (const id in grafici) {
+  const cfg = grafici[id];
+  charts[id] = creaGrafico(id, cfg.label, cfg.color);
+}
+
+async function aggiornaDati() {
+  aggiornaSfondo();
+  for (const id in grafici) {
+    const cfg = grafici[id];
+    const url = `https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/${cfg.field}.json?api_key=${API_KEY}&results=30`;
     const res = await fetch(url);
     const data = await res.json();
-    return data.feeds;
+    const valori = data.feeds.map(e => ({
+      x: new Date(e.created_at),
+      y: parseFloat(e[`field${cfg.field}`])
+    }));
+    charts[id].data.datasets[0].data = valori;
+    charts[id].update();
   }
+}
 
-  function updateCharts(feeds) {
-    const labels = feeds.map(f => new Date(f.created_at).toLocaleTimeString());
-    const temp = feeds.map(f => parseFloat(f.field1));
-    const hum = feeds.map(f => parseFloat(f.field2));
-    const pres = feeds.map(f => parseFloat(f.field3));
-    const air = feeds.map(f => parseFloat(f.field4));
-
-    createChart("tempChart", "Temperatura (°C)", temp, labels, "red");
-    createChart("humChart", "Umidità (%)", hum, labels, "blue");
-    createChart("presChart", "Pressione (hPa)", pres, labels, "orange");
-    createChart("airChart", "Qualità Aria (MQ135)", air, labels, "green");
-  }
-
-  function createChart(id, label, data, labels, color) {
-    const ctx = document.getElementById(id).getContext("2d");
-    if (window[id]) window[id].destroy();
-    window[id] = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label,
-          data,
-          borderColor: color,
-          backgroundColor: color + "33",
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: { y: { beginAtZero: false } }
-      }
-    });
-  }
-
-  async function update() {
-    const feeds = await getData();
-    if (feeds) updateCharts(feeds);
-  }
-
-  // Aggiornamento automatico
-  update();
-  setInterval(update, 60000);
-
-  // Tema giorno/notte in base all'ora locale
-  function setTheme() {
-    const now = new Date();
-    const hour = now.getHours();
-    if (hour >= 7 && hour <= 19) document.body.className = "day";
-    else document.body.className = "night";
-  }
-  setTheme();
-  </script>
+aggiornaDati();
+setInterval(aggiornaDati, 30000);
+</script>
 </body>
 </html>
