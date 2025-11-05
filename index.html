@@ -69,16 +69,17 @@ header {
   animation: float 6s ease-in-out infinite;
 }
 #sun {
-  background: radial-gradient(circle, #fff600 10%, #ffcc00 60%, #ff8800 100%);
-  box-shadow: 0 0 50px 15px #ffdd55;
+  background: radial-gradient(circle at 30% 30%, #fff68d 10%, #ffb400 60%, #ff6600 100%);
+  box-shadow: 0 0 60px 15px rgba(255,200,50,0.7);
 }
 #moon {
-  background: radial-gradient(circle at 30% 30%, #f0f0f0 40%, #bdbdbd 100%);
-  box-shadow: 0 0 35px 8px rgba(255,255,255,0.4);
+  background: radial-gradient(circle at 40% 40%, #e0f0ff 25%, #7fa9ff 100%);
+  box-shadow: 0 0 40px 15px rgba(120,160,255,0.35);
+  opacity: 0.9;
 }
 @keyframes float {
   0% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -60%) scale(1.08); }
+  50% { transform: translate(-50%, -55%) scale(1.08); }
   100% { transform: translate(-50%, -50%) scale(1); }
 }
 
@@ -188,7 +189,7 @@ Aggiornamento automatico ogni 30 s<br>
 const CHANNEL_ID = 3149218;
 const API_KEY = "4EGG4DXUFDU6FUGN";
 
-// === Genera stelle random ===
+// === Stelle notturne ===
 function generaStelle() {
   const starsContainer = document.getElementById("stars");
   for (let i = 0; i < 70; i++) {
@@ -220,7 +221,7 @@ function aggiornaCielo() {
     sun.style.display = "none";
     moon.style.display = "block";
     stars.style.display = "block";
-    sky.style.background = "linear-gradient(to bottom, #000820, #002850)";
+    sky.style.background = "linear-gradient(to bottom, #001030, #002850)";
   }
 }
 aggiornaCielo();
