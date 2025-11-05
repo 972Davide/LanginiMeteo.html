@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Langini Meteo Online</title>
+<title>Langini Meteo – Dati in tempo reale</title>
 
 <!-- Librerie -->
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -66,7 +66,7 @@ header h1{
   top:25%;left:-20%;
   transform:translate(-50%,-50%);
   will-change:transform,opacity;
-  z-index:1; /* sotto al testo e ai gauge */
+  z-index:1;
 }
 #sun{
   background:radial-gradient(circle at 30% 30%,#fff68d 10%,#ffb400 60%,#ff6600 100%);
@@ -130,7 +130,7 @@ footer{font-size:.9em;color:#a9c9ff;padding:10px;margin-bottom:15px;}
 
 <body>
 <header>
-  <h1>🌤️ Langini Meteo Online • Roma • Dati in tempo reale ThingSpeak</h1>
+  <h1>🌤️ Langini Meteo – Dati in tempo reale</h1>
 </header>
 
 <div id="sky">
@@ -242,7 +242,7 @@ function updateSky(){
     sun.style.display='block';moon.style.display='none';stars.style.display='none';
     const p=timeProgress(sunrise,sunset,now);
     const x=lerp(-10,110,p);
-    const y=35-15*Math.sin(Math.PI*p); // più in alto
+    const y=35-15*Math.sin(Math.PI*p);
     sun.style.left=x+'%';
     sun.style.top=y+'%';
   }else{
@@ -250,7 +250,7 @@ function updateSky(){
     const moonStart=sunset,moonEnd=nextSunrise;
     const p=timeProgress(moonStart,moonEnd,now);
     const x=lerp(-10,110,p);
-    const y=40-10*Math.sin(Math.PI*p); // più in alto
+    const y=40-10*Math.sin(Math.PI*p);
     moon.style.left=x+'%';
     moon.style.top=y+'%';
   }
