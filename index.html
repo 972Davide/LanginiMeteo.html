@@ -101,7 +101,7 @@ header h1{
 /* ======= GAUGE ======= */
 #gauges{
   position:absolute;
-  bottom:20%;               /* ⬆️ sollevato dal bordo inferiore */
+  bottom:12%;               /* Sollevati dal fondo */
   left:50%;
   transform:translateX(-50%);
   width:100%;
@@ -112,9 +112,7 @@ header h1{
   gap:25px;
   background:linear-gradient(to top,rgba(0,0,40,0.75) 0%,rgba(0,0,40,0.0) 100%);
   padding:25px 0 35px;
-  border-top:1px solid rgba(255,255,255,0.1);
 }
-
 .gaugeBox{
   background:none;
   border:none;
@@ -127,15 +125,37 @@ header h1{
 .value{font-size:1.1em;font-weight:700;color:#fff}
 .mean{font-size:.95em;color:#a0c4ff}
 
-a.btn{
+/* ======= SOTTO GAUGE ======= */
+#underGauges{
+  position:absolute;
+  bottom:2%;
+  left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  text-align:center;
+  z-index:6;
+}
+#underGauges .btn{
   color:#fff;background:rgba(0,0,0,0.35);
   padding:10px 18px;border-radius:10px;
   text-decoration:none;font-weight:700;
-  margin:5px auto 15px;display:inline-block;
+  margin-bottom:10px;
+  display:inline-block;
   backdrop-filter:blur(5px);
 }
-a.btn:hover{background:rgba(0,0,0,0.5);}
-footer{font-size:.9em;color:#a9c9ff;padding:10px;margin-bottom:10px;}
+#underGauges .btn:hover{background:rgba(0,0,0,0.5);}
+#underGauges footer{
+  font-size:.9em;
+  color:#a9c9ff;
+  margin:0;
+}
+
+/* ======= MOBILE ======= */
+@media (max-width:700px){
+  .gaugeBox{width:180px;height:180px;}
+  #gauges{gap:10px;padding:15px 0 20px;}
+  #underGauges{bottom:3%;}
+}
 </style>
 </head>
 
@@ -177,8 +197,10 @@ footer{font-size:.9em;color:#a9c9ff;padding:10px;margin-bottom:10px;}
     </div>
   </div>
 
-  <a href="grafici.html" class="btn">📊 Vedi Grafici Dettagliati</a>
-  <footer>© 2025 Langini Meteo • Aggiornamento automatico ogni 30 s</footer>
+  <div id="underGauges">
+    <a href="grafici.html" class="btn">📊 Vedi Grafici Dettagliati</a>
+    <footer>© 2025 Langini Meteo • Aggiornamento automatico ogni 30 s</footer>
+  </div>
 </div>
 
 <script>
