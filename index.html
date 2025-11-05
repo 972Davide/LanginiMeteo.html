@@ -3,11 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Langini Meteo</title>
+  <title>Langini Meteo - Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: #222;
+      text-align: center;
+      transition: background 1s;
+    }
+    header {
+      padding: 10px;
+      font-size: 1.6em;
+      font-weight: bold;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+    }
+    #gauges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+    canvas {
+      max-width: 320px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    footer {
+      margin-top: 25px;
+      font-size: 0.9em;
+      opacity: 0.7;
+    }
+    .day { background: linear-gradient(to bottom, #aee1ff, #fefefe); }
+    .night { background: linear-gradient(to bottom, #020024, #090979, #00d4ff); color: #fff; }
+  </style>
 </head>
-<body style="font-family:Arial;text-align:center;background:#eef;">
-  <h1>🌤️ Langini Meteo Online</h1>
-  <p>Sito attivo su GitHub Pages!</p>
-  <p>Prossimo passo: integrazione dati ThingSpeak ⛅</p>
+<body>
+  <header>🌤️ Langini Meteo Online</header>
+  <section id="gauges">
+    <canvas id="tempChart"></canvas>
+    <canvas id="humChart"></canvas>
+    <canvas id="presChart"></canvas>
+    <canvas id="airChart"></canvas>
+  </section>
+
+  <footer>
+    Aggiornamento automatico ogni 60 secondi<br>
+    © 2025 Langini Meteo | ThingSpeak API live
+  </footer>
+
+  <script>
+  const apiKey = "4EGG4DXUFDU6FUGN";
+  const channelID = "3149218"; // Canale Langini Meteo
+
+  async function getData() {
+    const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?results=10&api_key=${apiKey}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return data.feeds;
+  }
+
+  function updateCharts(feeds) {
+    const labels = feeds.map(f => new Date(f.created_at).toLocaleTimeString());
+    const temp = feeds.map(f => parseFloat(f.field1));
+    const hum = feeds.map(f => parseFloat(f.field2));
+    const pres = feeds.map(f => parseFloat(f.field3));
+    const air = feeds.map(f => parseFloat(f.field4));
+
+    createChart("tempChart", "Temperatura (°C)", temp, labels, "red");
+    createChart("humChart", "Umidità (%)", hum, labels, "blue");
+    createChart("presChart", "Pressione (hPa)", pres, labels, "orange");
+    createChart("airChart", "Qualità Aria (MQ135)", air, labels, "green");
+  }
+
+  function createChart(id, label, data, labels, color) {
+    const ctx = document.getElementById(id).getContext("2d");
+    if (window[id]) window[id].destroy();
+    window[id] = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          borderColor: color,
+          backgroundColor: color + "33",
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: false } }
+      }
+    });
+  }
+
+  async function update() {
+    const feeds = await getData();
+    if (feeds) updateCharts(feeds);
+  }
+
+  // Aggiornamento automatico
+  update();
+  setInterval(update, 60000);
+
+  // Tema giorno/notte in base all'ora locale
+  function setTheme() {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour >= 7 && hour <= 19) document.body.className = "day";
+    else document.body.className = "night";
+  }
+  setTheme();
+  </script>
 </body>
 </html>
