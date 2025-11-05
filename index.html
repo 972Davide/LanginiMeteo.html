@@ -13,24 +13,59 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(#001b3a, #0066b2);
+  background: linear-gradient(to bottom, #001b3a 0%, #004a8d 40%, #0066b2 100%);
   color: white;
   text-align: center;
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 header {
-  background: #9998a8;
+  background: rgba(153,152,168,0.9);
   color: white;
   font-weight: bold;
   padding: 12px 0;
   font-size: 1.6em;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
+#sky {
+  position: relative;
+  height: 45vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #003060, #0070c0);
+}
+#sun, #moon {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+#sun {
+  background: radial-gradient(circle, #fff600 20%, #ffcc00 70%, #ffaa00 100%);
+  box-shadow: 0 0 40px 10px #ffcc00;
+}
+#moon {
+  background: radial-gradient(circle at 30% 30%, #f0f0f0 40%, #bdbdbd 100%);
+  box-shadow: 0 0 25px 5px #cccccc;
+}
+@keyframes float {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -60%) scale(1.1); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
 #gauges {
+  position: relative;
+  bottom: 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 25px;
-  margin: 25px;
+  padding: 25px 0 50px;
+  background: linear-gradient(to bottom, #003366, #002040);
+  border-top: 3px solid #0066cc;
 }
 .gaugeBox {
   background: linear-gradient(to bottom, #f6f8fb, #e7ecf3);
@@ -57,9 +92,11 @@ header {
   color: #444;
 }
 footer {
-  margin-top: 20px;
+  margin-top: 0;
   font-size: 0.9em;
   color: #a9c9ff;
+  background: #001b3a;
+  padding: 10px;
 }
 a {
   color: #fff;
@@ -80,6 +117,11 @@ a:hover {
 
 <body>
 <header>🌤️ Langini Meteo Online</header>
+
+<div id="sky">
+  <div id="sun" style="display:none;"></div>
+  <div id="moon" style="display:none;"></div>
+</div>
 
 <div id="gauges">
   <div class="gaugeBox">
@@ -119,6 +161,25 @@ Aggiornamento automatico ogni 30 s<br>
 const CHANNEL_ID = 3149218;
 const API_KEY = "4EGG4DXUFDU6FUGN";
 
+// === Sole/Luna dinamici ===
+function aggiornaCielo() {
+  const ora = new Date().getHours();
+  const sun = document.getElementById("sun");
+  const moon = document.getElementById("moon");
+
+  if (ora >= 6 && ora < 18) {
+    sun.style.display = "block";
+    moon.style.display = "none";
+    document.body.style.background = "linear-gradient(to bottom, #0099ff 0%, #0055aa 100%)";
+  } else {
+    sun.style.display = "none";
+    moon.style.display = "block";
+    document.body.style.background = "linear-gradient(to bottom, #001030 0%, #002850 100%)";
+  }
+}
+aggiornaCielo();
+setInterval(aggiornaCielo, 60000);
+
 // === Gauge ===
 const g1 = new JustGage({
   id: "g1", value: 0, min: 950, max: 1050, title: "",
@@ -141,6 +202,7 @@ const g4 = new JustGage({
   levelColors: ["#00cc66","#ffcc00","#ff6600","#ff0000"]
 });
 
+// === Dati da ThingSpeak ===
 async function aggiorna() {
   try {
     const url = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&results=60`;
