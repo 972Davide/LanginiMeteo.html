@@ -160,6 +160,8 @@ function mixColor(c1,c2,p){
 }
 
 function updateSky(){
+  if(!timesToday||!timesTomorrow) return;
+
   const now=new Date();
   const sunrise=timesToday.sunrise;
   const sunset=timesToday.sunset;
@@ -171,10 +173,9 @@ function updateSky(){
   const moon=document.getElementById('moon');
   const label=document.getElementById('astroCountdown');
 
-  const TW=60*60000; // 1 ora di sfumatura
+  const TW=60*60000;
   let bg1,bg2;
 
-  // sfondo dinamico
   if(now>=new Date(sunrise-TW)&&now<new Date(sunrise+TW)){
     const p=(now-(sunrise-TW))/(2*TW);
     bg1=`#${mixColor([0x00,0x10,0x28],[0xff,0xa4,0x52],p)}`;
@@ -187,50 +188,36 @@ function updateSky(){
   else{bg1='001028';bg2='002a4f';}
   sky.style.background=`linear-gradient(to bottom,#${bg1},#${bg2})`;
 
-  // stelle visibilità
   stars.style.opacity=isDay?'0':'1';
 
-  // animazioni sole/luna
   if(isDay){
     const p=(now-sunrise)/(sunset-sunrise);
     const x=lerp(-10,110,p);
     const y=35-15*Math.sin(Math.PI*p);
     sun.style.left=x+'%';sun.style.top=y+'%';sun.style.opacity=1;
-    moon.style.opacity=0;
+    moon.style.opacity=Math.max(0,1-p*2);
   }else{
     const nightStart=sunset, nightEnd=nextSunrise;
     const p=(now-nightStart)/(nightEnd-nightStart);
     const x=lerp(-10,110,p);
     const y=40-10*Math.sin(Math.PI*p);
     moon.style.left=x+'%';moon.style.top=y+'%';moon.style.opacity=1;
-    sun.style.opacity=0;
+    sun.style.opacity=Math.max(0,1-p*2);
   }
 
-  // countdown sincronizzato (corretto)
-  let target, icon, labelText;
-  if (isDay) {
-    // se è giorno → countdown fino al tramonto
-    target = sunset;
-    icon = "☀️ Tramonto tra";
-    labelText = "Tramonto tra";
-  } else {
-    // se è notte → se l'alba di oggi è già passata, usa quella di domani
-    const nextTarget = (now > sunrise) ? nextSunrise : sunrise;
-    target = nextTarget;
-    icon = "🌙 Alba tra";
-    labelText = "Alba tra";
+  // countdown corretto
+  let target,icon;
+  if(isDay){
+    target=sunset;icon="☀️ Tramonto tra";
+  }else{
+    target=(now>sunrise)?nextSunrise:sunrise;
+    icon="🌙 Alba tra";
   }
-
-  const diff = target - now;
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-
-  const positiveH = Math.max(h, 0);
-  const positiveM = Math.max(m, 0);
-
-  label.innerHTML = `${icon} <b>${positiveH}h ${positiveM}min</b>`;
-
-
+  const diff=Math.max(target-now,0);
+  const h=Math.floor(diff/3600000);
+  const m=Math.floor((diff%3600000)/60000);
+  label.innerHTML=`${icon} <b>${h}h ${m}min</b>`;
+}
 updateSky();
 setInterval(updateSky,30000);
 
