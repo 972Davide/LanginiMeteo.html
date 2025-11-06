@@ -1,126 +1,201 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Langini Meteo - Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Langini Meteo – Dati in tempo reale</title>
+<script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+<style>
+html, body {margin:0; padding:0; height:100%; font-family:Arial,sans-serif; color:#fff; background:#003055;}
+header {
+  height:50px; overflow:hidden; position:relative; background:#bbb; text-align:left;
+}
+header h1 {
+  position:absolute; top:0; left:0; white-space:nowrap; color:#daffff; font-size:1.6em; font-weight:700;
+  animation:scrollTitle 14s linear infinite;
+  text-shadow:0 0 6px #aeeaff, 0 0 12px #66ccff;
+}
+@keyframes scrollTitle {0%{left:101%} 100%{left:-100%}}
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      color: #222;
-      text-align: center;
-      transition: background 1s;
-    }
-    header {
-      padding: 10px;
-      font-size: 1.6em;
-      font-weight: bold;
-      background: rgba(255,255,255,0.6);
-      backdrop-filter: blur(6px);
-    }
-    #gauges {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      padding: 20px;
-    }
-    canvas {
-      max-width: 320px;
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    footer {
-      margin-top: 25px;
-      font-size: 0.9em;
-      opacity: 0.7;
-    }
-    .day { background: linear-gradient(to bottom, #aee1ff, #fefefe); }
-    .night { background: linear-gradient(to bottom, #020024, #090979, #00d4ff); color: #fff; }
-  </style>
+#sky { position:relative; width:100%; height:100vh; margin:0; transition:background 3s;}
+#stars {position:absolute; inset:0; pointer-events:none; opacity:0; z-index:1;}
+.star {position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0;animation:twinkle 4s infinite;}
+@keyframes twinkle{0%,100%{opacity:0} 50%{opacity:1}}
+
+.body {
+  position:absolute;width:120px;height:120px;border-radius:50%;top:34%;left:-10%;z-index:2;transition:opacity 1.5s;
+}
+#sun{
+  background:radial-gradient(circle at 35% 35%,#fffccc 10%,#ffe457 70%,#ff9600 100%);
+  box-shadow:0 0 40px 12px rgba(255,220,50,.7);opacity:0;
+}
+#moon{
+  background:radial-gradient(circle at 60% 40%, #eef6ff 20%, #7fc0ff 100%);
+  box-shadow:0 0 30px 9px rgba(120,170,255,.5);opacity:0;
+}
+
+#gauges{
+  position:absolute;bottom:9%;left:50%;transform:translateX(-50%);
+  width:100%;display:flex;flex-wrap:wrap;justify-content:center;gap:32px;z-index:5;
+  background:linear-gradient(to top,rgba(0,0,40,0.85),rgba(0,0,40,0.1));padding:22px 0 32px;
+}
+.gaugeBox{width:230px;height:195px;margin:0;color:#fff;}
+.label{font-size:1.1em;font-weight:700;margin-top:4px;color:#bde6ff;}
+.value{font-size:1.4em;font-weight:700;margin-top:-5px;}
+.mean{font-size:1em;color:#8cb6fa;margin-top:2px;}
+footer{font-size:.9em;color:#a9c9ff;margin:0;}
+@media(max-width:700px){
+  .gaugeBox{width:140px;height:120px;}
+}
+</style>
 </head>
 <body>
-  <header>🌤️ Langini Meteo Online</header>
-  <section id="gauges">
-    <canvas id="tempChart"></canvas>
-    <canvas id="humChart"></canvas>
-    <canvas id="presChart"></canvas>
-    <canvas id="airChart"></canvas>
-  </section>
+<header><h1>🌤️ Langini Meteo – Dati in tempo reale</h1></header>
 
-  <footer>
-    Aggiornamento automatico ogni 60 secondi<br>
-    © 2025 Langini Meteo | ThingSpeak API live
+<div id="sky">
+  <div id="stars"></div>
+  <div id="sun" class="body"></div>
+  <div id="moon" class="body"></div>
+  <div id="gauges">
+    <div class="gaugeBox">
+      <div id="g1" style="height:120px"></div>
+      <div class="label">Pressione (hPa)</div>
+      <div class="value" id="v1">--</div>
+      <div class="mean">Media oraria: <span id="m1">--</span></div>
+    </div>
+    <div class="gaugeBox">
+      <div id="g2" style="height:120px"></div>
+      <div class="label">Temperatura (°C)</div>
+      <div class="value" id="v2">--</div>
+      <div class="mean">Media oraria: <span id="m2">--</span></div>
+    </div>
+    <div class="gaugeBox">
+      <div id="g3" style="height:120px"></div>
+      <div class="label">Umidità (%)</div>
+      <div class="value" id="v3">--</div>
+      <div class="mean">Media oraria: <span id="m3">--</span></div>
+    </div>
+    <div class="gaugeBox">
+      <div id="g4" style="height:120px"></div>
+      <div class="label">Qualità Aria (MQ135)</div>
+      <div class="value" id="v4">--</div>
+      <div class="mean">Media oraria: <span id="m4">--</span></div>
+    </div>
+  </div>
+  <footer style="position:absolute;bottom:2%;left:50%;transform:translateX(-50%);width:100%;text-align:center;z-index:6">
+    © 2025 Langini Meteo • Aggiornamento ogni 30 s
   </footer>
+</div>
 
-  <script>
-  const apiKey = "4EGG4DXUFDU6FUGN";
-  const channelID = "3149218"; // Canale Langini Meteo
+<script>
+const LAT = 41.8933, LON = 12.4829;  // Roma
+const CHANNEL_ID = 3149218, API_KEY = "4EGG4DXUFDU6FUGN";
 
-  async function getData() {
-    const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?results=10&api_key=${apiKey}`;
-    const res = await fetch(url);
+// Stelle
+(function makeStars(){
+  const N=70,box=document.getElementById('stars');
+  for(let i=0;i<N;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    s.style.left=(Math.random()*100)+'%';
+    s.style.top=(Math.random()*100)+'%';
+    s.style.animationDelay=(Math.random()*4)+'s';
+    s.style.opacity=(0.3+Math.random()*0.7).toFixed(2);
+    box.appendChild(s);
+  }
+})();
+
+// Orari alba/tramonto
+let sunrise, sunset, nextSunrise;
+function updateTimes(){
+  const now = new Date();
+  const today = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const tomorrow = new Date(today.getTime() + 86400000);
+  const t0 = SunCalc.getTimes(today, LAT, LON);
+  const t1 = SunCalc.getTimes(tomorrow, LAT, LON);
+  // Fuso orario Roma
+  sunrise = new Date(t0.sunrise.toLocaleString("en-US", {timeZone:"Europe/Rome"}));
+  sunset = new Date(t0.sunset.toLocaleString("en-US", {timeZone:"Europe/Rome"}));
+  nextSunrise = new Date(t1.sunrise.toLocaleString("en-US", {timeZone:"Europe/Rome"}));
+}
+updateTimes();
+
+// Animazione cielo + sole/luna
+function lerp(a,b,t){return a+(b-a)*t;}
+function mixColor(c1,c2,p){
+  return [0,1,2].map(i=>
+    Math.round(lerp(c1[i],c2[i],p)).toString(16).padStart(2,'0')
+  ).join('');
+}
+function updateSky(){
+  const now = new Date();
+  const day = (now >= sunrise && now < sunset);
+  const TW = 60*60000;
+  let bg1, bg2;
+  if(now >= new Date(sunrise-TW) && now < new Date(sunrise+TW)){
+    let p = (now-(sunrise-TW))/(2*TW);
+    bg1 = '#' + mixColor([0x00,0x10,0x28],[0xff,0xa4,0x52],p);
+    bg2 = '#' + mixColor([0x00,0x2a,0x4f],[0x7e,0xc9,0xff],p);
+  } else if(now >= new Date(sunset-TW) && now < new Date(sunset+TW)){
+    let p = (now-(sunset-TW))/(2*TW);
+    bg1 = '#' + mixColor([0x7e,0xc9,0xff],[0x00,0x10,0x28],p);
+    bg2 = '#' + mixColor([0x2b,0x77,0xd0],[0x00,0x2a,0x4f],p);
+  } else if(day) {
+    bg1 = '#88c9ff'; bg2 = '#0060ff';
+  } else {
+    bg1 = '#001028'; bg2 = '#002a4f';
+  }
+  document.getElementById('sky').style.background = `linear-gradient(to bottom,${bg1},${bg2})`;
+  document.getElementById('stars').style.opacity = day ? "0" : "1";
+  // Sole/Luna animati
+  const sun = document.getElementById('sun');
+  const moon = document.getElementById('moon');
+  if(day){
+    let p = (now - sunrise) / (sunset - sunrise);
+    let x = lerp(-10, 110, p), y = 34 - 12 * Math.sin(Math.PI * p);
+    sun.style.left = x + '%'; sun.style.top = y + '%'; sun.style.opacity = 1;
+    moon.style.opacity = 0;
+  }else{
+    let p = (now - sunset) / (nextSunrise - sunset);
+    let x = lerp(-10, 110, p), y = 35 - 10 * Math.sin(Math.PI * p);
+    moon.style.left = x + '%'; moon.style.top = y + '%'; moon.style.opacity = 1;
+    sun.style.opacity = 0;
+  }
+}
+setInterval(updateSky, 30000);
+window.onload = ()=>{updateSky(); updateTimes();};
+
+// Gauge meteo
+const g1 = new JustGage({id:"g1", value:0, min:950, max:1050, pointer:true});
+const g2 = new JustGage({id:"g2", value:0, min:-10, max:50, pointer:true});
+const g3 = new JustGage({id:"g3", value:0, min:0, max:100, pointer:true});
+const g4 = new JustGage({id:"g4", value:0, min:0, max:500, pointer:true});
+
+async function updateGauges(){
+  try{
+    const res = await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&results=60`);
     const data = await res.json();
-    return data.feeds;
+    if(!data.feeds || !data.feeds.length) return;
+    const f = data.feeds.map(x=>({f1:+x.field1, f2:+x.field2, f3:+x.field3, f4:+x.field4}));
+    const last = f[f.length-1];
+    const mean = a => (a.reduce((s,v)=>s+(isFinite(v)?v:0),0)/a.filter(x=>isFinite(x)).length).toFixed(1);
+    g1.refresh(last.f1); g2.refresh(last.f2); g3.refresh(last.f3); g4.refresh(last.f4);
+    document.getElementById("v1").textContent = last.f1.toFixed(1);
+    document.getElementById("v2").textContent = last.f2.toFixed(1);
+    document.getElementById("v3").textContent = last.f3.toFixed(1);
+    document.getElementById("v4").textContent = last.f4.toFixed(1);
+    document.getElementById("m1").textContent = mean(f.map(x=>x.f1));
+    document.getElementById("m2").textContent = mean(f.map(x=>x.f2));
+    document.getElementById("m3").textContent = mean(f.map(x=>x.f3));
+    document.getElementById("m4").textContent = mean(f.map(x=>x.f4));
+  }catch(e){
+    console.error(e);
   }
-
-  function updateCharts(feeds) {
-    const labels = feeds.map(f => new Date(f.created_at).toLocaleTimeString());
-    const temp = feeds.map(f => parseFloat(f.field1));
-    const hum = feeds.map(f => parseFloat(f.field2));
-    const pres = feeds.map(f => parseFloat(f.field3));
-    const air = feeds.map(f => parseFloat(f.field4));
-
-    createChart("tempChart", "Temperatura (°C)", temp, labels, "red");
-    createChart("humChart", "Umidità (%)", hum, labels, "blue");
-    createChart("presChart", "Pressione (hPa)", pres, labels, "orange");
-    createChart("airChart", "Qualità Aria (MQ135)", air, labels, "green");
-  }
-
-  function createChart(id, label, data, labels, color) {
-    const ctx = document.getElementById(id).getContext("2d");
-    if (window[id]) window[id].destroy();
-    window[id] = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label,
-          data,
-          borderColor: color,
-          backgroundColor: color + "33",
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: { y: { beginAtZero: false } }
-      }
-    });
-  }
-
-  async function update() {
-    const feeds = await getData();
-    if (feeds) updateCharts(feeds);
-  }
-
-  // Aggiornamento automatico
-  update();
-  setInterval(update, 60000);
-
-  // Tema giorno/notte in base all'ora locale
-  function setTheme() {
-    const now = new Date();
-    const hour = now.getHours();
-    if (hour >= 7 && hour <= 19) document.body.className = "day";
-    else document.body.className = "night";
-  }
-  setTheme();
-  </script>
+}
+updateGauges();
+setInterval(updateGauges, 30000);
+</script>
 </body>
 </html>
