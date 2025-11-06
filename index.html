@@ -341,4 +341,17 @@ async function aggiorna() {
     document.getElementById("v3").textContent = ultimo.f3.toFixed(1);
     document.getElementById("v4").textContent = ultimo.f4.toFixed(1);
     document.getElementById("m1").textContent = medie.m1;
-    document.getElementById("m2").textContent = me
+    document.getElementById("m2").textContent = medie.m2;
+    document.getElementById("m3").textContent = medie.m3;
+    document.getElementById("m4").textContent = medie.m4;
+    const now = new Date();
+    document.getElementById("statusBar").innerHTML = `✅ Aggiornato alle ${now.toLocaleTimeString("it-IT")}`;
+  } catch {
+    document.getElementById("statusBar").innerHTML = "⚠️ Connessione interrotta";
+  }
+}
+aggiorna();
+setInterval(aggiorna, 30000);
+</script>
+</body>
+</html>
