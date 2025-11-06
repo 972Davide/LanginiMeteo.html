@@ -62,7 +62,13 @@ header {
   font-size: 0.9em;
   color: #cce3ff;
 }
+.summaryTrend {
+  font-size: 0.9em;
+  font-weight: 600;
+  margin-top: 5px;
+}
 
+/* === Grafici === */
 section {
   margin: 20px auto;
   width: 95%;
@@ -77,6 +83,8 @@ canvas {
   border-radius: 10px;
   padding: 5px;
 }
+
+/* === Footer === */
 footer {
   font-size: 0.9em;
   color: #a9c9ff;
@@ -114,37 +122,33 @@ a:hover { background: #00aaff; }
     <div class="summaryTitle">🌡️ Temperatura</div>
     <div class="summaryVal" id="tempAvg">-- °C</div>
     <div class="summaryMinMax">Min: <span id="tempMin">--</span> • Max: <span id="tempMax">--</span></div>
+    <div class="summaryTrend" id="tempTrend">→ Stabile</div>
   </div>
   <div class="summaryBox">
     <div class="summaryTitle">💧 Umidità</div>
     <div class="summaryVal" id="humAvg">-- %</div>
     <div class="summaryMinMax">Min: <span id="humMin">--</span> • Max: <span id="humMax">--</span></div>
+    <div class="summaryTrend" id="humTrend">→ Stabile</div>
   </div>
   <div class="summaryBox">
     <div class="summaryTitle">🌪️ Pressione</div>
     <div class="summaryVal" id="pressAvg">-- hPa</div>
     <div class="summaryMinMax">Min: <span id="pressMin">--</span> • Max: <span id="pressMax">--</span></div>
+    <div class="summaryTrend" id="pressTrend">→ Stabile</div>
   </div>
   <div class="summaryBox">
     <div class="summaryTitle">🌫️ Qualità Aria</div>
     <div class="summaryVal" id="airAvg">--</div>
     <div class="summaryMinMax">Min: <span id="airMin">--</span> • Max: <span id="airMax">--</span></div>
+    <div class="summaryTrend" id="airTrend">→ Stabile</div>
   </div>
 </div>
 
 <!-- === GRAFICI === -->
-<section>
-  <canvas id="tempChart" height="220"></canvas>
-</section>
-<section>
-  <canvas id="humChart" height="220"></canvas>
-</section>
-<section>
-  <canvas id="pressChart" height="220"></canvas>
-</section>
-<section>
-  <canvas id="airChart" height="220"></canvas>
-</section>
+<section><canvas id="tempChart" height="220"></canvas></section>
+<section><canvas id="humChart" height="220"></canvas></section>
+<section><canvas id="pressChart" height="220"></canvas></section>
+<section><canvas id="airChart" height="220"></canvas></section>
 
 <a href="index.html">🏠 Torna alla Home</a>
 
@@ -170,7 +174,6 @@ async function caricaDati() {
   const press = feeds.map(f => +f.field1);
   const air = feeds.map(f => +f.field4);
 
-  // Calcoli riassuntivi
   aggiornaBox(temp, "temp");
   aggiornaBox(hum, "hum");
   aggiornaBox(press, "press");
@@ -182,15 +185,19 @@ async function caricaDati() {
   creaGrafico("airChart", "Qualità Aria (MQ135)", timeLabels, air, "rgba(255,80,80,0.8)");
 }
 
+// === Calcolo Media / Min / Max / Tendenza ===
 function aggiornaBox(array, prefix) {
   const valid = array.filter(v => !isNaN(v));
   if (valid.length === 0) return;
   const media = (valid.reduce((a,b)=>a+b,0)/valid.length).toFixed(1);
   const min = Math.min(...valid).toFixed(1);
   const max = Math.max(...valid).toFixed(1);
+  const trend = tendenza(valid, prefix);
+
   document.getElementById(prefix + "Avg").textContent = media + (prefix=="air"?"":" " + unita(prefix));
   document.getElementById(prefix + "Min").textContent = min;
   document.getElementById(prefix + "Max").textContent = max;
+  document.getElementById(prefix + "Trend").textContent = trend;
 }
 
 function unita(prefix) {
@@ -202,6 +209,32 @@ function unita(prefix) {
   }
 }
 
+// === Analisi tendenza (ultime 10 letture) ===
+function tendenza(array, prefix) {
+  const valid = array.filter(v => !isNaN(v));
+  if (valid.length < 10) return "→ Stabile";
+
+  const recenti = valid.slice(-5);
+  const precedenti = valid.slice(-10, -5);
+  const m1 = recenti.reduce((a,b)=>a+b,0)/recenti.length;
+  const m2 = precedenti.reduce((a,b)=>a+b,0)/precedenti.length;
+  const diff = m1 - m2;
+
+  switch(prefix) {
+    case "temp":
+      return diff>0.3?"↗️ Aumento":diff<-0.3?"↘️ Calo":"→ Stabile";
+    case "hum":
+      return diff>2?"↗️ Aumento":diff<-2?"↘️ Calo":"→ Stabile";
+    case "press":
+      return diff>1?"↗️ Alta (Meteo stabile)":diff<-1?"↘️ Calo (possibile pioggia)":"→ Stabile";
+    case "air":
+      return diff>5?"↗️ Peggiora":diff<-5?"↘️ Migliora":"→ Stabile";
+    default:
+      return "→ Stabile";
+  }
+}
+
+// === Creazione Grafico ===
 function creaGrafico(id, label, labels, dati, colore) {
   new Chart(document.getElementById(id), {
     type: "line",
@@ -218,9 +251,7 @@ function creaGrafico(id, label, labels, dati, colore) {
       }]
     },
     options: {
-      plugins: {
-        legend: { labels: { color: "#fff" } }
-      },
+      plugins: { legend: { labels: { color: "#fff" } } },
       scales: {
         x: { ticks: { color: "#a9c9ff" }, grid: { color: "rgba(255,255,255,0.05)" } },
         y: { ticks: { color: "#a9c9ff" }, grid: { color: "rgba(255,255,255,0.05)" } }
@@ -234,3 +265,4 @@ setInterval(caricaDati, 60000);
 </script>
 </body>
 </html>
+
