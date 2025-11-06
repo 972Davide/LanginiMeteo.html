@@ -18,7 +18,6 @@ body {
   text-align: center;
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background 3s ease;
 }
 header {
   background: rgba(0,0,30,0.6);
@@ -31,6 +30,39 @@ header {
   font-size: 1.1em;
   color: #a9c9ff;
 }
+
+/* === Pannello Riassunto === */
+#summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 15px;
+  background: rgba(255,255,255,0.1);
+  border-bottom: 2px solid rgba(255,255,255,0.15);
+}
+.summaryBox {
+  background: rgba(0,0,50,0.4);
+  border-radius: 12px;
+  padding: 12px 18px;
+  width: 200px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+.summaryTitle {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #a9c9ff;
+}
+.summaryVal {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #fff;
+}
+.summaryMinMax {
+  font-size: 0.9em;
+  color: #cce3ff;
+}
+
 section {
   margin: 20px auto;
   width: 95%;
@@ -66,6 +98,8 @@ a:hover { background: #00aaff; }
 
 @media (max-width: 600px) {
   header { font-size: 1.3em; }
+  #summary { flex-direction: column; align-items: center; }
+  .summaryBox { width: 90%; }
   canvas { width: 100% !important; }
 }
 </style>
@@ -74,6 +108,31 @@ a:hover { background: #00aaff; }
 <body>
 <header>📊 Grafici — Langini Meteo<br><div id="logo">Ultime 24 ore</div></header>
 
+<!-- === RIASSUNTO GIORNALIERO === -->
+<div id="summary">
+  <div class="summaryBox">
+    <div class="summaryTitle">🌡️ Temperatura</div>
+    <div class="summaryVal" id="tempAvg">-- °C</div>
+    <div class="summaryMinMax">Min: <span id="tempMin">--</span> • Max: <span id="tempMax">--</span></div>
+  </div>
+  <div class="summaryBox">
+    <div class="summaryTitle">💧 Umidità</div>
+    <div class="summaryVal" id="humAvg">-- %</div>
+    <div class="summaryMinMax">Min: <span id="humMin">--</span> • Max: <span id="humMax">--</span></div>
+  </div>
+  <div class="summaryBox">
+    <div class="summaryTitle">🌪️ Pressione</div>
+    <div class="summaryVal" id="pressAvg">-- hPa</div>
+    <div class="summaryMinMax">Min: <span id="pressMin">--</span> • Max: <span id="pressMax">--</span></div>
+  </div>
+  <div class="summaryBox">
+    <div class="summaryTitle">🌫️ Qualità Aria</div>
+    <div class="summaryVal" id="airAvg">--</div>
+    <div class="summaryMinMax">Min: <span id="airMin">--</span> • Max: <span id="airMax">--</span></div>
+  </div>
+</div>
+
+<!-- === GRAFICI === -->
 <section>
   <canvas id="tempChart" height="220"></canvas>
 </section>
@@ -97,23 +156,50 @@ Aggiornamento automatico ogni 60 s<br>
 <script>
 const CHANNEL_ID = 3149218;
 const API_KEY = "4EGG4DXUFDU6FUGN";
-const API_URL = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&results=96`; // 96×15min=24h
+const API_URL = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&results=96`;
 
 async function caricaDati() {
   const res = await fetch(API_URL);
   const data = await res.json();
   if (!data.feeds) return;
 
-  const timeLabels = data.feeds.map(f => new Date(f.created_at).toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"}));
-  const temp = data.feeds.map(f => +f.field2);
-  const hum = data.feeds.map(f => +f.field3);
-  const press = data.feeds.map(f => +f.field1);
-  const air = data.feeds.map(f => +f.field4);
+  const feeds = data.feeds;
+  const timeLabels = feeds.map(f => new Date(f.created_at).toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"}));
+  const temp = feeds.map(f => +f.field2);
+  const hum = feeds.map(f => +f.field3);
+  const press = feeds.map(f => +f.field1);
+  const air = feeds.map(f => +f.field4);
+
+  // Calcoli riassuntivi
+  aggiornaBox(temp, "temp");
+  aggiornaBox(hum, "hum");
+  aggiornaBox(press, "press");
+  aggiornaBox(air, "air");
 
   creaGrafico("tempChart", "Temperatura (°C)", timeLabels, temp, "rgba(255,150,0,0.8)");
   creaGrafico("humChart", "Umidità (%)", timeLabels, hum, "rgba(0,180,255,0.8)");
   creaGrafico("pressChart", "Pressione (hPa)", timeLabels, press, "rgba(0,255,140,0.8)");
   creaGrafico("airChart", "Qualità Aria (MQ135)", timeLabels, air, "rgba(255,80,80,0.8)");
+}
+
+function aggiornaBox(array, prefix) {
+  const valid = array.filter(v => !isNaN(v));
+  if (valid.length === 0) return;
+  const media = (valid.reduce((a,b)=>a+b,0)/valid.length).toFixed(1);
+  const min = Math.min(...valid).toFixed(1);
+  const max = Math.max(...valid).toFixed(1);
+  document.getElementById(prefix + "Avg").textContent = media + (prefix=="air"?"":" " + unita(prefix));
+  document.getElementById(prefix + "Min").textContent = min;
+  document.getElementById(prefix + "Max").textContent = max;
+}
+
+function unita(prefix) {
+  switch(prefix) {
+    case "temp": return "°C";
+    case "hum": return "%";
+    case "press": return "hPa";
+    default: return "";
+  }
 }
 
 function creaGrafico(id, label, labels, dati, colore) {
