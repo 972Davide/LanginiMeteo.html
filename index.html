@@ -52,7 +52,7 @@ header h1{
 
 /* countdown */
 #astroCountdown{
-  position:absolute;bottom:50%;left:50%;transform:translateX(-50%);
+  position:absolute;bottom:52%;left:50%;transform:translateX(-50%);
   background:rgba(0,0,0,0.6);padding:10px 26px;border-radius:14px;
   font-size:1.2em;font-weight:600;color:#fff;text-shadow:0 0 6px #000;
   box-shadow:0 0 8px rgba(0,0,0,0.4);z-index:5;
@@ -75,7 +75,7 @@ footer{font-size:.9em;color:#a9c9ff;margin:0;}
 
 @media(max-width:700px){
   .gaugeBox{width:180px;height:180px;}
-  #astroCountdown{bottom:52%;font-size:1em;}
+  #astroCountdown{bottom:54%;font-size:1em;}
 }
 </style>
 </head>
@@ -139,16 +139,28 @@ const CHANNEL_ID=3149218,API_KEY="4EGG4DXUFDU6FUGN";
   }
 })();
 
+// === CORREZIONE ORARI ROMA ===
 let timesToday=null,timesTomorrow=null;
 function computeTimes(){
   const now=new Date();
   const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const d1=new Date(d0.getTime()+86400000);
-  timesToday=SunCalc.getTimes(d0,LAT,LON);
-  timesTomorrow=SunCalc.getTimes(d1,LAT,LON);
+
+  const t0=SunCalc.getTimes(d0,LAT,LON);
+  const t1=SunCalc.getTimes(d1,LAT,LON);
+
+  // Conversione UTC → ora locale Roma
+  function toRome(dateUTC){
+    const tz='Europe/Rome';
+    return new Date(dateUTC.toLocaleString('en-US',{timeZone:tz}));
+  }
+
+  timesToday={sunrise:toRome(t0.sunrise),sunset:toRome(t0.sunset)};
+  timesTomorrow={sunrise:toRome(t1.sunrise),sunset:toRome(t1.sunset)};
 }
 computeTimes();
 
+// === FUNZIONI UTILITARIE ===
 function lerp(a,b,t){return a+(b-a)*t;}
 function mixColor(c1,c2,p){
   const r=Math.round(lerp(c1[0],c2[0],p)).toString(16).padStart(2,'0');
@@ -157,6 +169,7 @@ function mixColor(c1,c2,p){
   return r+g+b;
 }
 
+// === AGGIORNAMENTO CIELO ===
 function updateSky(){
   if(!timesToday||!timesTomorrow)return;
 
@@ -175,6 +188,7 @@ function updateSky(){
   const TW=60*60000;
   let bg1,bg2;
 
+  // Cielo graduale
   if(now>=new Date(sunrise-TW)&&now<new Date(sunrise+TW)){
     const p=(now-(sunrise-TW))/(2*TW);
     bg1=`#${mixColor([0x00,0x10,0x28],[0xff,0xa4,0x52],p)}`;
@@ -186,20 +200,14 @@ function updateSky(){
   }else if(isDay){bg1='7ec9ff';bg2='2b77d0';}
   else{bg1='001028';bg2='002a4f';}
   sky.style.background=`linear-gradient(to bottom,#${bg1},#${bg2})`;
-
   stars.style.opacity=isDay?'0':'1';
 
-  // --- Movimento sole e luna ---
+  // Sole e luna
   if(isDay){
     const p=(now-sunrise)/(sunset-sunrise);
     const x=lerp(-10,110,p);
     const y=35-15*Math.sin(Math.PI*p);
-
-    sun.style.left=x+'%';
-    sun.style.top=y+'%';
-    sun.style.opacity=1;
-
-    // luna esce e sparisce
+    sun.style.left=x+'%'; sun.style.top=y+'%'; sun.style.opacity=1;
     const fade=Math.max(0,1-p*3);
     moon.style.opacity=fade;
   }else{
@@ -207,40 +215,27 @@ function updateSky(){
     const p=(now-nightStart)/(nightEnd-nightStart);
     const x=lerp(-10,110,p);
     const y=40-10*Math.sin(Math.PI*p);
-
-    moon.style.left=x+'%';
-    moon.style.top=y+'%';
-    moon.style.opacity=1;
-
-    // sole entra appena luna scompare
+    moon.style.left=x+'%'; moon.style.top=y+'%'; moon.style.opacity=1;
     const fade=Math.max(0,1-Math.abs(p-1)*3);
     if(p>0.95){
       sun.style.left='-10%';
       sun.style.opacity=(p-0.95)*20;
-    }else{
-      sun.style.opacity=0;
-    }
+    }else{sun.style.opacity=0;}
   }
 
-  // --- Countdown dinamico ---
+  // Countdown
   let target,icon;
-  if(isDay){
-    target=sunset; icon="☀️ Tramonto tra";
-  }else{
-    const nextTarget=(now>sunrise)?nextSunrise:sunrise;
-    target=nextTarget; icon="🌙 Alba tra";
-  }
-
+  if(isDay){target=sunset;icon="☀️ Tramonto tra";}
+  else{const nextTarget=(now>sunrise)?nextSunrise:sunrise;target=nextTarget;icon="🌙 Alba tra";}
   const diff=Math.max(target-now,0);
   const h=Math.floor(diff/3600000);
   const m=Math.floor((diff%3600000)/60000);
-
   label.innerHTML=`${icon} <b>${h}h ${m}min</b>`;
 }
 updateSky();
 setInterval(updateSky,30000);
 
-// --- Gauge setup ---
+// === GAUGE ===
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
 const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
