@@ -30,7 +30,7 @@ header h1{
 
 #sky{
   position:relative;width:100%;height:100vh;
-  background:linear-gradient(to bottom,#001028,#002a4f);
+  background:linear-gradient(to bottom,#88c9ff,#0060ff);
   transition:background 5s ease;
 }
 #stars{position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;transition:opacity 5s ease;}
@@ -115,7 +115,7 @@ footer{font-size:.9em;color:#a9c9ff;margin:0;}
 const LAT=41.8933,LON=12.4829; // Roma
 const CHANNEL_ID=3149218,API_KEY="4EGG4DXUFDU6FUGN";
 
-// Stelle decorative
+// Stelle
 (function makeStars(){
   const N=80,box=document.getElementById('stars');
   for(let i=0;i<N;i++){
@@ -129,21 +129,25 @@ const CHANNEL_ID=3149218,API_KEY="4EGG4DXUFDU6FUGN";
   }
 })();
 
-// === ORARI ROMA ===
-let timesToday=null, timesTomorrow=null;
+// === CORREZIONE FUSO ROMA ===
+function toRomeTime(date){
+  return new Date(date.toLocaleString("en-US",{timeZone:"Europe/Rome"}));
+}
+
+// === Calcolo orari ===
+let timesToday=null,timesTomorrow=null;
 function computeTimes(){
   const now=new Date();
   const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const d1=new Date(d0.getTime()+86400000);
   const t0=SunCalc.getTimes(d0,LAT,LON);
   const t1=SunCalc.getTimes(d1,LAT,LON);
-  function utcToRome(dateUTC){return new Date(dateUTC.getTime()+new Date().getTimezoneOffset()*-60000);}
-  timesToday={sunrise:utcToRome(t0.sunrise),sunset:utcToRome(t0.sunset)};
-  timesTomorrow={sunrise:utcToRome(t1.sunrise),sunset:utcToRome(t1.sunset)};
+  timesToday={sunrise:toRomeTime(t0.sunrise),sunset:toRomeTime(t0.sunset)};
+  timesTomorrow={sunrise:toRomeTime(t1.sunrise),sunset:toRomeTime(t1.sunset)};
 }
 computeTimes();
 
-// === COLORI ===
+// === Utility ===
 function lerp(a,b,t){return a+(b-a)*t;}
 function mixColor(c1,c2,p){
   const r=Math.round(lerp(c1[0],c2[0],p)).toString(16).padStart(2,'0');
@@ -152,7 +156,7 @@ function mixColor(c1,c2,p){
   return r+g+b;
 }
 
-// === ANIMAZIONE CIELO E SOLE/LUNA ===
+// === Animazione sole/luna e cielo ===
 function updateSky(){
   if(!timesToday||!timesTomorrow)return;
   const now=new Date();
@@ -166,7 +170,6 @@ function updateSky(){
   const sun=document.getElementById('sun');
   const moon=document.getElementById('moon');
 
-  // sfumatura cielo
   const TW=60*60000;
   let bg1,bg2;
   if(now>=new Date(sunrise-TW)&&now<new Date(sunrise+TW)){
@@ -177,31 +180,29 @@ function updateSky(){
     const p=(now-(sunset-TW))/(2*TW);
     bg1=`#${mixColor([0x7e,0xc9,0xff],[0x00,0x10,0x28],p)}`;
     bg2=`#${mixColor([0x2b,0x77,0xd0],[0x00,0x2a,0x4f],p)}`;
-  }else if(isDay){bg1='7ec9ff';bg2='2b77d0';}
+  }else if(isDay){bg1='88c9ff';bg2='0060ff';}
   else{bg1='001028';bg2='002a4f';}
   sky.style.background=`linear-gradient(to bottom,#${bg1},#${bg2})`;
   stars.style.opacity=isDay?'0':'1';
 
-  // movimento sole/luna
   if(isDay){
     const p=(now-sunrise)/(sunset-sunrise);
     const x=lerp(-10,110,p);
     const y=35-15*Math.sin(Math.PI*p);
-    sun.style.left=x+'%'; sun.style.top=y+'%'; sun.style.opacity=1;
+    sun.style.left=x+'%';sun.style.top=y+'%';sun.style.opacity=1;
     moon.style.opacity=0;
   }else{
-    const nightStart=sunset,nightEnd=nextSunrise;
-    const p=(now-nightStart)/(nightEnd-nightStart);
+    const p=(now-sunset)/(nextSunrise-sunset);
     const x=lerp(-10,110,p);
     const y=40-10*Math.sin(Math.PI*p);
-    moon.style.left=x+'%'; moon.style.top=y+'%'; moon.style.opacity=1;
+    moon.style.left=x+'%';moon.style.top=y+'%';moon.style.opacity=1;
     sun.style.opacity=0;
   }
 }
 updateSky();
 setInterval(updateSky,30000);
 
-// === GAUGE ===
+// === Gauges ===
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
 const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
