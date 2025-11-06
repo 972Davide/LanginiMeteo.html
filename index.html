@@ -1,178 +1,188 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Langini Meteo – Dashboard V1.0</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: "Poppins", Arial, sans-serif;
-      min-height: 100vh;
-      transition: background 2s;
-      background: linear-gradient(to bottom, #001b3a 0%, #004a8d 40%, #0066b2 100%);
-      color: white;
-      text-align: center;
-      overflow-x: hidden;
-    }
-    header {
-      background: rgba(0,0,30,0.7);
-      color: #fff;
-      padding: 16px 0 4px;
-      font-weight: 600;
-      font-size: 1.7em;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.22);
-      position: relative;
-    }
-    #logo {
-      font-size: 1.07em;
-      font-weight: 400;
-      color: #a9c9ff;
-      padding-top: 7px;
-    }
-    #statusBar {
-      background: rgba(0,0,0,0.15);
-      font-size: 0.93em;
-      padding: 6px;
-      color: #a9c9ff;
-      min-height: 24px;
-    }
-    #sky {
-      position: relative;
-      height: 46vh;
-      overflow: hidden;
-      border-bottom: 4px solid #048;
-    }
-    #stars {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0;
-      z-index: 2;
-    }
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: #fff;
-      border-radius: 50%;
-      opacity: 0;
-      animation: twinkle 4s infinite;
-    }
-    @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:1} }
-    #sun, #moon {
-      position: absolute;
-      top: 53%;
-      left: 50%;
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      transform: translate(-50%,-50%);
-      transition: left 1.5s, top 1.5s, opacity 2s;
-    }
-    #sun { background: radial-gradient(circle, #fff600 20%, #ffcc00 70%, #ffaa00 100%); box-shadow: 0 0 40px 10px #ffcc00; opacity:0; z-index:3;}
-    #moon { background: radial-gradient(circle at 31% 32%, #f0f0f0 40%, #bdbdbd 100%); box-shadow: 0 0 25px 5px #cccccc; opacity:0; z-index:3;}
-    .cloud {
-      position: absolute;
-      background: rgba(255,255,255,0.8);
-      border-radius: 50%;
-      opacity: 0.7;
-      animation: moveCloud linear infinite;
-      z-index: 1;
-    }
-    @keyframes moveCloud {
-      from { transform: translateX(-220px);}
-      to { transform: translateX(116vw);}
-    }
-    #sunMoonTimes {
-      font-size: 1em;
-      color: #a9c9ff;
-      margin-top: 10px;
-      margin-bottom: 6px;
-    }
-    #gauges {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 26px;
-      padding: 30px 0 40px;
-      background: linear-gradient(to bottom, #002850, #00142c);
-      border-top: 3px solid #004b8d;
-      z-index:10;
-    }
-    .gaugeBox {
-      background: linear-gradient(to bottom, #f8fbff, #e6edf5);
-      border-radius: 18px;
-      width: 260px;
-      height: 270px;
-      padding: 10px;
-      color: #003366;
-      box-shadow: 0 0 14px rgba(0,0,0,0.14);
-      position: relative;
-      margin-bottom: 10px;
-    }
-    .gaugeBox img {
-      position: absolute;
-      top: 10px; right: 10px;
-      width: 38px; opacity: 0.84;
-    }
-    .label {
-      font-size: 1.17em;
-      font-weight: 600;
-      margin-top: 7px;
-    }
-    .value {
-      font-size: 1.23em;
-      font-weight: bold;
-      color: #000;
-      margin-top: 4px;
-    }
-    .mean {
-      font-size: 0.9em;
-      color: #444;
-      margin-top: 2px;
-    }
-    footer {
-      font-size: 0.93em;
-      color: #a9c9ff;
-      background: #001b3a;
-      padding: 10px;
-      margin-top: 0;
-    }
-    a {
-      color: #fff;
-      background: #0078ff;
-      padding: 11px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      display: inline-block;
-      margin-top: 14px;
-      transition: 0.3s;
-    }
-    a:hover { background: #00aaff; }
-    @media (max-width:700px) {
-      #gauges { flex-direction:column; align-items:center;}
-      .gaugeBox {width:92%; height:210px;}
-      header {font-size:1.16em;}
-      #sky {height:160px;}
-      #sun,#moon {width:62px; height:62px;}
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Langini Meteo – Dashboard V2.0</title>
+
+<!-- Librerie -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(to bottom, #001b3a 0%, #004a8d 40%, #0066b2 100%);
+  color: white;
+  text-align: center;
+  overflow-x: hidden;
+  transition: background 2s;
+}
+header {
+  background: rgba(0,0,30,0.7);
+  color: #fff;
+  padding: 16px 0 4px;
+  font-weight: 600;
+  font-size: 1.7em;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.22);
+}
+#logo {
+  font-size: 1.07em;
+  font-weight: 400;
+  color: #a9c9ff;
+}
+#statusBar {
+  background: rgba(0,0,0,0.15);
+  font-size: 0.93em;
+  padding: 6px;
+  color: #a9c9ff;
+  min-height: 24px;
+}
+#sky {
+  position: relative;
+  height: 46vh;
+  overflow: hidden;
+  border-bottom: 4px solid #048;
+}
+#stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle 4s infinite;
+}
+@keyframes twinkle { 0%,100%{opacity:0.2} 50%{opacity:1} }
+
+#sun, #moon {
+  position: absolute;
+  top: 53%;
+  left: 50%;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  transition: left 1.5s, top 1.5s, opacity 2s;
+  z-index: 3;
+}
+#sun {
+  background: radial-gradient(circle, #fff600 20%, #ffcc00 70%, #ffaa00 100%);
+  box-shadow: 0 0 40px 10px #ffcc00;
+  opacity: 0;
+}
+#moon {
+  background: radial-gradient(circle at 31% 32%, #f0f0f0 40%, #bdbdbd 100%);
+  box-shadow: 0 0 25px 5px #cccccc;
+  opacity: 0;
+}
+
+/* 🌥️ Nuvole migliorate */
+.cloud {
+  position: absolute;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  box-shadow:
+    -30px 10px 30px rgba(255,255,255,0.7),
+    40px 15px 40px rgba(255,255,255,0.6),
+    70px 20px 60px rgba(255,255,255,0.5);
+  animation: fluttuare 6s ease-in-out infinite alternate;
+  z-index: 1;
+}
+@keyframes fluttuare {
+  from { transform: translateY(0px); }
+  to { transform: translateY(8px); }
+}
+
+#sunMoonTimes {
+  font-size: 1em;
+  color: #a9c9ff;
+  margin: 8px 0;
+}
+
+/* Gauge */
+#gauges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 26px;
+  padding: 30px 0 40px;
+  background: linear-gradient(to bottom, #002850, #00142c);
+  border-top: 3px solid #004b8d;
+}
+.gaugeBox {
+  background: linear-gradient(to bottom, #f8fbff, #e6edf5);
+  border-radius: 18px;
+  width: 260px;
+  height: 270px;
+  padding: 10px;
+  color: #003366;
+  box-shadow: 0 0 14px rgba(0,0,0,0.14);
+  position: relative;
+}
+.gaugeBox img {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 38px; opacity: 0.84;
+}
+.label {
+  font-size: 1.17em;
+  font-weight: 600;
+  margin-top: 7px;
+}
+.value {
+  font-size: 1.23em;
+  font-weight: bold;
+  color: #000;
+  margin-top: 4px;
+}
+.mean {
+  font-size: 0.9em;
+  color: #444;
+  margin-top: 2px;
+}
+footer {
+  font-size: 0.93em;
+  color: #a9c9ff;
+  background: #001b3a;
+  padding: 10px;
+  margin-top: 0;
+}
+a {
+  color: #fff;
+  background: #0078ff;
+  padding: 11px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 14px;
+  transition: 0.3s;
+}
+a:hover { background: #00aaff; }
+</style>
 </head>
+
 <body>
-<header>🌤️ Langini Meteo – Dashboard V1.0<br><div id="logo">by Langini D.</div></header>
+<header>🌤️ Langini Meteo – Dashboard V2.0<br><div id="logo">by Langini D.</div></header>
 <div id="statusBar">Caricamento dati...</div>
+
 <div id="sky">
   <div id="stars"></div>
   <div id="sun"></div>
   <div id="moon"></div>
 </div>
 <div id="sunMoonTimes">☀️ Alba: --:-- • 🌇 Tramonto: --:--</div>
+
 <div id="gauges">
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/barometer.png" alt="">
@@ -203,141 +213,149 @@
     <div class="mean">Media oraria: <span id="m4">--</span></div>
   </div>
 </div>
+
 <a href="grafici.html">📊 Vedi Grafici Dettagliati</a>
-<footer>Aggiornamento automatico ogni 30 s<br>© 2025 Langini Meteo • ThingSpeak API live</footer>
+<footer>© 2025 Langini Meteo • Aggiornamento automatico ogni 30 s</footer>
+
 <script>
-const LAT = 45.77; // Varese provincia, puoi cambiare se vuoi
+const LAT = 45.77;
 const LON = 8.88;
 const CHANNEL_ID = 3149218;
 const API_KEY = "4EGG4DXUFDU6FUGN";
 
-// Nuvole animate dinamiche
-(function creaNuvole(){
-  const sky = document.getElementById("sky");
-  for (let i=0; i<7; i++) {
-    const c = document.createElement("div");
-    c.className = "cloud";
-    c.style.width = (100 + Math.random()*90) + "px";
-    c.style.height = (40 + Math.random()*22) + "px";
-    c.style.top = (12+Math.random()*60) + "%";
-    c.style.left = (Math.random()*95) + "%";
-    c.style.animationDuration = (38 + Math.random()*44) + "s";
-    c.style.opacity = 0.42 + Math.random()*0.4;
-    sky.appendChild(c);
-  }
-})();
-
-// Stelle dinamiche
+// ✨ Stelle dinamiche
 (function creaStelle(){
-  const N=38, box=document.getElementById('stars');
-  for(let i=0;i<N;i++){
+  const stars = document.getElementById('stars');
+  for(let i=0;i<40;i++){
     const s=document.createElement('div');
     s.className='star';
-    s.style.left=(Math.random()*100)+'%';
-    s.style.top=(Math.random()*100)+'%';
-    s.style.animationDelay=(Math.random()*4)+'s';
-    s.style.opacity=(0.4+Math.random()*0.4).toFixed(2);
-    box.appendChild(s);
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=Math.random()*3+'s';
+    stars.appendChild(s);
   }
 })();
 
-// Func orario e visual meteocielo
-function minutiToOra(m) {
-  const h = Math.floor(m / 60);
-  const min = Math.floor(m % 60);
-  return `${String(h).padStart(2,"0")}:${String(min).padStart(2,"0")}`;
-}
-function aggiornaCielo() {
-  const now = new Date();
-  const times = SunCalc.getTimes(now, LAT, LON);
-
-  // Alba/Tramonto Roma fuso
-  const sunrise = new Date(times.sunrise.toLocaleString("en-US", {timeZone:"Europe/Rome"}));
-  const sunset = new Date(times.sunset.toLocaleString("en-US", {timeZone:"Europe/Rome"}));
-  const alba_min = sunrise.getHours()*60 + sunrise.getMinutes();
-  const tramonto_min = sunset.getHours()*60 + sunset.getMinutes();
-
-  document.getElementById("sunMoonTimes").innerHTML = `☀️ Alba: ${minutiToOra(alba_min)} • 🌇 Tramonto: ${minutiToOra(tramonto_min)}`;
-
-  const curr_min = now.getHours()*60 + now.getMinutes();
+// ☁️ Nuvole dinamiche a 3 livelli
+(function gestisciNuvole(){
   const sky = document.getElementById("sky");
-  const sun = document.getElementById("sun");
-  const moon = document.getElementById("moon");
-  let isDay = curr_min >= alba_min && curr_min < tramonto_min;
+  const livelli = [
+    { velocita: 45, scala: 1.2, opacita: 0.6 },
+    { velocita: 70, scala: 1.0, opacita: 0.45 },
+    { velocita: 95, scala: 0.8, opacita: 0.35 }
+  ];
 
-  // Gradiente cielo smooth
+  function creaNuvola(l){
+    const c=document.createElement("div");
+    c.className="cloud";
+    const w=80+Math.random()*160, h=30+Math.random()*35;
+    c.style.width=w*l.scala+"px";
+    c.style.height=h*l.scala+"px";
+    c.style.top=(10+Math.random()*60)+"%";
+    c.style.left=(-300-Math.random()*200)+"px";
+    c.style.opacity=l.opacita+Math.random()*0.2;
+    c.style.filter=`blur(${1+Math.random()*1.5}px)`;
+    sky.appendChild(c);
+    const durata=(l.velocita+Math.random()*30)*1000;
+    c.animate([{transform:`translateX(0px)`},{transform:`translateX(${window.innerWidth+400}px)`}],
+      {duration:durata,iterations:1,easing:"linear"}).onfinish=()=>{
+        c.remove();
+        if(document.hasFocus()) setTimeout(()=>creaNuvola(l),3000);
+    };
+  }
+  livelli.forEach(l=>{
+    for(let i=0;i<3;i++) setTimeout(()=>creaNuvola(l),Math.random()*4000);
+  });
+  setInterval(()=>{
+    if(document.hasFocus()){
+      const l=livelli[Math.floor(Math.random()*livelli.length)];
+      creaNuvola(l);
+    }
+  },12000);
+})();
+
+// 🌅 Sole/Luna dinamici
+function minutiToOra(m){const h=Math.floor(m/60),min=Math.floor(m%60);return `${String(h).padStart(2,"0")}:${String(min).padStart(2,"0")}`;}
+function aggiornaCielo(){
+  const now=new Date();
+  const times=SunCalc.getTimes(now,LAT,LON);
+  const sunrise=new Date(times.sunrise.getTime());
+  const sunset=new Date(times.sunset.getTime());
+  const alba=sunrise.getHours()*60+sunrise.getMinutes();
+  const tramonto=sunset.getHours()*60+sunset.getMinutes();
+  const curr=now.getHours()*60+now.getMinutes();
+
+  document.getElementById("sunMoonTimes").innerHTML=`☀️ Alba: ${minutiToOra(alba)} • 🌇 Tramonto: ${minutiToOra(tramonto)}`;
+
+  const sun=document.getElementById("sun"),moon=document.getElementById("moon"),stars=document.getElementById("stars");
+  const isDay=curr>=alba&&curr<tramonto;
+
   if(isDay){
-    sky.style.background = "linear-gradient(to bottom,#88c9ff,#0060ff)";
-    document.getElementById('stars').style.opacity="0";
+    document.body.style.background="linear-gradient(to bottom,#00aaff 0%,#87ceeb 60%,#0099ff 100%)";
+    stars.style.opacity=0;
     sun.style.opacity=1; moon.style.opacity=0;
-    // Sole tra alba e tramonto
-    let p = (curr_min - alba_min) / (tramonto_min - alba_min);
-    let left = 5 + p*90, top = 53 - 17*Math.sin(p*Math.PI);
-    sun.style.left = left+"%"; sun.style.top = top+"%";
+    const p=(curr-alba)/(tramonto-alba);
+    sun.style.left=5+p*90+"%";
+    sun.style.top=53-17*Math.sin(p*Math.PI)+"%";
   }else{
-    sky.style.background = "linear-gradient(to bottom,#001028,#002a4f)";
-    document.getElementById('stars').style.opacity="0.85";
+    document.body.style.background="linear-gradient(to bottom,#000820 0%,#001b40 60%,#002860 100%)";
+    stars.style.opacity=0.9;
     moon.style.opacity=1; sun.style.opacity=0;
-    // Luna tra tramonto e alba
-    let totalNight = (24*60 - tramonto_min) + alba_min;
-    let passed = curr_min >= tramonto_min ?
-      (curr_min - tramonto_min) : (curr_min + 24*60 - tramonto_min);
-    let p = passed / totalNight;
-    let left = 95 - p*90, top = 53 - 12*Math.sin(p*Math.PI);
-    moon.style.left = left+"%"; moon.style.top = top+"%";
+    const total=(24*60-tramonto)+alba;
+    const passed=curr>=tramonto?(curr-tramonto):(curr+24*60-tramonto);
+    const p=passed/total;
+    moon.style.left=95-p*90+"%";
+    moon.style.top=53-12*Math.sin(p*Math.PI)+"%";
   }
 }
-setInterval(aggiornaCielo, 60000);
-window.onload = aggiornaCielo;
+setInterval(aggiornaCielo,60000);
+window.onload=aggiornaCielo;
 
-// Animazione oscil sole/luna
-let angle = 0;
-setInterval(() => {
-  const sun = document.getElementById("sun");
-  const moon = document.getElementById("moon");
-  angle += 0.04;
-  (sun.style.opacity>0.8 ? sun : moon).style.transform = `translate(-50%,-50%) rotate(${angle}rad)`;
-}, 120);
+// 🌞 Oscillazione sole/luna
+let angle=0;
+setInterval(()=>{
+  const sun=document.getElementById("sun");
+  const moon=document.getElementById("moon");
+  angle+=0.04;
+  (sun.style.opacity>0.5?sun:moon).style.transform=`translate(-50%,-50%) rotate(${angle}rad)`;
+},120);
 
-// Gauges Meteo
-const g1 = new JustGage({ id:"g1", value:0, min:950, max:1050, gaugeWidthScale:0.8, pointer:true, relativeGaugeSize:true });
-const g2 = new JustGage({ id:"g2", value:0, min:-10, max:50, gaugeWidthScale:0.8, pointer:true, relativeGaugeSize:true });
-const g3 = new JustGage({ id:"g3", value:0, min:0, max:100, gaugeWidthScale:0.8, pointer:true, relativeGaugeSize:true });
-const g4 = new JustGage({ id:"g4", value:0, min:0, max:500, gaugeWidthScale:0.8, pointer:true, relativeGaugeSize:true });
+// 📈 Gauges meteo
+const g1=new JustGage({id:"g1",value:0,min:950,max:1050,gaugeWidthScale:0.8,pointer:true});
+const g2=new JustGage({id:"g2",value:0,min:-10,max:50,gaugeWidthScale:0.8,pointer:true});
+const g3=new JustGage({id:"g3",value:0,min:0,max:100,gaugeWidthScale:0.8,pointer:true});
+const g4=new JustGage({id:"g4",value:0,min:0,max:500,gaugeWidthScale:0.8,pointer:true});
 
-async function aggiorna() {
-  try {
-    const res = await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&results=60`);
-    const data = await res.json();
-    if (!data.feeds || !data.feeds.length) return;
-    const feeds = data.feeds.map(f=>({
-      f1:+f.field1, f2:+f.field2, f3:+f.field3, f4:+f.field4
-    }));
-    const ultimo = feeds.at(-1);
-    function avg(arr){
-      const vals = arr.filter(v=>!isNaN(v)&&isFinite(v));
-      return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : "--";
+async function aggiorna(){
+  try{
+    const res=await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=60`);
+    const data=await res.json();
+    if(!data.feeds||!data.feeds.length){
+      document.getElementById("statusBar").textContent="⚠️ Nessun dato disponibile";
+      return;
     }
-    g1.refresh(ultimo.f1);
-    g2.refresh(ultimo.f2);
-    g3.refresh(ultimo.f3);
-    g4.refresh(ultimo.f4);
-    document.getElementById("v1").textContent = isNaN(ultimo.f1) ? "--" : ultimo.f1.toFixed(1);
-    document.getElementById("v2").textContent = isNaN(ultimo.f2) ? "--" : ultimo.f2.toFixed(1);
-    document.getElementById("v3").textContent = isNaN(ultimo.f3) ? "--" : ultimo.f3.toFixed(1);
-    document.getElementById("v4").textContent = isNaN(ultimo.f4) ? "--" : ultimo.f4.toFixed(1);
-    document.getElementById("m1").textContent = avg(feeds.map(f=>f.f1));
-    document.getElementById("m2").textContent = avg(feeds.map(f=>f.f2));
-    document.getElementById("m3").textContent = avg(feeds.map(f=>f.f3));
-    document.getElementById("m4").textContent = avg(feeds.map(f=>f.f4));
-    const now = new Date();
-    document.getElementById("statusBar").innerHTML = `✅ Aggiornato alle ${now.toLocaleTimeString("it-IT")}`;
-  } catch {
-    document.getElementById("statusBar").innerHTML = "⚠️ Connessione interrotta";
+    const feeds=data.feeds.map(f=>({f1:+f.field1,f2:+f.field2,f3:+f.field3,f4:+f.field4}));
+    const ultimo=feeds.at(-1);
+    const avg=a=>{const v=a.filter(x=>!isNaN(x));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):"--";};
+
+    g1.refresh(ultimo.f1); g2.refresh(ultimo.f2);
+    g3.refresh(ultimo.f3); g4.refresh(ultimo.f4);
+    document.getElementById("v1").textContent=isNaN(ultimo.f1)?"--":ultimo.f1.toFixed(1);
+    document.getElementById("v2").textContent=isNaN(ultimo.f2)?"--":ultimo.f2.toFixed(1);
+    document.getElementById("v3").textContent=isNaN(ultimo.f3)?"--":ultimo.f3.toFixed(1);
+    document.getElementById("v4").textContent=isNaN(ultimo.f4)?"--":ultimo.f4.toFixed(1);
+    document.getElementById("m1").textContent=avg(feeds.map(f=>f.f1));
+    document.getElementById("m2").textContent=avg(feeds.map(f=>f.f2));
+    document.getElementById("m3").textContent=avg(feeds.map(f=>f.f3));
+    document.getElementById("m4").textContent=avg(feeds.map(f=>f.f4));
+    document.getElementById("statusBar").textContent=`✅ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")}`;
+  }catch(e){
+    document.getElementById("statusBar").textContent="⚠️ Errore connessione ThingSpeak";
+    console.error(e);
   }
 }
 aggiorna();
-setInterval(aggiorna, 30000);
+setInterval(aggiorna,30000);
 </script>
 </body>
 </html>
