@@ -1,235 +1,126 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Langini Meteo – Dati in tempo reale</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Langini Meteo - Dashboard</title>
 
-<!-- Librerie -->
-<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
-
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
-  background: #001028;
-  color: #fff;
-  font-family: Arial, Helvetica, sans-serif;
-  text-align: center;
-}
-header {
-  background: rgba(0,0,0,0.3);
-  height: 50px;
-  line-height: 50px;
-  font-weight: bold;
-  overflow: hidden;
-  backdrop-filter: blur(5px);
-}
-header h1 {
-  white-space: nowrap;
-  animation: scrollTitle 15s linear infinite;
-}
-@keyframes scrollTitle {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
-#sky {
-  position: relative;
-  height: 100vh;
-  width: 100%;
-  transition: background 5s ease;
-}
-#stars {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-.star {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: white;
-  opacity: 0.8;
-  border-radius: 50%;
-  animation: twinkle 3s infinite ease-in-out;
-}
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-.body {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  top: 35%;
-  left: -20%;
-  transform: translate(-50%, -50%);
-  transition: opacity 1s ease;
-  z-index: 2;
-}
-#sun {
-  background: radial-gradient(circle at 30% 30%, #fff68d 10%, #ffb400 60%, #ff6600 100%);
-  box-shadow: 0 0 60px 20px rgba(255,200,50,0.6);
-  opacity: 0;
-}
-#moon {
-  background: radial-gradient(circle at 40% 40%, #e0f0ff 25%, #7fa9ff 100%);
-  box-shadow: 0 0 40px 12px rgba(120,160,255,0.3);
-  opacity: 0;
-}
-#gauges {
-  position: absolute;
-  bottom: 10%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  z-index: 3;
-}
-.gaugeBox {
-  width: 250px;
-  height: 200px;
-}
-.label { font-weight: bold; color: #cde; }
-.value { font-size: 1.4em; font-weight: bold; }
-.mean { font-size: 0.9em; color: #aaa; }
-footer {
-  position: absolute;
-  bottom: 2%;
-  width: 100%;
-  font-size: 0.9em;
-  color: #a9c9ff;
-}
-</style>
-</head>
-
-<body>
-<header><h1>🌤️ Langini Meteo – Dati in tempo reale</h1></header>
-
-<div id="sky">
-  <div id="stars"></div>
-  <div id="sun" class="body"></div>
-  <div id="moon" class="body"></div>
-
-  <div id="gauges">
-    <div class="gaugeBox">
-      <div id="g1" style="height:150px"></div>
-      <div class="label">Pressione (hPa)</div>
-      <div class="value" id="v1">--</div>
-      <div class="mean" id="m1">Media oraria: --</div>
-    </div>
-    <div class="gaugeBox">
-      <div id="g2" style="height:150px"></div>
-      <div class="label">Temperatura (°C)</div>
-      <div class="value" id="v2">--</div>
-      <div class="mean" id="m2">Media oraria: --</div>
-    </div>
-    <div class="gaugeBox">
-      <div id="g3" style="height:150px"></div>
-      <div class="label">Umidità (%)</div>
-      <div class="value" id="v3">--</div>
-      <div class="mean" id="m3">Media oraria: --</div>
-    </div>
-    <div class="gaugeBox">
-      <div id="g4" style="height:150px"></div>
-      <div class="label">Qualità Aria (MQ135)</div>
-      <div class="value" id="v4">--</div>
-      <div class="mean" id="m4">Media oraria: --</div>
-    </div>
-  </div>
-  <footer>© 2025 Langini Meteo • Aggiornamento automatico ogni 30 s</footer>
-</div>
-
-<script>
-window.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ DOM caricato, inizializzo animazioni cielo...");
-
-  const LAT = 41.8933, LON = 12.4829; // Roma
-  const sky = document.getElementById("sky");
-  const sun = document.getElementById("sun");
-  const moon = document.getElementById("moon");
-  const starsContainer = document.getElementById("stars");
-
-  // Genera stelle
-  for (let i = 0; i < 80; i++) {
-    const s = document.createElement("div");
-    s.className = "star";
-    s.style.left = Math.random() * 100 + "%";
-    s.style.top = Math.random() * 100 + "%";
-    starsContainer.appendChild(s);
-  }
-
-  // Funzione colore gradiente
-  function mixColor(c1, c2, p) {
-    const r = Math.round(c1[0] + (c2[0] - c1[0]) * p);
-    const g = Math.round(c1[1] + (c2[1] - c1[1]) * p);
-    const b = Math.round(c1[2] + (c2[2] - c1[2]) * p);
-    return `rgb(${r},${g},${b})`;
-  }
-
-  function toRomeTime(date) {
-    return new Date(date.toLocaleString("en-US", { timeZone: "Europe/Rome" }));
-  }
-
-  // Calcola alba/tramonto per oggi e domani
-  let timesToday, timesTomorrow;
-  function updateTimes() {
-    const now = new Date();
-    const d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const d1 = new Date(d0.getTime() + 86400000);
-    const t0 = SunCalc.getTimes(d0, LAT, LON);
-    const t1 = SunCalc.getTimes(d1, LAT, LON);
-    timesToday = { sunrise: toRomeTime(t0.sunrise), sunset: toRomeTime(t0.sunset) };
-    timesTomorrow = { sunrise: toRomeTime(t1.sunrise), sunset: toRomeTime(t1.sunset) };
-    console.log("🌅 Alba:", timesToday.sunrise.toLocaleTimeString(), "🌇 Tramonto:", timesToday.sunset.toLocaleTimeString());
-  }
-  updateTimes();
-
-  function lerp(a, b, t) { return a + (b - a) * t; }
-
-  // Aggiorna cielo e posizione sole/luna
-  function updateSky() {
-    const now = new Date();
-    const sunrise = timesToday.sunrise;
-    const sunset = timesToday.sunset;
-    const nextSunrise = timesTomorrow.sunrise;
-
-    const isDay = now >= sunrise && now < sunset;
-    const pDay = (now - sunrise) / (sunset - sunrise);
-    const pNight = (now - sunset) / (nextSunrise - sunset);
-
-    if (isDay) {
-      const x = lerp(-10, 110, Math.min(Math.max(pDay, 0), 1));
-      const y = 35 - 15 * Math.sin(Math.PI * pDay);
-      sun.style.left = x + "%";
-      sun.style.top = y + "%";
-      sun.style.opacity = 1;
-      moon.style.opacity = 0;
-      starsContainer.style.opacity = 0;
-      sky.style.background = `linear-gradient(to bottom, ${mixColor([135,206,250],[0,120,255],pDay)}, #87CEEB)`;
-      console.log(`☀️ Giorno | Sole @ ${x.toFixed(1)}%,${y.toFixed(1)}%`);
-    } else {
-      const x = lerp(-10, 110, Math.min(Math.max(pNight, 0), 1));
-      const y = 40 - 10 * Math.sin(Math.PI * pNight);
-      moon.style.left = x + "%";
-      moon.style.top = y + "%";
-      moon.style.opacity = 1;
-      sun.style.opacity = 0;
-      starsContainer.style.opacity = 1;
-      sky.style.background = `linear-gradient(to bottom, ${mixColor([0,16,40],[0,42,79],pNight)}, #000a1a)`;
-      console.log(`🌙 Notte | Luna @ ${x.toFixed(1)}%,${y.toFixed(1)}%`);
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: #222;
+      text-align: center;
+      transition: background 1s;
     }
+    header {
+      padding: 10px;
+      font-size: 1.6em;
+      font-weight: bold;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+    }
+    #gauges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+    canvas {
+      max-width: 320px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    footer {
+      margin-top: 25px;
+      font-size: 0.9em;
+      opacity: 0.7;
+    }
+    .day { background: linear-gradient(to bottom, #aee1ff, #fefefe); }
+    .night { background: linear-gradient(to bottom, #020024, #090979, #00d4ff); color: #fff; }
+  </style>
+</head>
+<body>
+  <header>🌤️ Langini Meteo Online</header>
+  <section id="gauges">
+    <canvas id="tempChart"></canvas>
+    <canvas id="humChart"></canvas>
+    <canvas id="presChart"></canvas>
+    <canvas id="airChart"></canvas>
+  </section>
+
+  <footer>
+    Aggiornamento automatico ogni 60 secondi<br>
+    © 2025 Langini Meteo | ThingSpeak API live
+  </footer>
+
+  <script>
+  const apiKey = "4EGG4DXUFDU6FUGN";
+  const channelID = "3149218"; // Canale Langini Meteo
+
+  async function getData() {
+    const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?results=10&api_key=${apiKey}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return data.feeds;
   }
 
-  updateSky();
-  setInterval(updateSky, 30000); // ogni 30s
-});
-</script>
+  function updateCharts(feeds) {
+    const labels = feeds.map(f => new Date(f.created_at).toLocaleTimeString());
+    const temp = feeds.map(f => parseFloat(f.field1));
+    const hum = feeds.map(f => parseFloat(f.field2));
+    const pres = feeds.map(f => parseFloat(f.field3));
+    const air = feeds.map(f => parseFloat(f.field4));
+
+    createChart("tempChart", "Temperatura (°C)", temp, labels, "red");
+    createChart("humChart", "Umidità (%)", hum, labels, "blue");
+    createChart("presChart", "Pressione (hPa)", pres, labels, "orange");
+    createChart("airChart", "Qualità Aria (MQ135)", air, labels, "green");
+  }
+
+  function createChart(id, label, data, labels, color) {
+    const ctx = document.getElementById(id).getContext("2d");
+    if (window[id]) window[id].destroy();
+    window[id] = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          borderColor: color,
+          backgroundColor: color + "33",
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: false } }
+      }
+    });
+  }
+
+  async function update() {
+    const feeds = await getData();
+    if (feeds) updateCharts(feeds);
+  }
+
+  // Aggiornamento automatico
+  update();
+  setInterval(update, 60000);
+
+  // Tema giorno/notte in base all'ora locale
+  function setTheme() {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour >= 7 && hour <= 19) document.body.className = "day";
+    else document.body.className = "night";
+  }
+  setTheme();
+  </script>
 </body>
 </html>
