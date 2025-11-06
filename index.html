@@ -51,14 +51,6 @@ header h1{
   box-shadow:0 0 40px 12px rgba(120,160,255,.3);opacity:0;
 }
 
-/* countdown */
-#astroCountdown{
-  position:absolute;bottom:54%;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.6);padding:10px 26px;border-radius:14px;
-  font-size:1.2em;font-weight:600;color:#fff;text-shadow:0 0 6px #000;
-  box-shadow:0 0 8px rgba(0,0,0,0.4);z-index:5;
-}
-
 /* gauge */
 #gauges{
   position:absolute;bottom:8%;left:50%;transform:translateX(-50%);
@@ -76,7 +68,6 @@ footer{font-size:.9em;color:#a9c9ff;margin:0;}
 
 @media(max-width:700px){
   .gaugeBox{width:180px;height:180px;}
-  #astroCountdown{bottom:56%;font-size:1em;}
 }
 </style>
 </head>
@@ -87,8 +78,6 @@ footer{font-size:.9em;color:#a9c9ff;margin:0;}
   <div id="stars"></div>
   <div id="sun" class="body"></div>
   <div id="moon" class="body"></div>
-
-  <div id="astroCountdown">...</div>
 
   <div id="gauges">
     <div class="gaugeBox">
@@ -140,35 +129,21 @@ const CHANNEL_ID=3149218,API_KEY="4EGG4DXUFDU6FUGN";
   }
 })();
 
-// === CORREZIONE DEFINITIVA ORARI ROMA ===
+// === ORARI ROMA ===
 let timesToday=null, timesTomorrow=null;
 function computeTimes(){
   const now=new Date();
   const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const d1=new Date(d0.getTime()+86400000);
-
   const t0=SunCalc.getTimes(d0,LAT,LON);
   const t1=SunCalc.getTimes(d1,LAT,LON);
-
-  // converte UTC → ora locale Roma in modo affidabile
-  function utcToRome(dateUTC){
-    const ms = dateUTC.getTime();
-    const rome = new Date(ms + (new Date().getTimezoneOffset()*-60000));
-    return rome;
-  }
-
-  timesToday={
-    sunrise: utcToRome(t0.sunrise),
-    sunset:  utcToRome(t0.sunset)
-  };
-  timesTomorrow={
-    sunrise: utcToRome(t1.sunrise),
-    sunset:  utcToRome(t1.sunset)
-  };
+  function utcToRome(dateUTC){return new Date(dateUTC.getTime()+new Date().getTimezoneOffset()*-60000);}
+  timesToday={sunrise:utcToRome(t0.sunrise),sunset:utcToRome(t0.sunset)};
+  timesTomorrow={sunrise:utcToRome(t1.sunrise),sunset:utcToRome(t1.sunset)};
 }
 computeTimes();
 
-// === UTILITY ===
+// === COLORI ===
 function lerp(a,b,t){return a+(b-a)*t;}
 function mixColor(c1,c2,p){
   const r=Math.round(lerp(c1[0],c2[0],p)).toString(16).padStart(2,'0');
@@ -177,7 +152,7 @@ function mixColor(c1,c2,p){
   return r+g+b;
 }
 
-// === ANIMAZIONE CIELO ===
+// === ANIMAZIONE CIELO E SOLE/LUNA ===
 function updateSky(){
   if(!timesToday||!timesTomorrow)return;
   const now=new Date();
@@ -190,11 +165,10 @@ function updateSky(){
   const stars=document.getElementById('stars');
   const sun=document.getElementById('sun');
   const moon=document.getElementById('moon');
-  const label=document.getElementById('astroCountdown');
 
+  // sfumatura cielo
   const TW=60*60000;
   let bg1,bg2;
-
   if(now>=new Date(sunrise-TW)&&now<new Date(sunrise+TW)){
     const p=(now-(sunrise-TW))/(2*TW);
     bg1=`#${mixColor([0x00,0x10,0x28],[0xff,0xa4,0x52],p)}`;
@@ -208,6 +182,7 @@ function updateSky(){
   sky.style.background=`linear-gradient(to bottom,#${bg1},#${bg2})`;
   stars.style.opacity=isDay?'0':'1';
 
+  // movimento sole/luna
   if(isDay){
     const p=(now-sunrise)/(sunset-sunrise);
     const x=lerp(-10,110,p);
@@ -222,15 +197,6 @@ function updateSky(){
     moon.style.left=x+'%'; moon.style.top=y+'%'; moon.style.opacity=1;
     sun.style.opacity=0;
   }
-
-  // Countdown
-  let target,icon;
-  if(isDay){target=sunset;icon="☀️ Tramonto tra";}
-  else{const nextTarget=(now>sunrise)?nextSunrise:sunrise;target=nextTarget;icon="🌙 Alba tra";}
-  const diff=Math.max(target-now,0);
-  const h=Math.floor(diff/3600000);
-  const m=Math.floor((diff%3600000)/60000);
-  label.innerHTML=`${icon} <b>${h}h ${m}min</b>`;
 }
 updateSky();
 setInterval(updateSky,30000);
