@@ -203,7 +203,7 @@ const API_KEY = "4EGG4DXUFDU6FUGN";
 const LAT = 45.77;
 const LON = 8.88;
 
-// === Crea nuvole dinamiche ===
+// === Nuvole dinamiche ===
 function creaNuvole() {
   const sky = document.getElementById("sky");
   for (let i=0; i<8; i++) {
@@ -222,7 +222,7 @@ function creaNuvole() {
 }
 creaNuvole();
 
-// === Calcolo Alba/Tramonto ===
+// === Calcolo Alba/Tramonto corretto ===
 function calcolaAlbaTramonto(lat, lon, date = new Date()) {
   const rad = Math.PI / 180;
   const n = Math.floor(date.getTime() / 86400000 - date.getTimezoneOffset()/1440 + 2440587.5) - 2451545.0;
@@ -247,7 +247,9 @@ function calcolaAlbaTramonto(lat, lon, date = new Date()) {
     const H = (isSunrise ? 360 - Math.acos(cosH)/rad : Math.acos(cosH)/rad) / 15;
     const T = H + RA/15 - 0.06571*t - 6.622;
     const UT = (T - lngHour + 24) % 24;
-    const localT = UT + 1; // UTC+1
+
+    // ✅ Correzione fuso orario reale
+    const localT = UT + (new Date().getTimezoneOffset() / -60);
     return localT * 60; // minuti
   }
 
@@ -292,7 +294,7 @@ function aggiornaCielo() {
   }
 }
 function minutiToOra(m) {
-  const h = Math.floor(m / 60);
+  const h = Math.floor((m / 60) % 24);
   const min = Math.floor(m % 60);
   return `${String(h).padStart(2,"0")}:${String(min).padStart(2,"0")}`;
 }
@@ -339,17 +341,4 @@ async function aggiorna() {
     document.getElementById("v3").textContent = ultimo.f3.toFixed(1);
     document.getElementById("v4").textContent = ultimo.f4.toFixed(1);
     document.getElementById("m1").textContent = medie.m1;
-    document.getElementById("m2").textContent = medie.m2;
-    document.getElementById("m3").textContent = medie.m3;
-    document.getElementById("m4").textContent = medie.m4;
-    const now = new Date();
-    document.getElementById("statusBar").innerHTML = `✅ Aggiornato alle ${now.toLocaleTimeString("it-IT")}`;
-  } catch {
-    document.getElementById("statusBar").innerHTML = "⚠️ Connessione interrotta";
-  }
-}
-aggiorna();
-setInterval(aggiorna, 30000);
-</script>
-</body>
-</html>
+    document.getElementById("m2").textContent = me
