@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V5.2</title>
+<title>Langini Meteo – Dashboard V7.8</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -11,106 +11,294 @@
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
 
 <style>
-body{margin:0;font-family:"Poppins",sans-serif;color:white;text-align:center;overflow-x:hidden;
-transition:background 2s;background:linear-gradient(to bottom,#001b3a 0%,#004a8d 40%,#0066b2 100%);}
-header{background:rgba(0,0,30,0.7);color:#fff;padding:16px 0 4px;font-size:1.7em;font-weight:600;
-box-shadow:0 2px 10px rgba(0,0,0,0.25);}
-#logo{font-size:1.05em;font-weight:400;color:#a9c9ff;}
+/* ====== Layout base ====== */
+body{
+  margin:0;font-family:"Poppins",sans-serif;color:white;text-align:center;
+  overflow-x:hidden;transition:background 2s;
+  background:linear-gradient(to bottom,#001b3a 0%,#004a8d 40%,#0066b2 100%);
+}
+header{
+  background:rgba(0,0,30,0.7);
+  color:#fff;
+  padding:16px 0 10px;
+  font-weight:600;
+  box-shadow:0 2px 10px rgba(0,0,0,0.25);
+  text-align:center;
+}
+header .mainTitle{font-size:1.7em;display:inline-block;vertical-align:middle;}
+header .subTitle{font-size:1.05em;font-weight:400;color:#a9c9ff;margin-left:12px;vertical-align:middle;opacity:0.9;}
 #statusBar{background:rgba(0,0,0,0.15);font-size:0.93em;color:#a9c9ff;padding:6px;}
+
+/* ====== Cielo ====== */
 #sky{position:relative;height:46vh;overflow:hidden;border-bottom:4px solid #048;}
-#stars{position:absolute;inset:0;opacity:0;z-index:2;}
+#stars{position:absolute;inset:0;opacity:0;z-index:1;}
 .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 4s infinite;}
 @keyframes twinkle{0%,100%{opacity:0.2}50%{opacity:1}}
-#sun,#moon{position:absolute;top:53%;left:50%;width:110px;height:110px;border-radius:50%;
-transform:translate(-50%,-50%);transition:left 1.5s,top 1.5s,opacity 2s;z-index:3;opacity:0;}
+#sun,#moon{
+  position:absolute;top:53%;left:50%;width:110px;height:110px;border-radius:50%;
+  transform:translate(-50%,-50%);transition:left 1.5s,top 1.5s,opacity 2s;
+  z-index:2;opacity:0;
+}
 #sun{background:radial-gradient(circle,#fff600 20%,#ffcc00 70%,#ffaa00 100%);box-shadow:0 0 40px 10px #ffcc00;}
 #moon{background:radial-gradient(circle at 31% 32%,#f0f0f0 40%,#bdbdbd 100%);box-shadow:0 0 25px 5px #ccc;}
-.cloud{position:absolute;background:rgba(255,255,255,0.8);border-radius:50%;
-box-shadow:-30px 10px 30px rgba(255,255,255,0.7),40px 15px 40px rgba(255,255,255,0.6),
-70px 20px 60px rgba(255,255,255,0.5);animation:fluttuare 6s ease-in-out infinite alternate;z-index:1;}
+.cloud{
+  position:absolute;background:rgba(255,255,255,0.9);
+  border-radius:50%;
+  box-shadow:-40px 10px 60px rgba(255,255,255,0.6),
+              60px 20px 80px rgba(255,255,255,0.5),
+              120px 30px 100px rgba(255,255,255,0.4);
+  animation:fluttuare 6s ease-in-out infinite alternate;
+  z-index:2;
+}
 @keyframes fluttuare{from{transform:translateY(0)}to{transform:translateY(8px)}}
 
-#skyStatus{font-size:1.4em;font-weight:600;color:#fff;background:rgba(0,0,0,0.3);
-padding:8px 18px;border-radius:16px;display:inline-block;margin-top:-25px;
-box-shadow:0 0 12px rgba(0,0,0,0.5);transition:all 1s ease;}
-#skyStatus.sunny{background:linear-gradient(to right,#ffcc00,#ff6600);color:#000;}
-#skyStatus.cloudy{background:linear-gradient(to right,#9ecfff,#b3e5fc);color:#003366;}
-#skyStatus.dark{background:linear-gradient(to right,#001b3a,#002850);color:#a9c9ff;}
+/* 🚁 Elicottero nero + scia */
+#helicopter{
+  position:absolute;top:25%;left:-180px;width:130px;height:70px;z-index:6;
+  opacity:0.96;filter:drop-shadow(0 0 8px rgba(0,0,0,0.7));
+  transition:transform 2s ease-out,left 25s linear;
+}
+#helicopter svg{width:100%;height:100%;display:block;}
+#helicopter path{fill:#111;stroke:#666;stroke-width:8;}
+.trail{
+  position:absolute;height:4px;
+  background:linear-gradient(90deg,rgba(255,255,255,0.65),rgba(255,255,255,0));
+  border-radius:3px;z-index:4;opacity:0.4;pointer-events:none;
+}
 
-#sunMoonTimes{font-size:1em;color:#000;background:rgba(255,255,255,0.6);display:inline-block;
-padding:4px 10px;border-radius:12px;margin:10px auto;box-shadow:0 0 6px rgba(0,0,0,0.25);
-font-weight:600;transition:all 1s ease;}
+/* 🐦 Uccelli */
+.bird{
+  position:absolute;width:32px;height:24px;
+  background:url('https://upload.wikimedia.org/wikipedia/commons/6/6b/Bird_silhouette.svg') no-repeat center/contain;
+  opacity:0.85;z-index:3;animation:birdFlap 1.2s infinite;
+}
+@keyframes birdFlap{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-4px) scale(1.05);}}
 
-#gauges{display:flex;flex-wrap:wrap;justify-content:center;gap:22px;
-padding:30px 0 40px;background:linear-gradient(to bottom,#002850,#00142c);border-top:3px solid #004b8d;}
-.gaugeBox{background:linear-gradient(to bottom,#f8fbff,#e6edf5);border-radius:16px;width:240px;height:250px;
-padding:10px;color:#003366;box-shadow:0 0 14px rgba(0,0,0,0.14);position:relative;}
-.gaugeBox img{position:absolute;top:10px;right:10px;width:34px;opacity:0.84;}
-.label{font-size:1.17em;font-weight:600;margin-top:7px;}
-.mean{font-size:0.9em;color:#444;margin-top:4px;}
-footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
-@media(max-width:768px){
-#gauges{gap:14px;padding:20px 0;}
-.gaugeBox{width:180px;height:200px;}
+/* 🌫️ Banner AQI (sopra alba/tramonto) */
+#ariaAlert{
+  display:block;margin:18px auto 10px auto;padding:10px 32px;
+  border-radius:22px;font-size:1.35em;font-weight:700;color:#fff;
+  background:#00e400;box-shadow:0 0 25px rgba(0,255,0,0.5);
+  width:fit-content;transition:all 0.8s ease;animation:none;z-index:5;text-align:center;
+}
+@keyframes blinkAir{from{opacity:0.6;}to{opacity:1;}}
+@keyframes pulseDanger{0%,100%{box-shadow:0 0 25px 8px rgba(102,0,153,0.8);}50%{box-shadow:0 0 40px 16px rgba(255,0,255,0.7);}}
+
+/* ☀️ Barra Alba/Tramonto */
+#sunMoonTimes{
+  display:block;margin:0 auto 8px auto;font-size:1em;color:#000;
+  background:rgba(255,255,255,0.65);padding:5px 14px;border-radius:12px;
+  box-shadow:0 0 6px rgba(0,0,0,0.25);font-weight:600;width:fit-content;text-align:center;
+}
+
+/* 🌍 Coordinate + mappamondo dinamico */
+#coordBox{
+  font-size:0.95em;color:#a9c9ff;margin-top:-6px;margin-bottom:14px;
+  text-align:center;font-weight:500;text-shadow:0 0 6px rgba(0,0,0,0.3);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.globe{
+  width:18px;height:18px;border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.35) 100%),
+    repeating-linear-gradient(90deg, rgba(0,160,255,0.8) 0 8px, rgba(0,140,230,0.8) 8px 16px);
+  box-shadow:inset 0 0 4px rgba(0,0,0,0.6), 0 0 6px rgba(0,180,255,0.6);
+  animation:spin 8s linear infinite;
+}
+@keyframes spin{
+  0% {background-position: 0 0, 0 0;}
+  100% {background-position: 0 0, -160px 0;}
+}
+
+/* 🧭 Gauges */
+#gauges{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:22px;
+  padding:20px 0 30px;background:linear-gradient(to bottom,#002850,#00142c);
+  border-top:3px solid #004b8d;
+}
+.gaugeBox{
+  background:linear-gradient(to bottom,#f8fbff,#e6edf5);
+  border-radius:16px;width:230px;height:235px;padding:8px;
+  color:#003366;box-shadow:0 0 10px rgba(0,0,0,0.14);position:relative;
+}
+.gaugeBox img{position:absolute;top:8px;right:8px;width:34px;opacity:0.84;}
+.label{font-size:1.05em;font-weight:600;margin-top:6px;}
+.mean{font-size:0.88em;color:#444;margin-top:6px;}
+footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
+
+/* 📱 Mobile */
+@media (max-width:768px){#gauges{gap:18px;}.gaugeBox{width:45%;height:220px;padding:6px;}}
+@media (max-width:480px){
+  #gauges{flex-direction:column;align-items:center;}
+  .gaugeBox{width:85%;height:210px;}
+  #ariaAlert{font-size:1.1em;padding:8px 20px;}
+  header .mainTitle{font-size:1.35em;}
 }
 </style>
 </head>
 
 <body>
-<header>🌤️ Langini Meteo – Dashboard V5.2<br><span id="logo">by Langini D.</span></header>
+<header>🌤️ <span class="mainTitle">Langini Meteo – Dashboard V7.8</span><span class="subTitle">by Langini D.</span></header>
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
   <div id="stars"></div>
   <div id="sun"></div>
   <div id="moon"></div>
+  <!-- 🚁 Elicottero SVG nero -->
+  <div id="helicopter">
+    <svg viewBox="0 0 640 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M528 224H448v-48c0-26.5-21.5-48-48-48H288V96h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H80c-8.8 0-16 7.2-16 16s7.2 16 16 16h80v32h-16c-26.5 0-48 21.5-48 48v96h-8c-17.7 0-32 14.3-32 32v32h32l32 64h32l32-64h64l32 64h32l32-64h32l32 64h32l32-64h32v-32h-16v-48h80v48h-16v32h48c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16zM112 176h320v48H112v-48zm320 192H208l-24-48h272l-24 48z"/>
+      <rect x="260" y="58" width="120" height="6" fill="#222" stroke="#666" stroke-width="2">
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 320 60" to="360 320 60" dur="0.25s" repeatCount="indefinite"/>
+      </rect>
+    </svg>
+  </div>
 </div>
 
-<div id="skyStatus">☀️ Sereno</div>
+<!-- Banner AQI sopra alba/tramonto -->
+<div id="ariaAlert">🌿 Aria eccellente</div>
+
+<!-- Alba/Tramonto -->
 <div id="sunMoonTimes">☀️ Alba: --:-- • 🌇 Tramonto: --:--</div>
 
+<!-- Coordinate con mini mappamondo -->
+<div id="coordBox"><span class="globe" aria-hidden="true"></span> 📍 Venegono Superiore — Lat: 45.77° • Lon: 8.88°</div>
+
+<!-- Gauges -->
 <div id="gauges">
-  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/barometer.png"><div id="g1" style="height:150px"></div><div class="label">Pressione (hPa)</div><div class="mean">Media oraria: <span id="m1">--</span></div></div>
-  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/temperature.png"><div id="g2" style="height:150px"></div><div class="label">Temperatura (°C)</div><div class="mean">Media oraria: <span id="m2">--</span></div></div>
-  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/hygrometer.png"><div id="g3" style="height:150px"></div><div class="label">Umidità (%)</div><div class="mean">Media oraria: <span id="m3">--</span></div></div>
-  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/smelling.png"><div id="g4" style="height:150px"></div><div class="label">Qualità Aria (MQ135)</div><div class="mean">Media oraria: <span id="m4">--</span></div></div>
+  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/barometer.png" alt=""><div id="g1" style="height:130px"></div><div class="label">Pressione (hPa)</div><div class="mean">Media oraria: <span id="m1">--</span></div></div>
+  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/temperature.png" alt=""><div id="g2" style="height:130px"></div><div class="label">Temperatura (°C)</div><div class="mean">Media oraria: <span id="m2">--</span></div></div>
+  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/hygrometer.png" alt=""><div id="g3" style="height:130px"></div><div class="label">Umidità (%)</div><div class="mean">Media oraria: <span id="m3">--</span></div></div>
+  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/smelling.png" alt=""><div id="g4" style="height:130px"></div><div class="label">Qualità Aria (MQ135)</div><div class="mean">Media oraria: <span id="m4">--</span></div></div>
 </div>
 
 <footer>© 2025 Langini Meteo • Aggiornamento ogni 30 s</footer>
 
 <script>
+/* ====== Config ====== */
 const LAT=45.77,LON=8.88,CHANNEL_ID=3149218;
 
+/* ====== Gauges ====== */
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
 const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
 const g4=new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
 
-function aggiornaCielo(){
- const now=new Date(),t=SunCalc.getTimes(now,LAT,LON);
- const alba=t.sunrise.getHours()*60+t.sunrise.getMinutes();
- const tram=t.sunset.getHours()*60+t.sunset.getMinutes();
- const info=document.getElementById("sunMoonTimes");
- info.innerHTML=`☀️ Alba: ${String(t.sunrise.getHours()).padStart(2,"0")}:${String(t.sunrise.getMinutes()).padStart(2,"0")} • 🌇 Tramonto: ${String(t.sunset.getHours()).padStart(2,"0")}:${String(t.sunset.getMinutes()).padStart(2,"0")}`;
+/* ====== Cielo dinamico ====== */
+function creaNuvola(){
+  const sky=document.getElementById("sky");
+  const c=document.createElement("div");
+  c.className="cloud";
+  const s=0.8+Math.random()*1.4;
+  c.style.width=(80+Math.random()*160)*s+"px";
+  c.style.height=(35+Math.random()*45)*s+"px";
+  c.style.top=(10+Math.random()*60)+"%";
+  c.style.left="-250px";
+  c.style.opacity=0.4+Math.random()*0.4;
+  sky.appendChild(c);
+  const dur=30000+Math.random()*40000;
+  c.animate([{transform:"translateX(0)"},{transform:`translateX(${window.innerWidth+400}px)`}],
+  {duration:dur,easing:"linear"}).onfinish=()=>{c.remove();setTimeout(creaNuvola,4000+Math.random()*3000);};
 }
-aggiornaCielo();
 
+function volaElicottero(){
+  const sky=document.getElementById('sky');
+  const heli=document.getElementById('helicopter');
+  const topPos=25+Math.random()*35;
+  heli.style.top=topPos+'%';
+  heli.style.left='-180px';
+  heli.style.transition='none';
+  heli.offsetHeight;
+  const tilt=Math.random()>0.5?6:-6;
+  heli.style.transform=`rotate(${tilt}deg)`;
+  setTimeout(()=>heli.style.transform='rotate(0deg)',22000);
+  heli.style.transition='transform 2s ease-out,left 25s linear';
+  heli.style.left='110%';
+  const trail=document.createElement('div');
+  trail.className='trail';
+  trail.style.top=`calc(${topPos}% + 25px)`;
+  trail.style.left='-180px';
+  trail.style.width='0px';
+  sky.appendChild(trail);
+  trail.animate([{width:'0px',opacity:0.8},{width:window.innerWidth+'px',opacity:0.1}],
+  {duration:25000,easing:'linear'}).onfinish=()=>trail.remove();
+  setTimeout(volaElicottero,35000+Math.random()*40000);
+}
+
+function creaUccello(){
+  const sky=document.getElementById("sky");
+  const b=document.createElement("div");
+  b.className="bird";
+  b.style.top=(20+Math.random()*50)+"%";
+  b.style.left="-60px";
+  b.style.transform=`scale(${0.7+Math.random()*0.6})`;
+  sky.appendChild(b);
+  const dur=15000+Math.random()*12000;
+  b.animate([{transform:"translateX(0)"},{transform:`translateX(${window.innerWidth+200}px)`}],
+  {duration:dur,easing:"linear"}).onfinish=()=>{b.remove();setTimeout(creaUccello,4000+Math.random()*7000);};
+}
+
+function aggiornaCielo(){
+  const now=new Date(),t=SunCalc.getTimes(now,LAT,LON);
+  const alba=t.sunrise.getHours()*60+t.sunrise.getMinutes();
+  const tram=t.sunset.getHours()*60+t.sunset.getMinutes();
+  const curr=now.getHours()*60+now.getMinutes();
+  const sun=document.getElementById("sun"),moon=document.getElementById("moon"),stars=document.getElementById("stars");
+  document.getElementById("sunMoonTimes").innerHTML=`☀️ Alba: ${String(t.sunrise.getHours()).padStart(2,"0")}:${String(t.sunrise.getMinutes()).padStart(2,"0")} • 🌇 Tramonto: ${String(t.sunset.getHours()).padStart(2,"0")}:${String(t.sunset.getMinutes()).padStart(2,"0")}`;
+  if(curr>=alba&&curr<tram){
+    stars.style.opacity=0;sun.style.opacity=1;moon.style.opacity=0;
+    const p=(curr-alba)/(tram-alba);
+    sun.style.left=5+p*90+"%";sun.style.top=53-17*Math.sin(p*Math.PI)+"%";
+  }else{
+    stars.style.opacity=0.9;moon.style.opacity=1;sun.style.opacity=0;
+    const tot=(24*60-tram)+alba;
+    const pass=curr>=tram?(curr-tram):(curr+24*60-tram);
+    const p=pass/tot;
+    moon.style.left=95-p*90+"%";moon.style.top=53-12*Math.sin(p*Math.PI)+"%";
+  }
+}
+
+function initCielo(){
+  for(let i=0;i<40;i++){
+    let e=document.createElement('div');
+    e.className='star';
+    e.style.left=Math.random()*100+'%';
+    e.style.top=Math.random()*100+'%';
+    e.style.animationDelay=Math.random()*3+'s';
+    document.getElementById('stars').appendChild(e);
+  }
+  for(let i=0;i<5;i++)setTimeout(creaNuvola,Math.random()*6000);
+  for(let i=0;i<3;i++)setTimeout(creaUccello,Math.random()*8000);
+  volaElicottero();aggiornaCielo();setInterval(aggiornaCielo,60000);
+}
+document.addEventListener("DOMContentLoaded",initCielo);
+
+/* ====== ThingSpeak + AQI ====== */
 async function aggiorna(){
- try{
-  const r=await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=1`);
-  const d=await r.json();if(!d.feeds.length)return;
-  const f=d.feeds[0];
-  const val=[+f.field1,+f.field2,+f.field3,+f.field4,+f.field5];
-  g1.refresh(val[0]);g2.refresh(val[1]);g3.refresh(val[2]);g4.refresh(val[3]);
-  document.getElementById("statusBar").textContent=`✅ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")}`;
-  
-  // --- Stato cielo dal TEMT6000 ---
-  const luce=val[4];const banner=document.getElementById("skyStatus");
-  if(luce>3000){banner.textContent="☀️ Sereno";banner.className="sunny";}
-  else if(luce>1500){banner.textContent="🌤️ Nuvoloso";banner.className="cloudy";}
-  else if(luce>200){banner.textContent="☁️ Coperto";banner.className="cloudy";}
-  else{banner.textContent="🌙 Notte";banner.className="dark";}
- }catch(e){document.getElementById("statusBar").textContent="⚠️ Errore connessione";}
+  try{
+    const r=await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=60`);
+    const d=await r.json();
+    if(!d.feeds||!d.feeds.length){document.getElementById("statusBar").textContent="⚠️ Nessun dato disponibile";return;}
+    const f=d.feeds.map(e=>({f1:+e.field1,f2:+e.field2,f3:+e.field3,f4:+e.field4})),u=f.at(-1);
+    g1.refresh(u.f1);g2.refresh(u.f2);g3.refresh(u.f3);g4.refresh(u.f4);
+    const avg=a=>{const v=a.filter(x=>!isNaN(x));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):"--";};
+    ["m1","m2","m3","m4"].forEach((id,i)=>document.getElementById(id).textContent=avg(f.map(x=>x[`f${i+1}`])));
+    // AQI banner
+    const aqi=u.f4,alert=document.getElementById("ariaAlert");
+    let text="--",bg="#00e400",anim="none";
+    if(aqi<=50){text="🌿 Aria eccellente";bg="#00e400";}
+    else if(aqi<=100){text="😊 Aria buona";bg="#9cff00";}
+    else if(aqi<=150){text="⚠️ Qualità moderata";bg="#ffde33";anim="blinkAir 1.4s infinite alternate";}
+    else if(aqi<=200){text="😷 Aria scadente";bg="#ff9933";}
+    else if(aqi<=300){text="☠️ Aria molto scarsa";bg="#cc0033";}
+    else{text="💀 Aria pericolosa";bg="#660099";anim="pulseDanger 2.5s infinite alternate";}
+    alert.textContent=text;alert.style.background=bg;alert.style.boxShadow=`0 0 25px ${bg}`;alert.style.animation=anim;
+    document.getElementById("statusBar").textContent=`✅ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")}`;
+  }catch(e){
+    document.getElementById("statusBar").textContent="⚠️ Errore connessione";
+    console.error(e);
+  }
 }
 aggiorna();setInterval(aggiorna,30000);
 </script>
