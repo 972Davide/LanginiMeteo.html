@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V7.3</title>
+<title>Langini Meteo – Dashboard V7.4</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -49,17 +49,28 @@ header{
 }
 @keyframes fluttuare{from{transform:translateY(0)}to{transform:translateY(8px)}}
 
-/* ✈️ Aereo nero + scia bianca */
+/* ✈️ Aereo SVG nero + scia */
 #plane{
-  position:absolute;top:25%;left:-180px;width:130px;height:50px;
-  background:url('https://upload.wikimedia.org/wikipedia/commons/0/0e/Airplane_silhouette.svg') no-repeat center/contain;
-  z-index:5;opacity:0.95;filter:drop-shadow(0 0 6px rgba(0,0,0,0.8));
+  position:absolute;
+  top:25%;
+  left:-180px;
+  width:130px;
+  height:70px;
+  z-index:6;
+  opacity:0.96;
+  filter:drop-shadow(0 0 8px rgba(0,0,0,0.7));
   transition:transform 2s ease-out,left 25s linear;
 }
+#plane svg{width:100%;height:100%;display:block;}
+#plane path{fill:#111;stroke:#666;stroke-width:8;}
 .trail{
-  position:absolute;height:5px;
+  position:absolute;
+  height:5px;
   background:linear-gradient(90deg,rgba(255,255,255,0.85),rgba(255,255,255,0));
-  border-radius:3px;z-index:3;opacity:0.6;pointer-events:none;
+  border-radius:3px;
+  z-index:4;
+  opacity:0.6;
+  pointer-events:none;
 }
 
 /* 🐦 Uccelli */
@@ -87,7 +98,7 @@ header{
   box-shadow:0 0 6px rgba(0,0,0,0.25);font-weight:600;width:fit-content;text-align:center;
 }
 
-/* 🧭 Gauge Section */
+/* 🧭 Gauges */
 #gauges{
   display:flex;flex-wrap:wrap;justify-content:center;gap:22px;
   padding:20px 0 30px;background:linear-gradient(to bottom,#002850,#00142c);
@@ -121,14 +132,19 @@ footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
 </head>
 
 <body>
-<header>🌤️ Langini Meteo – Dashboard V7.3<br><div id="logo">by Langini D.</div></header>
+<header>🌤️ Langini Meteo – Dashboard V7.4<br><div id="logo">by Langini D.</div></header>
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
   <div id="stars"></div>
   <div id="sun"></div>
   <div id="moon"></div>
-  <div id="plane"></div>
+  <!-- ✈️ Inline SVG Aereo Nero -->
+  <div id="plane">
+    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <path d="M505 216c-5-15-20-25-36-24l-154 11-176-191c-7-8-18-10-27-4l-31 18c-7 4-10 13-7 21l73 185-92 6-36-35c-4-4-9-6-15-5l-20 2c-6 1-10 7-10 13l7 43c1 6 5 11 11 13l32 8 96-6 69 176c3 8 10 13 18 14l32 1c8 1 15-5 16-13l18-103 152 38c16 4 33-4 40-19l7-14c7-15 6-32-1-47l-20-40z"/>
+    </svg>
+  </div>
 </div>
 
 <div id="ariaAlert">🌿 Aria eccellente</div>
