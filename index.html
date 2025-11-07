@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V7.4</title>
+<title>Langini Meteo – Dashboard V7.5</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -26,7 +26,6 @@ header{
 #stars{position:absolute;inset:0;opacity:0;z-index:1;}
 .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 4s infinite;}
 @keyframes twinkle{0%,100%{opacity:0.2}50%{opacity:1}}
-
 #sun,#moon{
   position:absolute;top:53%;left:50%;width:110px;height:110px;border-radius:50%;
   transform:translate(-50%,-50%);transition:left 1.5s,top 1.5s,opacity 2s;
@@ -36,8 +35,6 @@ header{
   box-shadow:0 0 40px 10px #ffcc00;}
 #moon{background:radial-gradient(circle at 31% 32%,#f0f0f0 40%,#bdbdbd 100%);
   box-shadow:0 0 25px 5px #ccc;}
-
-/* ☁️ Nuvole */
 .cloud{
   position:absolute;background:rgba(255,255,255,0.9);
   border-radius:50%;
@@ -49,8 +46,8 @@ header{
 }
 @keyframes fluttuare{from{transform:translateY(0)}to{transform:translateY(8px)}}
 
-/* ✈️ Aereo SVG nero + scia */
-#plane{
+/* 🚁 elicottero + scia */
+#helicopter{
   position:absolute;
   top:25%;
   left:-180px;
@@ -61,19 +58,19 @@ header{
   filter:drop-shadow(0 0 8px rgba(0,0,0,0.7));
   transition:transform 2s ease-out,left 25s linear;
 }
-#plane svg{width:100%;height:100%;display:block;}
-#plane path{fill:#111;stroke:#666;stroke-width:8;}
+#helicopter svg{width:100%;height:100%;display:block;}
+#helicopter path{fill:#111;stroke:#666;stroke-width:8;}
 .trail{
   position:absolute;
-  height:5px;
-  background:linear-gradient(90deg,rgba(255,255,255,0.85),rgba(255,255,255,0));
+  height:4px;
+  background:linear-gradient(90deg,rgba(255,255,255,0.65),rgba(255,255,255,0));
   border-radius:3px;
   z-index:4;
-  opacity:0.6;
+  opacity:0.4;
   pointer-events:none;
 }
 
-/* 🐦 Uccelli */
+/* 🐦 uccelli */
 .bird{
   position:absolute;width:32px;height:24px;
   background:url('https://upload.wikimedia.org/wikipedia/commons/6/6b/Bird_silhouette.svg') no-repeat center/contain;
@@ -81,7 +78,7 @@ header{
 }
 @keyframes birdFlap{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-4px) scale(1.05);}}
 
-/* 🌫️ Banner AQI */
+/* 🌫️ banner AQI */
 #ariaAlert{
   display:block;margin:18px auto 10px auto;padding:10px 32px;
   border-radius:22px;font-size:1.35em;font-weight:700;color:#fff;
@@ -91,14 +88,14 @@ header{
 @keyframes blinkAir{from{opacity:0.6;}to{opacity:1;}}
 @keyframes pulseDanger{0%,100%{box-shadow:0 0 25px 8px rgba(102,0,153,0.8);}50%{box-shadow:0 0 40px 16px rgba(255,0,255,0.7);}}
 
-/* ☀️ Barra Alba/Tramonto */
+/* ☀️ barra alba/tramonto */
 #sunMoonTimes{
   display:block;margin:0 auto 14px auto;font-size:1em;color:#000;
   background:rgba(255,255,255,0.65);padding:5px 14px;border-radius:12px;
   box-shadow:0 0 6px rgba(0,0,0,0.25);font-weight:600;width:fit-content;text-align:center;
 }
 
-/* 🧭 Gauges */
+/* 🧭 gauges */
 #gauges{
   display:flex;flex-wrap:wrap;justify-content:center;gap:22px;
   padding:20px 0 30px;background:linear-gradient(to bottom,#002850,#00142c);
@@ -113,36 +110,28 @@ header{
 .label{font-size:1.05em;font-weight:600;margin-top:6px;}
 .mean{font-size:0.88em;color:#444;margin-top:6px;}
 footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
-
-/* 📱 Mobile */
-@media (max-width:768px){
-  #gauges{gap:18px;}
-  .gaugeBox{width:45%;height:220px;padding:6px;}
-  .label{font-size:0.95em;}
-  .mean{font-size:0.82em;}
-}
-@media (max-width:480px){
-  #gauges{flex-direction:column;align-items:center;}
-  .gaugeBox{width:85%;height:210px;}
-  #ariaAlert{font-size:1.1em;padding:8px 20px;}
-  #sunMoonTimes{font-size:0.95em;padding:4px 10px;}
-  header{font-size:1.3em;}
-}
+@media (max-width:768px){#gauges{gap:18px;}.gaugeBox{width:45%;height:220px;padding:6px;}}
+@media (max-width:480px){#gauges{flex-direction:column;align-items:center;}.gaugeBox{width:85%;height:210px;}#ariaAlert{font-size:1.1em;padding:8px 20px;}}
 </style>
 </head>
 
 <body>
-<header>🌤️ Langini Meteo – Dashboard V7.4<br><div id="logo">by Langini D.</div></header>
+<header>🌤️ Langini Meteo – Dashboard V7.5<br><div id="logo">by Langini D.</div></header>
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
   <div id="stars"></div>
   <div id="sun"></div>
   <div id="moon"></div>
-  <!-- ✈️ Inline SVG Aereo Nero -->
-  <div id="plane">
-    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-      <path d="M505 216c-5-15-20-25-36-24l-154 11-176-191c-7-8-18-10-27-4l-31 18c-7 4-10 13-7 21l73 185-92 6-36-35c-4-4-9-6-15-5l-20 2c-6 1-10 7-10 13l7 43c1 6 5 11 11 13l32 8 96-6 69 176c3 8 10 13 18 14l32 1c8 1 15-5 16-13l18-103 152 38c16 4 33-4 40-19l7-14c7-15 6-32-1-47l-20-40z"/>
+  <!-- 🚁 elicottero SVG nero -->
+  <div id="helicopter">
+    <svg viewBox="0 0 640 512" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#111" stroke="#666" stroke-width="8"
+        d="M528 224H448v-48c0-26.5-21.5-48-48-48H288V96h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H80c-8.8 0-16 7.2-16 16s7.2 16 16 16h80v32h-16c-26.5 0-48 21.5-48 48v96h-8c-17.7 0-32 14.3-32 32v32h32l32 64h32l32-64h64l32 64h32l32-64h32l32 64h32l32-64h32v-32h-16v-48h80v48h-16v32h48c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16zM112 176h320v48H112v-48zm320 192H208l-24-48h272l-24 48z"/>
+      <rect x="260" y="58" width="120" height="6" fill="#222" stroke="#666" stroke-width="2">
+        <animateTransform attributeName="transform" attributeType="XML"
+          type="rotate" from="0 320 60" to="360 320 60" dur="0.25s" repeatCount="indefinite"/>
+      </rect>
     </svg>
   </div>
 </div>
@@ -166,112 +155,68 @@ const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
 const g4=new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
 
-function creaNuvola(){
-  const sky=document.getElementById("sky");
-  const c=document.createElement("div");
-  c.className="cloud";
-  const s=0.8+Math.random()*1.4;
-  c.style.width=(80+Math.random()*160)*s+"px";
-  c.style.height=(35+Math.random()*45)*s+"px";
-  c.style.top=(10+Math.random()*60)+"%";
-  c.style.left="-250px";
-  c.style.opacity=0.4+Math.random()*0.4;
-  sky.appendChild(c);
-  const dur=30000+Math.random()*40000;
-  c.animate([{transform:"translateX(0)"},{transform:`translateX(${window.innerWidth+400}px)`}],
-  {duration:dur,easing:"linear"}).onfinish=()=>{c.remove();setTimeout(creaNuvola,4000+Math.random()*3000);};
-}
+function creaNuvola(){const sky=document.getElementById("sky");const c=document.createElement("div");c.className="cloud";
+const s=0.8+Math.random()*1.4;c.style.width=(80+Math.random()*160)*s+"px";
+c.style.height=(35+Math.random()*45)*s+"px";c.style.top=(10+Math.random()*60)+"%";
+c.style.left="-250px";c.style.opacity=0.4+Math.random()*0.4;sky.appendChild(c);
+const dur=30000+Math.random()*40000;
+c.animate([{transform:"translateX(0)"},{transform:`translateX(${window.innerWidth+400}px)`}],
+{duration:dur,easing:"linear"}).onfinish=()=>{c.remove();setTimeout(creaNuvola,4000+Math.random()*3000);};}
 
-function volaAereo(){
-  const sky=document.getElementById('sky');
-  const plane=document.getElementById('plane');
-  const topPos=20+Math.random()*40;
-  plane.style.top=topPos+'%';
-  plane.style.left='-180px';
-  plane.style.transition='none';
-  plane.offsetHeight;
-  const tilt=Math.random()>0.5?10:-10;
-  plane.style.transform=`rotate(${tilt}deg)`;
-  setTimeout(()=>plane.style.transform='rotate(0deg)',22000);
-  plane.style.transition='transform 2s ease-out,left 25s linear';
-  plane.style.left='110%';
-  const trail=document.createElement('div');
-  trail.className='trail';
-  trail.style.top=`calc(${topPos}% + 25px)`;
-  trail.style.left='-180px';
-  trail.style.width='0px';
-  sky.appendChild(trail);
-  trail.animate([{width:'0px',opacity:0.9},{width:window.innerWidth+'px',opacity:0.15}],
-  {duration:25000,easing:'linear'}).onfinish=()=>trail.remove();
-  setTimeout(volaAereo,35000+Math.random()*40000);
-}
+function volaElicottero(){const sky=document.getElementById('sky');const heli=document.getElementById('helicopter');
+const topPos=25+Math.random()*35;heli.style.top=topPos+'%';heli.style.left='-180px';
+heli.style.transition='none';heli.offsetHeight;
+const tilt=Math.random()>0.5?6:-6;heli.style.transform=`rotate(${tilt}deg)`;setTimeout(()=>heli.style.transform='rotate(0deg)',22000);
+heli.style.transition='transform 2s ease-out,left 25s linear';heli.style.left='110%';
+const trail=document.createElement('div');trail.className='trail';
+trail.style.top=`calc(${topPos}% + 25px)`;trail.style.left='-180px';trail.style.width='0px';sky.appendChild(trail);
+trail.animate([{width:'0px',opacity:0.8},{width:window.innerWidth+'px',opacity:0.1}],
+{duration:25000,easing:'linear'}).onfinish=()=>trail.remove();
+setTimeout(volaElicottero,35000+Math.random()*40000);}
 
-function creaUccello(){
-  const sky=document.getElementById("sky");
-  const b=document.createElement("div");
-  b.className="bird";
-  b.style.top=(20+Math.random()*50)+"%";
-  b.style.left="-60px";
-  b.style.transform=`scale(${0.7+Math.random()*0.6})`;
-  sky.appendChild(b);
-  const dur=15000+Math.random()*12000;
-  b.animate([{transform:"translateX(0)"},{transform:`translateX(${window.innerWidth+200}px)`}],
-  {duration:dur,easing:"linear"}).onfinish=()=>{b.remove();setTimeout(creaUccello,4000+Math.random()*7000);};
-}
+function creaUccello(){const sky=document.getElementById("sky");const b=document.createElement("div");b.className="bird";
+b.style.top=(20+Math.random()*50)+"%";b.style.left="-60px";b.style.transform=`scale(${0.7+Math.random()*0.6})`;
+sky.appendChild(b);const dur=15000+Math.random()*12000;
+b.animate([{transform:"translateX(0)"},{transform:`translateX(${window.innerWidth+200}px)`}],
+{duration:dur,easing:"linear"}).onfinish=()=>{b.remove();setTimeout(creaUccello,4000+Math.random()*7000);};}
 
-function aggiornaCielo(){
-  const now=new Date(),t=SunCalc.getTimes(now,LAT,LON);
-  const alba=t.sunrise.getHours()*60+t.sunrise.getMinutes();
-  const tram=t.sunset.getHours()*60+t.sunset.getMinutes();
-  const curr=now.getHours()*60+now.getMinutes();
-  const sun=document.getElementById("sun"),moon=document.getElementById("moon"),stars=document.getElementById("stars");
-  document.getElementById("sunMoonTimes").innerHTML=`☀️ Alba: ${String(t.sunrise.getHours()).padStart(2,"0")}:${String(t.sunrise.getMinutes()).padStart(2,"0")} • 🌇 Tramonto: ${String(t.sunset.getHours()).padStart(2,"0")}:${String(t.sunset.getMinutes()).padStart(2,"0")}`;
-  if(curr>=alba&&curr<tram){
-    stars.style.opacity=0;sun.style.opacity=1;moon.style.opacity=0;
-    const p=(curr-alba)/(tram-alba);
-    sun.style.left=5+p*90+"%";sun.style.top=53-17*Math.sin(p*Math.PI)+"%";
-  }else{
-    stars.style.opacity=0.9;moon.style.opacity=1;sun.style.opacity=0;
-    const tot=(24*60-tram)+alba;
-    const pass=curr>=tram?(curr-tram):(curr+24*60-tram);
-    const p=pass/tot;
-    moon.style.left=95-p*90+"%";
-    moon.style.top=53-12*Math.sin(p*Math.PI)+"%";
-  }
-}
+function aggiornaCielo(){const now=new Date(),t=SunCalc.getTimes(now,LAT,LON);
+const alba=t.sunrise.getHours()*60+t.sunrise.getMinutes();
+const tram=t.sunset.getHours()*60+t.sunset.getMinutes();
+const curr=now.getHours()*60+now.getMinutes();
+const sun=document.getElementById("sun"),moon=document.getElementById("moon"),stars=document.getElementById("stars");
+document.getElementById("sunMoonTimes").innerHTML=`☀️ Alba: ${String(t.sunrise.getHours()).padStart(2,"0")}:${String(t.sunrise.getMinutes()).padStart(2,"0")} • 🌇 Tramonto: ${String(t.sunset.getHours()).padStart(2,"0")}:${String(t.sunset.getMinutes()).padStart(2,"0")}`;
+if(curr>=alba&&curr<tram){stars.style.opacity=0;sun.style.opacity=1;moon.style.opacity=0;
+const p=(curr-alba)/(tram-alba);sun.style.left=5+p*90+"%";sun.style.top=53-17*Math.sin(p*Math.PI)+"%";}
+else{stars.style.opacity=0.9;moon.style.opacity=1;sun.style.opacity=0;
+const tot=(24*60-tram)+alba;const pass=curr>=tram?(curr-tram):(curr+24*60-tram);
+const p=pass/tot;moon.style.left=95-p*90+"%";moon.style.top=53-12*Math.sin(p*Math.PI)+"%";}}
 
-function initCielo(){
-  for(let i=0;i<40;i++){let e=document.createElement('div');e.className='star';e.style.left=Math.random()*100+'%';e.style.top=Math.random()*100+'%';e.style.animationDelay=Math.random()*3+'s';document.getElementById('stars').appendChild(e);}
-  for(let i=0;i<5;i++)setTimeout(creaNuvola,Math.random()*6000);
-  for(let i=0;i<3;i++)setTimeout(creaUccello,Math.random()*8000);
-  volaAereo();aggiornaCielo();setInterval(aggiornaCielo,60000);
-}
+function initCielo(){for(let i=0;i<40;i++){let e=document.createElement('div');e.className='star';
+e.style.left=Math.random()*100+'%';e.style.top=Math.random()*100+'%';e.style.animationDelay=Math.random()*3+'s';
+document.getElementById('stars').appendChild(e);}
+for(let i=0;i<5;i++)setTimeout(creaNuvola,Math.random()*6000);
+for(let i=0;i<3;i++)setTimeout(creaUccello,Math.random()*8000);
+volaElicottero();aggiornaCielo();setInterval(aggiornaCielo,60000);}
 document.addEventListener("DOMContentLoaded",initCielo);
 
-async function aggiorna(){
-  try{
-    const r=await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=60`);
-    const d=await r.json();
-    if(!d.feeds||!d.feeds.length)return;
-    const f=d.feeds.map(e=>({f1:+e.field1,f2:+e.field2,f3:+e.field3,f4:+e.field4})),u=f.at(-1);
-    g1.refresh(u.f1);g2.refresh(u.f2);g3.refresh(u.f3);g4.refresh(u.f4);
-    const avg=a=>{const v=a.filter(x=>!isNaN(x));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):"--";};
-    ["m1","m2","m3","m4"].forEach((id,i)=>document.getElementById(id).textContent=avg(f.map(x=>x[`f${i+1}`])));
-    const aqi=u.f4,alert=document.getElementById("ariaAlert");
-    let text="--",bg="#00e400",anim="none";
-    if(aqi<=50){text="🌿 Aria eccellente";bg="#00e400";}
-    else if(aqi<=100){text="😊 Aria buona";bg="#9cff00";}
-    else if(aqi<=150){text="⚠️ Qualità moderata";bg="#ffde33";anim="blinkAir 1.4s infinite alternate";}
-    else if(aqi<=200){text="😷 Aria scadente";bg="#ff9933";}
-    else if(aqi<=300){text="☠️ Aria molto scarsa";bg="#cc0033";}
-    else{text="💀 Aria pericolosa";bg="#660099";anim="pulseDanger 2.5s infinite alternate";}
-    alert.textContent=text;alert.style.background=bg;alert.style.boxShadow=`0 0 25px ${bg}`;alert.style.animation=anim;
-    document.getElementById("statusBar").textContent=`✅ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")}`;
-  }catch(e){
-    document.getElementById("statusBar").textContent="⚠️ Errore connessione";
-    console.error(e);
-  }
-}
+async function aggiorna(){try{const r=await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=60`);
+const d=await r.json();if(!d.feeds||!d.feeds.length)return;
+const f=d.feeds.map(e=>({f1:+e.field1,f2:+e.field2,f3:+e.field3,f4:+e.field4})),u=f.at(-1);
+g1.refresh(u.f1);g2.refresh(u.f2);g3.refresh(u.f3);g4.refresh(u.f4);
+const avg=a=>{const v=a.filter(x=>!isNaN(x));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):"--";};
+["m1","m2","m3","m4"].forEach((id,i)=>document.getElementById(id).textContent=avg(f.map(x=>x[`f${i+1}`])));
+const aqi=u.f4,alert=document.getElementById("ariaAlert");
+let text="--",bg="#00e400",anim="none";
+if(aqi<=50){text="🌿 Aria eccellente";bg="#00e400";}
+else if(aqi<=100){text="😊 Aria buona";bg="#9cff00";}
+else if(aqi<=150){text="⚠️ Qualità moderata";bg="#ffde33";anim="blinkAir 1.4s infinite alternate";}
+else if(aqi<=200){text="😷 Aria scadente";bg="#ff9933";}
+else if(aqi<=300){text="☠️ Aria molto scarsa";bg="#cc0033";}
+else{text="💀 Aria pericolosa";bg="#660099";anim="pulseDanger 2.5s infinite alternate";}
+alert.textContent=text;alert.style.background=bg;alert.style.boxShadow=`0 0 25px ${bg}`;alert.style.animation=anim;
+document.getElementById("statusBar").textContent=`✅ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")}`;}
+catch(e){document.getElementById("statusBar").textContent="⚠️ Errore connessione";console.error(e);}}
 aggiorna();setInterval(aggiorna,30000);
 </script>
 </body>
