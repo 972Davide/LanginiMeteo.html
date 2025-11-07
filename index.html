@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V5.1</title>
+<title>Langini Meteo – Dashboard V5.2</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -31,14 +31,42 @@ box-shadow:-30px 10px 30px rgba(255,255,255,0.7),40px 15px 40px rgba(255,255,255
 @keyframes fluttuare{from{transform:translateY(0)}to{transform:translateY(8px)}}
 body.alba{background:linear-gradient(to bottom,#ffb347 0%,#ffd194 40%,#87ceeb 100%)!important;}
 body.tramonto{background:linear-gradient(to bottom,#f46b45 0%,#eea849 50%,#002850 100%)!important;}
-#phaseMsg{position:absolute;top:10%;left:-50%;font-size:1.5em;font-weight:700;
-background:rgba(0,0,0,0.45);padding:6px 16px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.5);
-opacity:0;z-index:5;white-space:nowrap;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-#phaseMsg.albaColor{background-image:linear-gradient(90deg,#ffcc33,#ff6600);}
-#phaseMsg.tramontoColor{background-image:linear-gradient(90deg,#ff3366,#cc0033);}
-#phaseMsg.show{animation:movePhase 25s linear forwards;}
-@keyframes movePhase{0%{left:-30%;opacity:0}10%{opacity:1}50%{left:50%;transform:translateX(-50%);opacity:1}
-90%{opacity:1}100%{left:120%;opacity:0}}
+
+/* === BANNER ALBA / TRAMONTO MIGLIORATO === */
+#phaseMsg{
+  position:absolute;top:14%;left:50%;transform:translateX(-50%);
+  font-size:1.9em;font-weight:700;padding:10px 22px;border-radius:30px;
+  opacity:0;z-index:5;text-transform:uppercase;letter-spacing:1px;
+  background:rgba(0,0,0,0.3);color:transparent;-webkit-background-clip:text;
+  text-shadow:0 0 18px rgba(255,255,255,0.4);
+  box-shadow:0 0 15px rgba(255,255,255,0.25);border:2px solid transparent;
+}
+#phaseMsg.albaColor{
+  background-image:linear-gradient(90deg,#ffcc00,#ff6600,#ffaa00);
+  border-color:#ffb347;
+  animation:fadeBanner 20s ease forwards, glowAlba 3s infinite alternate;
+}
+#phaseMsg.tramontoColor{
+  background-image:linear-gradient(90deg,#ff6699,#ff3300,#cc0033);
+  border-color:#ff6688;
+  animation:fadeBanner 20s ease forwards, glowTramonto 3s infinite alternate;
+}
+@keyframes fadeBanner{
+  0%{opacity:0;transform:translate(-50%,-20px);}
+  20%{opacity:1;transform:translate(-50%,0);}
+  80%{opacity:1;}
+  100%{opacity:0;transform:translate(-50%,10px);}
+}
+@keyframes glowAlba{
+  from{box-shadow:0 0 20px 6px rgba(255,204,51,0.6);}
+  to{box-shadow:0 0 40px 12px rgba(255,153,0,0.8);}
+}
+@keyframes glowTramonto{
+  from{box-shadow:0 0 20px 6px rgba(255,102,153,0.6);}
+  to{box-shadow:0 0 40px 12px rgba(255,0,51,0.8);}
+}
+
+/* === ALTRO === */
 #scroller{position:absolute;top:20%;left:-100%;font-size:1.3em;font-weight:600;white-space:nowrap;
 opacity:0;z-index:4;color:#000;text-shadow:0 0 8px rgba(255,255,255,0.5);}
 @keyframes scrollText{from{left:-40%;opacity:0}10%{opacity:1}90%{opacity:1}to{left:120%;opacity:0}}
@@ -61,7 +89,7 @@ a:hover{background:#00aaff;}
 </head>
 
 <body>
-<header>🌤️ Langini Meteo – Dashboard V5.1<br><div id="logo">by Langini D.</div></header>
+<header>🌤️ Langini Meteo – Dashboard V5.2<br><div id="logo">by Langini D.</div></header>
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
@@ -87,6 +115,14 @@ a:hover{background:#00aaff;}
   <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_6f4b8e2be3.mp3" type="audio/mpeg">
 </audio>
 
+<!-- 🌄 Suoni atmosferici -->
+<audio id="suonoAlba" preload="auto">
+  <source src="https://cdn.pixabay.com/download/audio/2023/03/14/audio_263b4f5168.mp3?filename=birds-chirping-ambient-141717.mp3" type="audio/mpeg">
+</audio>
+<audio id="suonoTramonto" preload="auto">
+  <source src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_310d5f7f29.mp3?filename=crickets-ambient-night-6787.mp3" type="audio/mpeg">
+</audio>
+
 <script>
 const LAT=45.77,LON=8.88,CHANNEL_ID=3149218;
 
@@ -108,6 +144,26 @@ c.animate([{transform:`translateX(0)`},{transform:`translateX(${window.innerWidt
 {duration:dur,iterations:1,easing:"linear"}).onfinish=()=>{c.remove();setTimeout(()=>crea(l),3000);};}
 lv.forEach(l=>{for(let i=0;i<3;i++)setTimeout(()=>crea(l),Math.random()*4000);});})();
 
+// --- Suono + Banner Alba/Tramonto ---
+function mostraEvento(fase){
+ const msg=document.getElementById("phaseMsg");
+ const suonoAlba=document.getElementById("suonoAlba");
+ const suonoTramonto=document.getElementById("suonoTramonto");
+ [suonoAlba,suonoTramonto].forEach(a=>{a.pause();a.currentTime=0;});
+ if(fase==="alba"){
+  msg.textContent="🌅 ALBA IN CORSO";msg.className="albaColor";
+  suonoAlba.volume=0;suonoAlba.play().catch(()=>{});
+  let v=0;const fadeIn=setInterval(()=>{v+=0.05;if(v>=0.7)clearInterval(fadeIn);suonoAlba.volume=Math.min(v,0.7);},300);
+  setTimeout(()=>{const fadeOut=setInterval(()=>{v-=0.05;if(v<=0){clearInterval(fadeOut);suonoAlba.pause();}suonoAlba.volume=Math.max(v,0);},300);},15000);
+ }
+ if(fase==="tramonto"){
+  msg.textContent="🌇 TRAMONTO IN CORSO";msg.className="tramontoColor";
+  suonoTramonto.volume=0;suonoTramonto.play().catch(()=>{});
+  let v=0;const fadeIn=setInterval(()=>{v+=0.05;if(v>=0.7)clearInterval(fadeIn);suonoTramonto.volume=Math.min(v,0.7);},300);
+  setTimeout(()=>{const fadeOut=setInterval(()=>{v-=0.05;if(v<=0){clearInterval(fadeOut);suonoTramonto.pause();}suonoTramonto.volume=Math.max(v,0);},300);},15000);
+ }
+}
+
 // --- Cielo dinamico ---
 function minutiToOra(m){const h=Math.floor(m/60),min=Math.floor(m%60);return`${String(h).padStart(2,"0")}:${String(min).padStart(2,"0")}`;}
 function aggiornaCielo(){
@@ -123,17 +179,17 @@ function aggiornaCielo(){
  if(isDay){
   stars.style.opacity=0;sun.style.opacity=1;moon.style.opacity=0;
   info.style.color="#000";info.style.background="rgba(255,255,255,0.6)";
-  if(diffA<30){document.body.className="alba";msg.textContent="🌅 Alba in corso";msg.className="albaColor show";}
-  else if(diffT<30){document.body.className="tramonto";msg.textContent="🌇 Tramonto in corso";msg.className="tramontoColor show";}
-  else{document.body.className="";document.body.style.background="linear-gradient(to bottom,#00aaff,#87ceeb 60%,#0099ff 100%)";msg.className="";}
+  if(diffA<30){document.body.className="alba";mostraEvento("alba");}
+  else if(diffT<30){document.body.className="tramonto";mostraEvento("tramonto");}
+  else{document.body.className="";msg.className="";msg.style.opacity=0;}
   const p=(curr-alba)/(tram-alba);
   sun.style.left=5+p*90+"%";sun.style.top=53-17*Math.sin(p*Math.PI)+"%";
  }else{
   stars.style.opacity=0.9;moon.style.opacity=1;sun.style.opacity=0;
   info.style.color="#fff";info.style.background="rgba(0,0,0,0.5)";
-  if(diffT<30){document.body.className="tramonto";msg.textContent="🌇 Tramonto in corso";msg.className="tramontoColor show";}
-  else if(diffA<30){document.body.className="alba";msg.textContent="🌅 Alba in corso";msg.className="albaColor show";}
-  else{document.body.className="";document.body.style.background="linear-gradient(to bottom,#000820 0%,#001b40 60%,#002860 100%)";msg.className="";}
+  if(diffT<30){document.body.className="tramonto";mostraEvento("tramonto");}
+  else if(diffA<30){document.body.className="alba";mostraEvento("alba");}
+  else{document.body.className="";msg.className="";msg.style.opacity=0;}
   const tot=(24*60-tram)+alba;
   const pass=curr>=tram?(curr-tram):(curr+24*60-tram);
   const p=pass/tot;moon.style.left=95-p*90+"%";moon.style.top=53-12*Math.sin(p*Math.PI)+"%";
@@ -142,49 +198,4 @@ setInterval(aggiornaCielo,60000);window.onload=aggiornaCielo;
 
 // --- Sole/luna rotazione ---
 let angle=0;setInterval(()=>{angle+=0.04;
-const s=document.getElementById("sun"),m=document.getElementById("moon");
-(s.style.opacity>0.5?s:m).style.transform=`translate(-50%,-50%) rotate(${angle}rad)`;},120);
-
-// --- Testo scorrevole random ---
-function mostraScroller(){const el=document.getElementById("scroller");
-const day=document.getElementById("sun").style.opacity>0.5;
-el.style.color=day?"#000":"#fff";el.style.textShadow=day?"0 0 8px rgba(255,255,255,0.6)":"0 0 8px rgba(0,0,0,0.6)";
-el.style.animation="scrollText 15s linear forwards";setTimeout(()=>{el.style.animation="none";},16000);}
-(function loop(){const d=30000+Math.random()*60000;setTimeout(()=>{mostraScroller();loop();},d);})();
-
-// --- Gauges ---
-const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
-const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
-const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
-const g4=new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
-async function aggiorna(){
- try{
-  const r=await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=60`);
-  const d=await r.json();if(!d.feeds||!d.feeds.length){document.getElementById("statusBar").textContent="⚠️ Nessun dato disponibile";return;}
-  const f=d.feeds.map(e=>({f1:+e.field1,f2:+e.field2,f3:+e.field3,f4:+e.field4})),u=f.at(-1);
-  const avg=a=>{const v=a.filter(x=>!isNaN(x));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):"--";};
-  g1.refresh(u.f1);g2.refresh(u.f2);g3.refresh(u.f3);g4.refresh(u.f4);
-  ["v1","v2","v3","v4"].forEach((id,i)=>document.getElementById(id).textContent=isNaN(u[`f${i+1}`])?"--":u[`f${i+1}`].toFixed(1));
-  ["m1","m2","m3","m4"].forEach((id,i)=>document.getElementById(id).textContent=avg(f.map(x=>x[`f${i+1}`])));
-  document.getElementById("statusBar").textContent=`✅ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")}`;
- }catch(e){document.getElementById("statusBar").textContent="⚠️ Errore connessione";console.error(e);}
-}
-aggiorna();setInterval(aggiorna,30000);
-
-// --- 🔔 Rintocchi ogni ora ---
-function suonaCampane(){
- const now=new Date(),h=now.getHours();
- if(h<7||h>22)return;
- const audio=document.getElementById("campana");
- const numRintocchi=h===0?12:h;let i=0;
- function playRintocco(){if(i>=numRintocchi)return;
-  audio.currentTime=0;audio.play().catch(()=>{});i++;
-  setTimeout(playRintocco,1800);}
- playRintocco();
-}
-let ultimaOra=new Date().getHours();
-setInterval(()=>{const now=new Date();
- if(now.getMinutes()===0&&now.getHours()!==ultimaOra){suonaCampane();ultimaOra=now.getHours();}},15000);
-</script>
-</body>
-</html>
+const s=document.getElementById("sun"),m=document.getElementBy
