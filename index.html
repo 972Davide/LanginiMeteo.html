@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V6.5</title>
+<title>Langini Meteo – Dashboard V6.6</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -43,37 +43,27 @@ header{
 }
 #stars{position:absolute;inset:0;opacity:0;z-index:1;}
 .star{
-  position:absolute;
-  width:2px;height:2px;
-  background:#fff;
-  border-radius:50%;
+  position:absolute;width:2px;height:2px;
+  background:#fff;border-radius:50%;
   animation:twinkle 4s infinite;
 }
 @keyframes twinkle{0%,100%{opacity:0.2}50%{opacity:1}}
 #sun,#moon{
-  position:absolute;
-  top:53%;left:50%;
-  width:110px;height:110px;
-  border-radius:50%;
+  position:absolute;top:53%;left:50%;
+  width:110px;height:110px;border-radius:50%;
   transform:translate(-50%,-50%);
   transition:left 1.5s,top 1.5s,opacity 2s;
   z-index:2;opacity:0;
 }
-#sun{
-  background:radial-gradient(circle,#fff600 20%,#ffcc00 70%,#ffaa00 100%);
-  box-shadow:0 0 40px 10px #ffcc00;
-}
-#moon{
-  background:radial-gradient(circle at 31% 32%,#f0f0f0 40%,#bdbdbd 100%);
-  box-shadow:0 0 25px 5px #ccc;
-}
+#sun{background:radial-gradient(circle,#fff600 20%,#ffcc00 70%,#ffaa00 100%);
+  box-shadow:0 0 40px 10px #ffcc00;}
+#moon{background:radial-gradient(circle at 31% 32%,#f0f0f0 40%,#bdbdbd 100%);
+  box-shadow:0 0 25px 5px #ccc;}
 
 /* ✈️ Aereo */
 #plane{
   position:absolute;
-  top:25%;
-  left:-150px;
-  width:120px;height:40px;
+  top:25%;left:-150px;width:120px;height:40px;
   background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Airplane_silhouette.svg/128px-Airplane_silhouette.svg.png') no-repeat center/contain;
   z-index:3;opacity:0.9;
   filter:drop-shadow(0 0 6px rgba(255,255,255,0.7));
@@ -118,33 +108,30 @@ header{
   transition:all 1s ease;
 }
 
-/* 🧭 Gauge Section */
+/* 🧭 Gauge Section - Ridotta */
 #gauges{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:26px;
-  padding:30px 0 40px;
+  display:flex;flex-wrap:wrap;justify-content:center;gap:22px;
+  padding:20px 0 30px;
   background:linear-gradient(to bottom,#002850,#00142c);
   border-top:3px solid #004b8d;
 }
 .gaugeBox{
   background:linear-gradient(to bottom,#f8fbff,#e6edf5);
-  border-radius:18px;
-  width:260px;height:260px;
-  padding:10px;color:#003366;
-  box-shadow:0 0 14px rgba(0,0,0,0.14);
+  border-radius:16px;
+  width:230px;height:235px;
+  padding:8px;color:#003366;
+  box-shadow:0 0 10px rgba(0,0,0,0.14);
   position:relative;
 }
-.gaugeBox img{position:absolute;top:10px;right:10px;width:38px;opacity:0.84;}
-.label{font-size:1.17em;font-weight:600;margin-top:7px;}
-.mean{font-size:0.9em;color:#444;margin-top:6px;}
-footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
+.gaugeBox img{position:absolute;top:8px;right:8px;width:34px;opacity:0.84;}
+.label{font-size:1.05em;font-weight:600;margin-top:6px;}
+.mean{font-size:0.88em;color:#444;margin-top:6px;}
+footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
 </style>
 </head>
 
 <body>
-<header>🌤️ Langini Meteo – Dashboard V6.5<br><div id="logo">by Langini D.</div></header>
+<header>🌤️ Langini Meteo – Dashboard V6.6<br><div id="logo">by Langini D.</div></header>
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
@@ -154,38 +141,38 @@ footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
   <div id="plane"></div>
 </div>
 
-<!-- 🌫️ Banner sopra, centrato -->
+<!-- 🌫️ Banner sopra -->
 <div id="ariaAlert">🌿 Aria eccellente</div>
 
 <!-- ☀️ Barra Alba/Tramonto -->
 <div id="sunMoonTimes">☀️ Alba: --:-- • 🌇 Tramonto: --:--</div>
 
-<!-- 🧭 Gauges -->
+<!-- 🧭 Gauges (ridotti) -->
 <div id="gauges">
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/barometer.png">
-    <div id="g1" style="height:150px"></div>
+    <div id="g1" style="height:130px"></div>
     <div class="label">Pressione (hPa)</div>
     <div class="mean">Media oraria: <span id="m1">--</span></div>
   </div>
 
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/temperature.png">
-    <div id="g2" style="height:150px"></div>
+    <div id="g2" style="height:130px"></div>
     <div class="label">Temperatura (°C)</div>
     <div class="mean">Media oraria: <span id="m2">--</span></div>
   </div>
 
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/hygrometer.png">
-    <div id="g3" style="height:150px"></div>
+    <div id="g3" style="height:130px"></div>
     <div class="label">Umidità (%)</div>
     <div class="mean">Media oraria: <span id="m3">--</span></div>
   </div>
 
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/smelling.png">
-    <div id="g4" style="height:150px"></div>
+    <div id="g4" style="height:130px"></div>
     <div class="label">Qualità Aria (MQ135)</div>
     <div class="mean">Media oraria: <span id="m4">--</span></div>
   </div>
@@ -195,20 +182,18 @@ footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
 
 <script>
 const LAT=45.77,LON=8.88,CHANNEL_ID=3149218;
-
-// Gauges
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
 const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
 const g4=new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
 
-// Stelle
+// Stelle dinamiche
 (()=>{const s=document.getElementById('stars');
 for(let i=0;i<40;i++){let e=document.createElement('div');e.className='star';
 e.style.left=Math.random()*100+'%';e.style.top=Math.random()*100+'%';
 e.style.animationDelay=Math.random()*3+'s';s.appendChild(e);}})();
 
-// ✈️ Aereo
+// ✈️ Aereo animato
 function volaAereo(){
   const plane=document.getElementById('plane');
   const topPos=20+Math.random()*40;
