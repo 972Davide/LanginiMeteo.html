@@ -1,46 +1,158 @@
-<style>
-/* ... resto del CSS invariato ... */
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Langini Meteo – Dashboard V6.4</title>
 
-/* 🌫️ Banner AQI sopra la barra (distaccato) */
-#ariaAlert{
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:"Poppins",sans-serif;
+  color:white;
+  text-align:center;
+  overflow-x:hidden;
+  transition:background 2s;
+  background:linear-gradient(to bottom,#001b3a 0%,#004a8d 40%,#0066b2 100%);
+}
+header{
+  background:rgba(0,0,30,0.7);
+  color:#fff;
+  padding:16px 0 4px;
+  font-size:1.7em;
+  font-weight:600;
+  box-shadow:0 2px 10px rgba(0,0,0,0.25);
+}
+#logo{font-size:1.05em;font-weight:400;color:#a9c9ff;}
+#statusBar{
+  background:rgba(0,0,0,0.15);
+  font-size:0.93em;
+  color:#a9c9ff;
+  padding:6px;
+}
+#sky{
   position:relative;
-  display:inline-block;
-  margin-top:12px;           /* distanza dal cielo */
-  margin-bottom:10px;        /* distanza dalla barra */
-  padding:10px 30px;
+  height:46vh;
+  overflow:hidden;
+  border-bottom:4px solid #048;
+}
+#stars{position:absolute;inset:0;opacity:0;z-index:1;}
+.star{
+  position:absolute;
+  width:2px;height:2px;
+  background:#fff;
+  border-radius:50%;
+  animation:twinkle 4s infinite;
+}
+@keyframes twinkle{0%,100%{opacity:0.2}50%{opacity:1}}
+#sun,#moon{
+  position:absolute;
+  top:53%;left:50%;
+  width:110px;height:110px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  transition:left 1.5s,top 1.5s,opacity 2s;
+  z-index:2;opacity:0;
+}
+#sun{
+  background:radial-gradient(circle,#fff600 20%,#ffcc00 70%,#ffaa00 100%);
+  box-shadow:0 0 40px 10px #ffcc00;
+}
+#moon{
+  background:radial-gradient(circle at 31% 32%,#f0f0f0 40%,#bdbdbd 100%);
+  box-shadow:0 0 25px 5px #ccc;
+}
+
+/* ✈️ Aereo */
+#plane{
+  position:absolute;
+  top:25%;
+  left:-150px;
+  width:120px;height:40px;
+  background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Airplane_silhouette.svg/128px-Airplane_silhouette.svg.png') no-repeat center/contain;
+  z-index:3;opacity:0.9;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,0.7));
+}
+
+/* 🌫️ Banner AQI sopra la barra, allineato e centrato */
+#ariaAlert{
+  display:block;
+  margin:18px auto 10px auto;
+  padding:10px 32px;
   border-radius:22px;
   font-size:1.35em;
   font-weight:700;
   color:#fff;
   background:#00e400;
   box-shadow:0 0 25px rgba(0,255,0,0.5);
+  width:fit-content;
   transition:all 0.8s ease;
   animation:none;
   z-index:5;
+  text-align:center;
 }
+
+/* Effetti dinamici AQI */
 @keyframes blinkAir{from{opacity:0.6;}to{opacity:1;}}
 @keyframes pulseDanger{
   0%,100%{box-shadow:0 0 25px 8px rgba(102,0,153,0.8);}
   50%{box-shadow:0 0 40px 16px rgba(255,0,255,0.7);}
 }
 
-/* ☀️ Barra Alba/Tramonto */
+/* ☀️ Barra Alba/Tramonto - perfettamente centrata sotto */
 #sunMoonTimes{
+  display:block;
+  margin:0 auto 14px auto;
   font-size:1em;
   color:#000;
-  background:rgba(255,255,255,0.6);
-  display:inline-block;
-  padding:4px 10px;
+  background:rgba(255,255,255,0.65);
+  padding:5px 14px;
   border-radius:12px;
-  margin-bottom:8px;
   box-shadow:0 0 6px rgba(0,0,0,0.25);
   font-weight:600;
+  width:fit-content;
+  text-align:center;
   transition:all 1s ease;
 }
+
+/* 🧭 Gauge Section */
+#gauges{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:26px;
+  padding:30px 0 40px;
+  background:linear-gradient(to bottom,#002850,#00142c);
+  border-top:3px solid #004b8d;
+}
+.gaugeBox{
+  background:linear-gradient(to bottom,#f8fbff,#e6edf5);
+  border-radius:18px;
+  width:260px;height:270px;
+  padding:10px;color:#003366;
+  box-shadow:0 0 14px rgba(0,0,0,0.14);
+  position:relative;
+}
+.gaugeBox img{position:absolute;top:10px;right:10px;width:38px;opacity:0.84;}
+.label{font-size:1.17em;font-weight:600;margin-top:7px;}
+.value{font-size:1.23em;font-weight:bold;color:#000;margin-top:4px;}
+.mean{font-size:0.9em;color:#444;margin-top:2px;}
+footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
+
+/* 📱 Adattamento mobile */
+@media (max-width:600px){
+  #ariaAlert,#sunMoonTimes{font-size:1em;}
+}
 </style>
+</head>
 
 <body>
-<header>🌤️ Langini Meteo – Dashboard V6.3<br><div id="logo">by Langini D.</div></header>
+<header>🌤️ Langini Meteo – Dashboard V6.4<br><div id="logo">by Langini D.</div></header>
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
@@ -50,10 +162,110 @@
   <div id="plane"></div>
 </div>
 
-<!-- 🌫️ Banner sopra, separato -->
+<!-- 🌫️ Banner sopra, centrato -->
 <div id="ariaAlert">🌿 Aria eccellente</div>
 
 <!-- ☀️ Barra Alba/Tramonto -->
 <div id="sunMoonTimes">☀️ Alba: --:-- • 🌇 Tramonto: --:--</div>
 
-<!-- ... resto invariato ... -->
+<!-- 🧭 Gauges -->
+<div id="gauges">
+  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/barometer.png"><div id="g1" style="height:150px"></div><div class="label">Pressione (hPa)</div><div class="value">Live: <span id="v1">--</span></div><div class="mean">Media oraria: <span id="m1">--</span></div></div>
+  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/temperature.png"><div id="g2" style="height:150px"></div><div class="label">Temperatura (°C)</div><div class="value">Live: <span id="v2">--</span></div><div class="mean">Media oraria: <span id="m2">--</span></div></div>
+  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/hygrometer.png"><div id="g3" style="height:150px"></div><div class="label">Umidità (%)</div><div class="value">Live: <span id="v3">--</span></div><div class="mean">Media oraria: <span id="m3">--</span></div></div>
+  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/smelling.png"><div id="g4" style="height:150px"></div><div class="label">Qualità Aria (MQ135)</div><div class="value">Live: <span id="v4">--</span></div><div class="mean">Media oraria: <span id="m4">--</span></div></div>
+</div>
+
+<footer>© 2025 Langini Meteo • Aggiornamento ogni 30 s</footer>
+
+<script>
+const LAT=45.77,LON=8.88,CHANNEL_ID=3149218;
+
+// Inizializzazione Gauge
+const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
+const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
+const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
+const g4=new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
+
+// Stelle casuali
+(()=>{const s=document.getElementById('stars');
+for(let i=0;i<40;i++){let e=document.createElement('div');e.className='star';
+e.style.left=Math.random()*100+'%';e.style.top=Math.random()*100+'%';
+e.style.animationDelay=Math.random()*3+'s';s.appendChild(e);}})();
+
+// ✈️ Animazione aereo
+function volaAereo(){
+  const plane=document.getElementById('plane');
+  const topPos=20+Math.random()*40;
+  plane.style.top=topPos+'%';
+  plane.style.left='-150px';
+  plane.style.transition='none';
+  plane.offsetHeight;
+  plane.style.transition='left 20s linear';
+  plane.style.left='110%';
+  setTimeout(volaAereo,40000+Math.random()*30000);
+}
+window.onload=volaAereo;
+
+// ☀️ Cielo dinamico
+function minutiToOra(m){const h=Math.floor(m/60),min=Math.floor(m%60);return`${String(h).padStart(2,"0")}:${String(min).padStart(2,"0")}`;}
+function aggiornaCielo(){
+  const now=new Date(),t=SunCalc.getTimes(now,LAT,LON);
+  const alba=t.sunrise.getHours()*60+t.sunrise.getMinutes();
+  const tram=t.sunset.getHours()*60+t.sunset.getMinutes();
+  const curr=now.getHours()*60+now.getMinutes();
+  const sun=document.getElementById("sun"),moon=document.getElementById("moon"),stars=document.getElementById("stars");
+  document.getElementById("sunMoonTimes").innerHTML=`☀️ Alba: ${minutiToOra(alba)} • 🌇 Tramonto: ${minutiToOra(tram)}`;
+  if(curr>=alba&&curr<tram){
+    stars.style.opacity=0;sun.style.opacity=1;moon.style.opacity=0;
+    const p=(curr-alba)/(tram-alba);
+    sun.style.left=5+p*90+"%";
+    sun.style.top=53-17*Math.sin(p*Math.PI)+"%";
+  }else{
+    stars.style.opacity=0.9;moon.style.opacity=1;sun.style.opacity=0;
+    const tot=(24*60-tram)+alba;
+    const pass=curr>=tram?(curr-tram):(curr+24*60-tram);
+    const p=pass/tot;
+    moon.style.left=95-p*90+"%";
+    moon.style.top=53-12*Math.sin(p*Math.PI)+"%";
+  }
+}
+setInterval(aggiornaCielo,60000);
+window.onload=()=>{aggiornaCielo();volaAereo();};
+
+// 🌫️ Aggiornamento dati
+async function aggiorna(){
+ try{
+  const r=await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=60`);
+  const d=await r.json();
+  if(!d.feeds||!d.feeds.length)return;
+  const f=d.feeds.map(e=>({f1:+e.field1,f2:+e.field2,f3:+e.field3,f4:+e.field4})),u=f.at(-1);
+  g1.refresh(u.f1);g2.refresh(u.f2);g3.refresh(u.f3);g4.refresh(u.f4);
+  ["v1","v2","v3","v4"].forEach((id,i)=>document.getElementById(id).textContent=isNaN(u[`f${i+1}`])?"--":u[`f${i+1}`].toFixed(1));
+
+  const aqi=u.f4;
+  const alert=document.getElementById("ariaAlert");
+  let text="--",bg="#00e400",anim="none";
+  if(aqi<=50){text="🌿 Aria eccellente";bg="#00e400";}
+  else if(aqi<=100){text="😊 Aria buona";bg="#9cff00";}
+  else if(aqi<=150){text="⚠️ Qualità moderata";bg="#ffde33";anim="blinkAir 1.4s infinite alternate";}
+  else if(aqi<=200){text="😷 Aria scadente";bg="#ff9933";}
+  else if(aqi<=300){text="☠️ Aria molto scarsa";bg="#cc0033";}
+  else{text="💀 Aria pericolosa";bg="#660099";anim="pulseDanger 2.5s infinite alternate";}
+
+  alert.textContent=text;
+  alert.style.background=bg;
+  alert.style.boxShadow=`0 0 25px ${bg}`;
+  alert.style.animation=anim;
+
+  document.getElementById("statusBar").textContent=`✅ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")}`;
+ }catch(e){
+  document.getElementById("statusBar").textContent="⚠️ Errore connessione";
+  console.error(e);
+ }
+}
+aggiorna();
+setInterval(aggiorna,30000);
+</script>
+</body>
+</html>
