@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V6.4</title>
+<title>Langini Meteo – Dashboard V6.5</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -79,7 +79,7 @@ header{
   filter:drop-shadow(0 0 6px rgba(255,255,255,0.7));
 }
 
-/* 🌫️ Banner AQI sopra la barra, allineato e centrato */
+/* 🌫️ Banner AQI sopra la barra */
 #ariaAlert{
   display:block;
   margin:18px auto 10px auto;
@@ -96,15 +96,13 @@ header{
   z-index:5;
   text-align:center;
 }
-
-/* Effetti dinamici AQI */
 @keyframes blinkAir{from{opacity:0.6;}to{opacity:1;}}
 @keyframes pulseDanger{
   0%,100%{box-shadow:0 0 25px 8px rgba(102,0,153,0.8);}
   50%{box-shadow:0 0 40px 16px rgba(255,0,255,0.7);}
 }
 
-/* ☀️ Barra Alba/Tramonto - perfettamente centrata sotto */
+/* ☀️ Barra Alba/Tramonto */
 #sunMoonTimes{
   display:block;
   margin:0 auto 14px auto;
@@ -133,26 +131,20 @@ header{
 .gaugeBox{
   background:linear-gradient(to bottom,#f8fbff,#e6edf5);
   border-radius:18px;
-  width:260px;height:270px;
+  width:260px;height:260px;
   padding:10px;color:#003366;
   box-shadow:0 0 14px rgba(0,0,0,0.14);
   position:relative;
 }
 .gaugeBox img{position:absolute;top:10px;right:10px;width:38px;opacity:0.84;}
 .label{font-size:1.17em;font-weight:600;margin-top:7px;}
-.value{font-size:1.23em;font-weight:bold;color:#000;margin-top:4px;}
-.mean{font-size:0.9em;color:#444;margin-top:2px;}
+.mean{font-size:0.9em;color:#444;margin-top:6px;}
 footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
-
-/* 📱 Adattamento mobile */
-@media (max-width:600px){
-  #ariaAlert,#sunMoonTimes{font-size:1em;}
-}
 </style>
 </head>
 
 <body>
-<header>🌤️ Langini Meteo – Dashboard V6.4<br><div id="logo">by Langini D.</div></header>
+<header>🌤️ Langini Meteo – Dashboard V6.5<br><div id="logo">by Langini D.</div></header>
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
@@ -170,10 +162,33 @@ footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
 
 <!-- 🧭 Gauges -->
 <div id="gauges">
-  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/barometer.png"><div id="g1" style="height:150px"></div><div class="label">Pressione (hPa)</div><div class="value">Live: <span id="v1">--</span></div><div class="mean">Media oraria: <span id="m1">--</span></div></div>
-  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/temperature.png"><div id="g2" style="height:150px"></div><div class="label">Temperatura (°C)</div><div class="value">Live: <span id="v2">--</span></div><div class="mean">Media oraria: <span id="m2">--</span></div></div>
-  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/hygrometer.png"><div id="g3" style="height:150px"></div><div class="label">Umidità (%)</div><div class="value">Live: <span id="v3">--</span></div><div class="mean">Media oraria: <span id="m3">--</span></div></div>
-  <div class="gaugeBox"><img src="https://img.icons8.com/fluency/48/smelling.png"><div id="g4" style="height:150px"></div><div class="label">Qualità Aria (MQ135)</div><div class="value">Live: <span id="v4">--</span></div><div class="mean">Media oraria: <span id="m4">--</span></div></div>
+  <div class="gaugeBox">
+    <img src="https://img.icons8.com/fluency/48/barometer.png">
+    <div id="g1" style="height:150px"></div>
+    <div class="label">Pressione (hPa)</div>
+    <div class="mean">Media oraria: <span id="m1">--</span></div>
+  </div>
+
+  <div class="gaugeBox">
+    <img src="https://img.icons8.com/fluency/48/temperature.png">
+    <div id="g2" style="height:150px"></div>
+    <div class="label">Temperatura (°C)</div>
+    <div class="mean">Media oraria: <span id="m2">--</span></div>
+  </div>
+
+  <div class="gaugeBox">
+    <img src="https://img.icons8.com/fluency/48/hygrometer.png">
+    <div id="g3" style="height:150px"></div>
+    <div class="label">Umidità (%)</div>
+    <div class="mean">Media oraria: <span id="m3">--</span></div>
+  </div>
+
+  <div class="gaugeBox">
+    <img src="https://img.icons8.com/fluency/48/smelling.png">
+    <div id="g4" style="height:150px"></div>
+    <div class="label">Qualità Aria (MQ135)</div>
+    <div class="mean">Media oraria: <span id="m4">--</span></div>
+  </div>
 </div>
 
 <footer>© 2025 Langini Meteo • Aggiornamento ogni 30 s</footer>
@@ -181,19 +196,19 @@ footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
 <script>
 const LAT=45.77,LON=8.88,CHANNEL_ID=3149218;
 
-// Inizializzazione Gauge
+// Gauges
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
 const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
 const g4=new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
 
-// Stelle casuali
+// Stelle
 (()=>{const s=document.getElementById('stars');
 for(let i=0;i<40;i++){let e=document.createElement('div');e.className='star';
 e.style.left=Math.random()*100+'%';e.style.top=Math.random()*100+'%';
 e.style.animationDelay=Math.random()*3+'s';s.appendChild(e);}})();
 
-// ✈️ Animazione aereo
+// ✈️ Aereo
 function volaAereo(){
   const plane=document.getElementById('plane');
   const topPos=20+Math.random()*40;
@@ -241,7 +256,9 @@ async function aggiorna(){
   if(!d.feeds||!d.feeds.length)return;
   const f=d.feeds.map(e=>({f1:+e.field1,f2:+e.field2,f3:+e.field3,f4:+e.field4})),u=f.at(-1);
   g1.refresh(u.f1);g2.refresh(u.f2);g3.refresh(u.f3);g4.refresh(u.f4);
-  ["v1","v2","v3","v4"].forEach((id,i)=>document.getElementById(id).textContent=isNaN(u[`f${i+1}`])?"--":u[`f${i+1}`].toFixed(1));
+
+  const avg=a=>{const v=a.filter(x=>!isNaN(x));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):"--";};
+  ["m1","m2","m3","m4"].forEach((id,i)=>document.getElementById(id).textContent=avg(f.map(x=>x[`f${i+1}`])));
 
   const aqi=u.f4;
   const alert=document.getElementById("ariaAlert");
@@ -252,12 +269,10 @@ async function aggiorna(){
   else if(aqi<=200){text="😷 Aria scadente";bg="#ff9933";}
   else if(aqi<=300){text="☠️ Aria molto scarsa";bg="#cc0033";}
   else{text="💀 Aria pericolosa";bg="#660099";anim="pulseDanger 2.5s infinite alternate";}
-
   alert.textContent=text;
   alert.style.background=bg;
   alert.style.boxShadow=`0 0 25px ${bg}`;
   alert.style.animation=anim;
-
   document.getElementById("statusBar").textContent=`✅ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")}`;
  }catch(e){
   document.getElementById("statusBar").textContent="⚠️ Errore connessione";
