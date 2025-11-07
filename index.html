@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V6.0</title>
+<title>Langini Meteo – Dashboard V6.1</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -83,10 +83,10 @@ header{
 #ariaAlert{
   display:inline-block;
   position:relative;
-  top:-10px;
-  margin-bottom:12px;
+  top:0;
+  margin-bottom:-4px; /* appoggiato alla barra sotto */
   padding:10px 30px;
-  border-radius:22px;
+  border-radius:22px 22px 0 0;
   font-size:1.35em;
   font-weight:700;
   color:#fff;
@@ -109,8 +109,8 @@ header{
   background:rgba(255,255,255,0.6);
   display:inline-block;
   padding:4px 10px;
-  border-radius:12px;
-  margin:0 auto 6px;
+  border-radius:0 0 12px 12px;
+  margin:0 auto 8px;
   box-shadow:0 0 6px rgba(0,0,0,0.25);
   font-weight:600;
   transition:all 1s ease;
@@ -140,7 +140,7 @@ footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
 </head>
 
 <body>
-<header>🌤️ Langini Meteo – Dashboard V6.0<br><div id="logo">by Langini D.</div></header>
+<header>🌤️ Langini Meteo – Dashboard V6.1<br><div id="logo">by Langini D.</div></header>
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
@@ -150,7 +150,7 @@ footer{font-size:0.93em;color:#a9c9ff;background:#001b3a;padding:10px;}
   <div id="plane"></div>
 </div>
 
-<!-- 🌫️ Banner centrato e distanziato -->
+<!-- 🌫️ Banner perfettamente sopra la barra -->
 <div id="ariaAlert">🌿 Aria eccellente</div>
 
 <!-- ☀️ Barra Alba/Tramonto -->
