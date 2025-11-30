@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V11 (Locale)</title>
+<title>Langini Meteo – Dashboard V12 (ThingSpeak)</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -131,18 +131,19 @@ footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
 @media (max-width:480px){#gauges{flex-direction:column;align-items:center;}.gaugeBox{width:85%;height:210px;}#ariaAlert{font-size:1.1em;padding:8px 20px;}}
 </style>
 </head>
-
 <body>
-<header>🌤️ <span class="mainTitle">Langini Meteo – Dashboard V11</span>
-<span class="subTitle">by Langini D.</span></header>
+
+<header>🌤️ <span class="mainTitle">Langini Meteo – Dashboard V12</span>
+<span class="subTitle">ThingSpeak Edition</span></header>
+
 <div id="statusBar">Caricamento dati...</div>
 
 <div id="sky">
   <div id="stars"></div>
   <div id="sun"></div>
   <div id="moon"></div>
+
   <div id="helicopter">
-    <!-- lo stesso SVG -->
     <svg viewBox="0 0 640 512" xmlns="http://www.w3.org/2000/svg">
       <path fill="#111" stroke="#666" stroke-width="8"
         d="M528 224H448v-48c0-26.5-21.5-48-48-48H288V96h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H80c-8.8 0-16 7.2-16 16s7.2 16 16 16h80v32h-16c-26.5 0-48 21.5-48 48v96h-8c-17.7 0-32 14.3-32 32v32h32l32 64h32l32-64h64l32 64h32l32-64h32l32 64h32l32-64h32v-32h-16v-48h80v48h-16v32h48c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16zM112 176h320v48H112v-48zm320 192H208l-24-48h272l-24 48z"/>
@@ -164,57 +165,196 @@ footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
     <div id="g1" style="height:130px"></div>
     <div class="label">Pressione (hPa)</div>
   </div>
+
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/temperature.png">
     <div id="g2" style="height:130px"></div>
     <div class="label">Temperatura (°C)</div>
   </div>
+
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/hygrometer.png">
     <div id="g3" style="height:130px"></div>
     <div class="label">Umidità (%)</div>
   </div>
+
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/smelling.png">
     <div id="g4" style="height:130px"></div>
     <div class="label">Qualità Aria (AQI)</div>
   </div>
 </div>
-
-<footer>© 2025 Langini Meteo • Dati locali ESP32</footer>
+<footer>© 2025 Langini Meteo • Dashboard V12 ThingSpeak Edition</footer>
 
 <script>
-const LAT=45.77,LON=8.88;
+/* ========= COORDINATE PER ALBA/TRAMONTO ========= */
+const LAT=45.77, LON=8.88;
 
-// Gauges
+/* ========= GAUGES ========= */
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
 const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
 const g4=new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
 
-/* ANIMAZIONI CIELO — come originale */
-function creaNuvola(){...}
-function volaElicottero(){...}
-function creaUccello(){...}
-function aggiornaCielo(){...}
-function initCielo(){...}
+/* ========= ANIMAZIONI DEL CIELO ========= */
+function creaNuvola(){
+  const sky=document.getElementById("sky");
+  const c=document.createElement("div");
+  c.className="cloud";
+  const s=0.8+Math.random()*1.4;
+  c.style.width=(80+Math.random()*160)*s+"px";
+  c.style.height=(35+Math.random()*45)*s+"px";
+  c.style.top=(10+Math.random()*60)+"%";
+  c.style.left="-250px";
+  c.style.opacity=0.4+Math.random()*0.4;
+  sky.appendChild(c);
+  const dur=30000+Math.random()*40000;
+  c.animate(
+    [{transform:"translateX(0)"},{transform:`translateX(${window.innerWidth+400}px)`}],
+    {duration:dur,easing:"linear"}
+  ).onfinish=()=>{c.remove();setTimeout(creaNuvola,4000+Math.random()*3000);};
+}
+
+function volaElicottero(){
+  const sky=document.getElementById('sky');
+  const heli=document.getElementById('helicopter');
+  const topPos=25+Math.random()*35;
+
+  heli.style.top=topPos+'%';
+  heli.style.left='-180px';
+  heli.style.transition='none';
+  heli.offsetHeight;
+
+  const tilt=Math.random()>0.5?6:-6;
+  heli.style.transform=`rotate(${tilt}deg)`;
+  setTimeout(()=>heli.style.transform='rotate(0deg)',22000);
+
+  heli.style.transition='transform 2s ease-out,left 25s linear';
+  heli.style.left='110%';
+
+  const trail=document.createElement('div');
+  trail.className='trail';
+  trail.style.top=`calc(${topPos}% + 25px)`;
+  trail.style.left='-180px';
+  trail.style.width='0px';
+  sky.appendChild(trail);
+
+  trail.animate(
+    [{width:'0px',opacity:0.8},{width:window.innerWidth+'px',opacity:0.1}],
+    {duration:25000,easing:'linear'}
+  ).onfinish=()=>trail.remove();
+
+  setTimeout(volaElicottero,35000+Math.random()*40000);
+}
+
+function creaUccello(){
+  const sky=document.getElementById("sky");
+  const b=document.createElement("div");
+  b.className="bird";
+  b.style.top=(20+Math.random()*50)+"%";
+  b.style.left="-60px";
+  b.style.transform=`scale(${0.7+Math.random()*0.6})`;
+  sky.appendChild(b);
+
+  const dur=15000+Math.random()*12000;
+  b.animate(
+    [{transform:"translateX(0)"},{transform:`translateX(${window.innerWidth+200}px)`}],
+    {duration:dur,easing:"linear"}
+  ).onfinish=()=>{b.remove();setTimeout(creaUccello,4000+Math.random()*7000);};
+}
+
+function aggiornaCielo(){
+  const now=new Date(),t=SunCalc.getTimes(now,LAT,LON);
+  const alba=t.sunrise.getHours()*60+t.sunrise.getMinutes();
+  const tram=t.sunset.getHours()*60+t.sunset.getMinutes();
+  const curr=now.getHours()*60+now.getMinutes();
+
+  const sun=document.getElementById("sun"),
+        moon=document.getElementById("moon"),
+        stars=document.getElementById("stars");
+
+  document.getElementById("sunMoonTimes").innerHTML=
+    `☀️ Alba: ${String(t.sunrise.getHours()).padStart(2,"0")}:${String(t.sunrise.getMinutes()).padStart(2,"0")}
+     • 🌇 Tramonto: ${String(t.sunset.getHours()).padStart(2,"0")}:${String(t.sunset.getMinutes()).padStart(2,"0")}`;
+
+  if(curr>=alba && curr<tram){
+    stars.style.opacity=0;
+    sun.style.opacity=1;
+    moon.style.opacity=0;
+
+    const p=(curr-alba)/(tram-alba);
+    sun.style.left=5+p*90+"%";
+    sun.style.top=53-17*Math.sin(p*Math.PI)+"%";
+
+  } else {
+    stars.style.opacity=0.9;
+    moon.style.opacity=1;
+    sun.style.opacity=0;
+
+    const tot=(24*60-tram)+alba;
+    const pass=curr>=tram?(curr-tram):(curr+24*60-tram);
+    const p=pass/tot;
+
+    moon.style.left=95-p*90+"%";
+    moon.style.top=53-12*Math.sin(p*Math.PI)+"%";
+  }
+}
+
+function initCielo(){
+  for(let i=0;i<40;i++){
+    let e=document.createElement('div');
+    e.className='star';
+    e.style.left=Math.random()*100+'%';
+    e.style.top=Math.random()*100+'%';
+    e.style.animationDelay=Math.random()*3+'s';
+    document.getElementById('stars').appendChild(e);
+  }
+
+  for(let i=0;i<5;i++)
+    setTimeout(creaNuvola,Math.random()*6000);
+
+  for(let i=0;i<3;i++)
+    setTimeout(creaUccello,Math.random()*8000);
+
+  volaElicottero();
+  aggiornaCielo();
+  setInterval(aggiornaCielo,60000);
+}
 document.addEventListener("DOMContentLoaded",initCielo);
 
-/* 🔥 AGGIORNAMENTO DATI DA ESP32 /json */
+
+/* ===================================================
+   🔥 AGGIORNAMENTO DATI – THINGSPEAK FIELDS 1..6
+   =================================================== */
+
 async function aggiorna(){
   try{
-    const r = await fetch('/json');
+    const r = await fetch("https://api.thingspeak.com/channels/3149218/feeds.json?results=60");
     const d = await r.json();
 
-    // Aggiorna gauge
-    g1.refresh(d.press);
-    g2.refresh(d.temp);
-    g3.refresh(d.hum);
-    g4.refresh(d.aqi);
+    if(!d.feeds || !d.feeds.length) return;
 
-    // AQI banner
+    // Array dei record
+    const f = d.feeds.map(e => ({
+      p : +e.field1,   // pressione
+      t : +e.field2,   // temperatura
+      h : +e.field3,   // umidità
+      a : +e.field4,   // aqi
+      v : +e.field5,   // vento
+      pi: +e.field6    // pioggia (0/1)
+    }));
+
+    const u = f.at(-1); // ultimo record
+
+    // Aggiorna gauge
+    g1.refresh(u.p);
+    g2.refresh(u.t);
+    g3.refresh(u.h);
+    g4.refresh(u.a);
+
+    // Banner AQI
     const alert=document.getElementById("ariaAlert");
-    let aqi=d.aqi, text="--", bg="#00e400", anim="none";
+    let aqi=u.a, text="--", bg="#00e400", anim="none";
 
     if(aqi<=50){text="🌿 Aria eccellente";bg="#00e400";}
     else if(aqi<=100){text="😊 Aria buona";bg="#9cff00";}
@@ -228,19 +368,20 @@ async function aggiorna(){
     alert.style.boxShadow=`0 0 25px ${bg}`;
     alert.style.animation=anim;
 
-    // barra stato
-    document.getElementById("statusBar").textContent=
-      `✔ Aggiornato • ☁ Pioggia: ${d.rain} • 💨 Vento: ${d.wind_kmh} km/h`;
+    // Barra stato
+    document.getElementById("statusBar").textContent =
+      `✔ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")} 
+       • 💨 ${u.v} km/h 
+       • ☁ ${u.pi ? "Pioggia" : "Asciutto"}`;
 
-  }catch(e){
-    document.getElementById("statusBar").textContent="⚠ Errore connessione ESP32";
+  }catch(err){
+    document.getElementById("statusBar").textContent="⚠ Errore connessione ThingSpeak";
   }
 }
 
-setInterval(aggiorna,1500);
+setInterval(aggiorna,30000);
 aggiorna();
 </script>
 
 </body>
 </html>
-
