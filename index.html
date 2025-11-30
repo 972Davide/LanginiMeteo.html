@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V12 (ThingSpeak)</title>
+<title>Langini Meteo – Dashboard V13 (ThingSpeak + Vento Pro)</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
@@ -37,7 +37,15 @@ header .subTitle{
   vertical-align:middle;
   opacity:0.9;
 }
-#statusBar{background:rgba(0,0,0,0.15);font-size:0.93em;color:#a9c9ff;padding:6px;}
+#statusBar{
+  background:rgba(0,0,0,0.15);
+  font-size:0.93em;
+  color:#a9c9ff;
+  padding:6px;
+  transition:color 0.5s;
+}
+
+/* CIELO */
 #sky{position:relative;height:46vh;overflow:hidden;border-bottom:4px solid #048;}
 #stars{position:absolute;inset:0;opacity:0;z-index:1;}
 .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 4s infinite;}
@@ -47,10 +55,14 @@ header .subTitle{
   transform:translate(-50%,-50%);transition:left 1.5s,top 1.5s,opacity 2s;
   z-index:2;opacity:0;
 }
-#sun{background:radial-gradient(circle,#fff600 20%,#ffcc00 70%,#ffaa00 100%);
-  box-shadow:0 0 40px 10px #ffcc00;}
-#moon{background:radial-gradient(circle at 31% 32%,#f0f0f0 40%,#bdbdbd 100%);
-  box-shadow:0 0 25px 5px #ccc;}
+#sun{
+  background:radial-gradient(circle,#fff600 20%,#ffcc00 70%,#ffaa00 100%);
+  box-shadow:0 0 40px 10px #ffcc00;
+}
+#moon{
+  background:radial-gradient(circle at 31% 32%,#f0f0f0 40%,#bdbdbd 100%);
+  box-shadow:0 0 25px 5px #ccc;
+}
 .cloud{
   position:absolute;background:rgba(255,255,255,0.9);
   border-radius:50%;
@@ -125,16 +137,122 @@ header .subTitle{
 .gaugeBox img{position:absolute;top:8px;right:8px;width:34px;opacity:0.84;}
 .label{font-size:1.05em;font-weight:600;margin-top:6px;}
 
-footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
+/* SEZIONE VENTO (GRAFICO + BANDIERA) */
+#windSection{
+  background:linear-gradient(to bottom,#00142c,#000814);
+  padding:20px 10px 30px;
+  border-top:2px solid #003060;
+}
+#windSection h2{
+  margin:6px 0 10px;
+  font-size:1.3em;
+}
+#windVisuals{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:flex-start;
+  gap:24px;
+  max-width:900px;
+  margin:0 auto;
+}
+#flagContainer{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+}
+#flagpole{
+  width:6px;
+  height:120px;
+  background:linear-gradient(to bottom,#ddd,#999);
+  box-shadow:0 0 6px rgba(0,0,0,0.6);
+  border-radius:3px;
+}
+#flag{
+  width:110px;
+  height:60px;
+  margin-left:6px;
+  background:linear-gradient(135deg,#ff1744,#ff9100,#ffea00);
+  border-radius:4px 14px 14px 4px;
+  box-shadow:0 0 12px rgba(0,0,0,0.5);
+  transform-origin:left center;
+}
 
-@media (max-width:768px){#gauges{gap:18px;}.gaugeBox{width:45%;height:220px;padding:6px;}}
-@media (max-width:480px){#gauges{flex-direction:column;align-items:center;}.gaugeBox{width:85%;height:210px;}#ariaAlert{font-size:1.1em;padding:8px 20px;}}
+/* diversi stati del vento */
+.flag-calm{
+  animation:flagWaveSmall 2.4s ease-in-out infinite;
+}
+.flag-breeze{
+  animation:flagWaveSmall 1.7s ease-in-out infinite;
+}
+.flag-windy{
+  animation:flagWaveMedium 1.1s ease-in-out infinite;
+}
+.flag-storm{
+  animation:flagWaveStrong 0.6s ease-in-out infinite;
+}
+
+@keyframes flagWaveSmall{
+  0%{transform:skewX(0deg) translateX(0);}
+  50%{transform:skewX(-4deg) translateX(7px);}
+  100%{transform:skewX(0deg) translateX(0);}
+}
+@keyframes flagWaveMedium{
+  0%{transform:skewX(0deg) translateX(0);}
+  50%{transform:skewX(-8deg) translateX(14px);}
+  100%{transform:skewX(0deg) translateX(0);}
+}
+@keyframes flagWaveStrong{
+  0%{transform:skewX(0deg) translateX(0);}
+  50%{transform:skewX(-14deg) translateX(22px);}
+  100%{transform:skewX(0deg) translateX(0);}
+}
+
+/* box grafico vento */
+#windChartBox{
+  background:rgba(0,0,0,0.35);
+  border-radius:16px;
+  padding:12px 10px 18px;
+  box-shadow:0 0 10px rgba(0,0,0,0.6);
+  min-width:260px;
+  max-width:480px;
+}
+#windChart{
+  width:100%;
+  height:180px;
+}
+
+/* testo sotto bandiera */
+#windLegend{
+  font-size:0.93em;
+  color:#a9c9ff;
+}
+
+/* FOOTER */
+footer{
+  font-size:0.9em;
+  color:#a9c9ff;
+  background:#001b3a;
+  padding:10px;
+}
+
+@media (max-width:768px){
+  #gauges{gap:18px;}
+  .gaugeBox{width:45%;height:220px;padding:6px;}
+}
+@media (max-width:480px){
+  #gauges{flex-direction:column;align-items:center;}
+  .gaugeBox{width:85%;height:210px;}
+  #ariaAlert{font-size:1.1em;padding:8px 20px;}
+  #windVisuals{flex-direction:column;align-items:center;}
+}
 </style>
 </head>
 <body>
 
-<header>🌤️ <span class="mainTitle">Langini Meteo – Dashboard V12</span>
-<span class="subTitle">ThingSpeak Edition</span></header>
+<header>🌤️ <span class="mainTitle">Langini Meteo – Dashboard V13</span>
+<span class="subTitle">ThingSpeak + Vento Pro</span></header>
 
 <div id="statusBar">Caricamento dati...</div>
 
@@ -158,7 +276,7 @@ footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
 <div id="ariaAlert">🌿 Aria eccellente</div>
 <div id="sunMoonTimes">☀️ Alba: --:-- • 🌇 Tramonto: --:--</div>
 
-<!-- GAUGES -->
+<!-- GAUGES PRINCIPALI -->
 <div id="gauges">
   <div class="gaugeBox">
     <img src="https://img.icons8.com/fluency/48/barometer.png">
@@ -183,20 +301,69 @@ footer{font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;}
     <div id="g4" style="height:130px"></div>
     <div class="label">Qualità Aria (AQI)</div>
   </div>
-</div>
-<footer>© 2025 Langini Meteo • Dashboard V12 ThingSpeak Edition</footer>
 
+  <!-- NUOVO GAUGE VENTO -->
+  <div class="gaugeBox">
+    <img src="https://img.icons8.com/fluency/48/wind.png">
+    <div id="g5" style="height:130px"></div>
+    <div class="label">Vento (km/h)</div>
+  </div>
+</div>
+
+<!-- SEZIONE VENTO (GRAFICO + BANDIERA) -->
+<section id="windSection">
+  <h2>💨 Vento – Andamento & Intensità</h2>
+  <div id="windVisuals">
+    <div id="flagContainer">
+      <div style="display:flex;align-items:flex-start;">
+        <div id="flagpole"></div>
+        <div id="flag" class="flag-calm"></div>
+      </div>
+      <div id="windLegend">La bandiera sventola in base alla velocità del vento.</div>
+    </div>
+
+    <div id="windChartBox">
+      <h3>Andamento vento (ultime letture)</h3>
+      <div id="windChart"></div>
+    </div>
+  </div>
+</section>
+
+<footer>© 2025 Langini Meteo • Dashboard V13 ThingSpeak + Vento Pro</footer>
 <script>
-/* ========= COORDINATE PER ALBA/TRAMONTO ========= */
+/* ========= CONFIG ========= */
 const LAT=45.77, LON=8.88;
+const CHANNEL_ID = 3149218;
 
 /* ========= GAUGES ========= */
 const g1=new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
 const g2=new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
 const g3=new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
 const g4=new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
+const g5=new JustGage({
+  id:"g5",
+  value:0,
+  min:0,
+  max:120,
+  decimals:1,
+  pointer:true,
+  gaugeWidthScale:0.8,
+  customSectors:[
+    { color:"#00e676", lo:0,  hi:15 },
+    { color:"#29b6f6", lo:15, hi:30 },
+    { color:"#ffeb3b", lo:30, hi:55 },
+    { color:"#ff9800", lo:55, hi:75 },
+    { color:"#e53935", lo:75, hi:120 }
+  ],
+  counter:true
+});
 
-/* ========= ANIMAZIONI DEL CIELO ========= */
+/* ========= VARIABILI GRAFICO VENTO ========= */
+let windPaper = null;
+let windLine  = null;
+let windAxis  = null;
+
+/* ========= ANIMAZIONI CIELO ========= */
 function creaNuvola(){
   const sky=document.getElementById("sky");
   const c=document.createElement("div");
@@ -322,19 +489,80 @@ function initCielo(){
 }
 document.addEventListener("DOMContentLoaded",initCielo);
 
+/* ========= DISEGNO GRAFICO VENTO (RAPHAEL) ========= */
+function disegnaGraficoVento(valori){
+  const el = document.getElementById("windChart");
+  if(!el) return;
 
-/* ===================================================
-   🔥 AGGIORNAMENTO DATI – THINGSPEAK FIELDS 1..6
-   =================================================== */
+  const w = el.clientWidth || 320;
+  const h = el.clientHeight || 180;
 
+  if(!windPaper){
+    windPaper = Raphael("windChart", w, h);
+  }else{
+    windPaper.setSize(w,h);
+    windPaper.clear();
+  }
+
+  const v = valori.filter(x => !isNaN(x));
+  if(!v.length) return;
+
+  const maxV = Math.max(...v, 5);
+  const minV = 0;
+  const span = maxV - minV || 1;
+
+  const leftPad = 30;
+  const rightPad = 10;
+  const topPad = 10;
+  const bottomPad = 20;
+
+  const usableW = w - leftPad - rightPad;
+  const usableH = h - topPad - bottomPad;
+
+  const n = valori.length;
+  let path = "";
+
+  for(let i=0;i<n;i++){
+    const val = isNaN(valori[i]) ? minV : valori[i];
+    const x = leftPad + (i/(n-1 || 1))*usableW;
+    const y = topPad + (1 - (val-minV)/span)*usableH;
+
+    if(i===0) path += `M${x},${y}`;
+    else path += `L${x},${y}`;
+  }
+
+  // griglia base
+  const axisColor = "#88c";
+  windPaper.path(`M${leftPad},${topPad}L${leftPad},${h-bottomPad}`).attr({stroke:axisColor,"stroke-width":1});
+  windPaper.path(`M${leftPad},${h-bottomPad}L${w-rightPad},${h-bottomPad}`).attr({stroke:axisColor,"stroke-width":1});
+  // label max e min
+  windPaper.text(10, topPad+5, `${maxV.toFixed(1)} km/h`).attr({"font-size":10,fill:"#a9c9ff","text-anchor":"start"});
+  windPaper.text(10, h-bottomPad, "0 km/h").attr({"font-size":10,fill:"#a9c9ff","text-anchor":"start"});
+
+  // linea vento
+  windPaper.path(path).attr({
+    stroke:"#29b6f6",
+    "stroke-width":3,
+    "stroke-linejoin":"round",
+    "stroke-linecap":"round"
+  });
+
+  // riempimento morbido
+  const lastSeg = path.replace("M","L");
+  windPaper.path(path + `L${leftPad+usableW},${h-bottomPad}L${leftPad},${h-bottomPad}Z`).attr({
+    stroke:"none",
+    fill:"90-#29b6f655-#001b3a00"
+  });
+}
+
+/* ========= AGGIORNAMENTO DATI THINGSPEAK ========= */
 async function aggiorna(){
   try{
-    const r = await fetch("https://api.thingspeak.com/channels/3149218/feeds.json?results=60");
+    const r = await fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=60`);
     const d = await r.json();
 
     if(!d.feeds || !d.feeds.length) return;
 
-    // Array dei record
     const f = d.feeds.map(e => ({
       p : +e.field1,   // pressione
       t : +e.field2,   // temperatura
@@ -343,14 +571,18 @@ async function aggiorna(){
       v : +e.field5,   // vento
       pi: +e.field6    // pioggia (0/1)
     }));
-
-    const u = f.at(-1); // ultimo record
+    const u = f.at(-1);
 
     // Aggiorna gauge
     g1.refresh(u.p);
     g2.refresh(u.t);
     g3.refresh(u.h);
     g4.refresh(u.a);
+    g5.refresh(u.v);
+
+    // Grafico vento con tutti i valori v
+    const serieVento = f.map(x => x.v);
+    disegnaGraficoVento(serieVento);
 
     // Banner AQI
     const alert=document.getElementById("ariaAlert");
@@ -368,11 +600,25 @@ async function aggiorna(){
     alert.style.boxShadow=`0 0 25px ${bg}`;
     alert.style.animation=anim;
 
-    // Barra stato
-    document.getElementById("statusBar").textContent =
-      `✔ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")} 
-       • 💨 ${u.v} km/h 
-       • ☁ ${u.pi ? "Pioggia" : "Asciutto"}`;
+    // Barra stato + colore in base al vento
+    const status = document.getElementById("statusBar");
+    status.textContent =
+      `✔ Aggiornato alle ${new Date().toLocaleTimeString("it-IT")} • 💨 ${u.v.toFixed(1)} km/h • ☁ ${u.pi ? "Pioggia" : "Asciutto"}`;
+
+    let windColor = "#a9c9ff";
+    if(u.v > 15) windColor = "#29b6f6";
+    if(u.v > 30) windColor = "#ffeb3b";
+    if(u.v > 55) windColor = "#ff9800";
+    if(u.v > 75) windColor = "#e53935";
+    status.style.color = windColor;
+
+    // Bandiera animata in base al vento
+    const flag = document.getElementById("flag");
+    flag.className = ""; // reset
+    if(u.v < 5)       flag.classList.add("flag-calm");
+    else if(u.v < 20) flag.classList.add("flag-breeze");
+    else if(u.v < 50) flag.classList.add("flag-windy");
+    else              flag.classList.add("flag-storm");
 
   }catch(err){
     document.getElementById("statusBar").textContent="⚠ Errore connessione ThingSpeak";
