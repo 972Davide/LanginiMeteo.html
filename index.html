@@ -187,12 +187,15 @@
   .moon.phase-6 .moon-phase-mask { transform:translateX(15%) scaleX(0.5); }
   .moon.phase-7 .moon-phase-mask { transform:translateX(35%) scaleX(0.2); }
 
-  /* ================= CONTENT ================= */
+  /* ================= CONTENT (DATI PIÙ IN BASSO) ================= */
 
   .content {
     max-width:1200px;
     margin:0 auto;
     padding:16px;
+
+    /* 🔥 Sposta i dati molto più in basso */
+    margin-top:20vh;   /* 20% dell’altezza dello schermo */
   }
 
   h1 { text-align:center; margin-bottom:8px; font-size:1.3rem; }
@@ -332,11 +335,9 @@
 /* CONFIG */
 const METEO_CHANNEL = 3149218;
 const WIND_CHANNEL  = 2956240;
-
 const LAT = 45.7525;
 const LON = 8.8975;
 
-/* UTILITY */
 function clamp(v,a,b){ return Math.min(b,Math.max(a,v)); }
 function toNum(v){ const n=parseFloat(v); return isNaN(n)?0:n; }
 
@@ -345,22 +346,22 @@ function interpolateColor(c1,c2,t){
   const b=parseInt(c2.slice(1),16);
   const ar=(a>>16)&255, ag=(a>>8)&255, ab=a&255;
   const br=(b>>16)&255, bg=(b>>8)&255, bb=b&255;
-  const r = Math.round(ar + (br-ar)*t);
-  const g = Math.round(ag + (bg-ag)*t);
-  const b2= Math.round(ab + (bb-ab)*t);
+  const r=Math.round(ar + (br-ar)*t);
+  const g=Math.round(ag + (bg-ag)*t);
+  const b2=Math.round(ab + (bb-ab)*t);
   return `rgb(${r},${g},${b2})`;
 }
 
 /* FASE LUNARE */
 function moonPhaseIndex(date){
-  const lp = 2551443;
-  const new_moon = Date.UTC(1970,0,7,20,35,0);
-  const now = date.getTime();
-  const phase = ((now-new_moon)/1000)%lp;
+  const lp=2551443;
+  const new_moon=Date.UTC(1970,0,7,20,35,0);
+  const now=date.getTime();
+  const phase=((now-new_moon)/1000)%lp;
   return Math.floor((phase/lp)*8+0.5)&7;
 }
 
-/* UPDATE CIELO */
+/* CIELO */
 function updateSky(){
   const now=new Date();
   const t=SunCalc.getTimes(now,LAT,LON);
@@ -371,46 +372,46 @@ function updateSky(){
   const SM=document.getElementById("sunMoon");
   const MASK=document.getElementById("moonMask");
 
-  const isDay = now>=t.sunrise && now<=t.sunset;
+  const isDay=now>=t.sunrise && now<=t.sunset;
 
-  /* Sole/Luna */
   if(isDay){
     SM.classList.add("sun");
     SM.classList.remove("moon");
     MASK.style.display="none";
-  } else {
+  }else{
     SM.classList.remove("sun");
     SM.classList.add("moon");
     MASK.style.display="block";
 
-    const idx = moonPhaseIndex(now);
+    const idx=moonPhaseIndex(now);
     for(let i=0;i<8;i++) SM.classList.remove("phase-"+i);
     SM.classList.add("phase-"+idx);
   }
 
   /* Posizione Sole/Luna */
-  const start = isDay ? t.sunrise : t.sunset;
-  const end   = isDay ? t.sunset : new Date(t.sunrise.getTime()+86400000);
+  const start=isDay ? t.sunrise : t.sunset;
+  const end  =isDay ? t.sunset : new Date(t.sunrise.getTime()+86400000);
   let p=(now-start)/(end-start);
   p=clamp(p,0,1);
 
-  const W = window.innerWidth;
-  const H = window.innerHeight*0.35;
+  const W=window.innerWidth;
+  const H=window.innerHeight*0.35;
 
   SM.style.left=`${p*(W+160)-80}px`;
   SM.style.top =`${H - Math.sin(p*Math.PI)*H}px`;
 
-  /* Colore cielo → altitudine */
+  /* Colore cielo */
   const DAY="#1f2b3a";
   const NIGHT="#000814";
 
   let blend;
   const ALT_N=-12, ALT_D=45;
+
   if(alt<=ALT_N) blend=0;
   else if(alt>=ALT_D) blend=1;
   else blend=(alt-ALT_N)/(ALT_D-ALT_N);
 
-  SKY.style.background = interpolateColor(NIGHT,DAY,blend);
+  SKY.style.background=interpolateColor(NIGHT,DAY,blend);
 
   if(alt<=0) SKY.classList.add("night");
   else SKY.classList.remove("night");
@@ -443,31 +444,28 @@ updateWindMaxDisp();
 
 async function updateDashboard(){
   try{
-    const meteo = await fetch(`https://api.thingspeak.com/channels/${METEO_CHANNEL}/feeds.json?results=60`)
+    const meteo=await fetch(`https://api.thingspeak.com/channels/${METEO_CHANNEL}/feeds.json?results=60`)
       .then(r=>r.json());
-    const wind  = await fetch(`https://api.thingspeak.com/channels/${WIND_CHANNEL}/feeds.json?results=60`)
+    const wind =await fetch(`https://api.thingspeak.com/channels/${WIND_CHANNEL}/feeds.json?results=60`)
       .then(r=>r.json());
 
-    const m = meteo.feeds?.at(-1)||{};
-    const w = wind.feeds?.at(-1)||{};
+    const m=meteo.feeds?.at(-1)||{};
+    const w=wind.feeds?.at(-1)||{};
 
-    const pressure = toNum(m.field1);
-    const temp     = toNum(m.field2);
-    const hum      = toNum(m.field3);
-    const aqi      = toNum(m.field4);
+    const pressure=toNum(m.field1);
+    const temp    =toNum(m.field2);
+    const hum     =toNum(m.field3);
+    const aqi     =toNum(m.field4);
 
-    document.getElementById("pressureValue").textContent = pressure.toFixed(0);
-    document.getElementById("tempValue").textContent     = temp.toFixed(0);
-    document.getElementById("humValue").textContent      = hum.toFixed(0);
-    document.getElementById("aqValue").textContent       = aqi.toFixed(0);
+    document.getElementById("pressureValue").textContent=pressure.toFixed(0);
+    document.getElementById("tempValue").textContent=temp.toFixed(0);
+    document.getElementById("humValue").textContent=hum.toFixed(0);
+    document.getElementById("aqValue").textContent=aqi.toFixed(0);
 
-    document.getElementById("gaugePressure").style.width =
-      clamp((pressure-950)/100*100,0,100)+"%";
-    document.getElementById("gaugeTemp").style.width     =
-      clamp((temp+10)/60*100,0,100)+"%";
-    document.getElementById("gaugeHum").style.width      = hum+"%";
-    document.getElementById("gaugeAQ").style.width       =
-      clamp(aqi/500*100,0,100)+"%";
+    document.getElementById("gaugePressure").style.width=clamp((pressure-950)/100*100,0,100)+"%";
+    document.getElementById("gaugeTemp").style.width    =clamp((temp+10)/60*100,0,100)+"%";
+    document.getElementById("gaugeHum").style.width     =hum+"%";
+    document.getElementById("gaugeAQ").style.width      =clamp(aqi/500*100,0,100)+"%";
 
     /* Pioggia */
     const rain=toNum(w.field2);
@@ -488,18 +486,20 @@ async function updateDashboard(){
     if(windVal>windMax){
       windMax=windVal;
       const now=new Date();
-      windMaxTime =
+      windMaxTime=
         now.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})+
         " - "+now.toLocaleDateString("it-IT");
+
       localStorage.setItem("windMax",windMax.toFixed(1));
       localStorage.setItem("windMaxTime",windMaxTime);
     }
+
     updateWindMaxDisp();
 
     document.getElementById("statusText").textContent=
       "Aggiornato: "+new Date(w.created_at||m.created_at).toLocaleTimeString("it-IT");
 
-    /* Effetti meteo */
+    /* Effetti */
     const aur=document.getElementById("aurora");
     const fog=document.getElementById("fog");
     const lightning=document.getElementById("lightning");
