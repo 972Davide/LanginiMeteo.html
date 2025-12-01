@@ -2,10 +2,10 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Langini Meteo – Dashboard V8.0</title>
+  <title>Langini Meteo – Dashboard V8.1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- SunCalc per alba/tramonto -->
+  <!-- SunCalc per alba/tramonto + fasi lunari -->
   <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
   <style>
@@ -61,10 +61,163 @@
       background-size: 3px 3px;
       mix-blend-mode: screen;
       z-index: 1;
+      animation: twinkle 6s infinite alternate;
     }
 
     .sky.night .stars {
       opacity: 0.35;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.15; }
+      50% { opacity: 0.35; }
+      100% { opacity: 0.25; }
+    }
+
+    /* NUVOLE */
+    .cloud-layer {
+      position: absolute;
+      top: 10%;
+      left: -50%;
+      width: 200%;
+      height: 40%;
+      background-repeat: repeat-x;
+      background-position: 0 0;
+      opacity: 0.25;
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+
+    .cloud-layer.front {
+      top: 15%;
+      height: 35%;
+      opacity: 0.35;
+      animation: cloudsFront 60s linear infinite;
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.9) 0, transparent 40%),
+        radial-gradient(circle at 35% 40%, rgba(255,255,255,0.8) 0, transparent 40%),
+        radial-gradient(circle at 70% 30%, rgba(255,255,255,0.85) 0, transparent 40%);
+    }
+
+    .cloud-layer.back {
+      top: 5%;
+      height: 30%;
+      opacity: 0.18;
+      animation: cloudsBack 120s linear infinite;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.6) 0, transparent 45%),
+        radial-gradient(circle at 60% 20%, rgba(255,255,255,0.5) 0, transparent 45%);
+    }
+
+    .sky.night .cloud-layer {
+      opacity: 0.12;
+    }
+
+    @keyframes cloudsFront {
+      from { transform: translateX(0); }
+      to { transform: translateX(-25%); }
+    }
+
+    @keyframes cloudsBack {
+      from { transform: translateX(0); }
+      to { transform: translateX(-15%); }
+    }
+
+    /* AURORA */
+    .aurora {
+      position: absolute;
+      top: 5%;
+      left: 0;
+      width: 100%;
+      height: 40%;
+      background: linear-gradient(180deg,
+        rgba(120,255,200,0.4),
+        rgba(80,120,255,0.0)
+      );
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: screen;
+      filter: blur(6px);
+      transition: opacity 1.2s ease;
+      animation: auroraWave 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes auroraWave {
+      0% { transform: translateX(-5%) translateY(0); }
+      50% { transform: translateX(5%) translateY(5px); }
+      100% { transform: translateX(0%) translateY(-5px); }
+    }
+
+    /* NEBBIA */
+    .fog {
+      position: absolute;
+      bottom: 0;
+      left: -20%;
+      width: 140%;
+      height: 30%;
+      background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.18), transparent 60%),
+                  radial-gradient(circle at 60% 90%, rgba(255,255,255,0.2), transparent 60%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+      filter: blur(4px);
+      transition: opacity 1s ease;
+      animation: fogDrift 40s linear infinite;
+    }
+
+    @keyframes fogDrift {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(10%); }
+    }
+
+    /* FULMINE */
+    .lightning {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 0%, rgba(255,255,255,0.85), transparent 45%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 4;
+      mix-blend-mode: screen;
+      transition: opacity 0.15s ease;
+    }
+
+    .lightning.flash {
+      opacity: 0.8;
+    }
+
+    /* STELLA CADENTE */
+    .shooting-star {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 120px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.9), transparent);
+      opacity: 0;
+      transform: rotate(25deg);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .shooting-star.active {
+      animation: shooting 1.2s ease-out forwards;
+    }
+
+    @keyframes shooting {
+      0% {
+        opacity: 0;
+        transform: translate(-10vw, -10vh) rotate(25deg);
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(40vw, 40vh) rotate(25deg);
+      }
     }
 
     /* SOLE / LUNA ANIMATI */
@@ -75,18 +228,72 @@
       width: 70px;
       height: 70px;
       border-radius: 50%;
-      z-index: 2;
-      transition: left 1.5s linear, top 1.5s linear;
+      z-index: 3;
+      transition: left 1.5s linear, top 1.5s linear, box-shadow 1s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
     }
 
     .sun {
       background: radial-gradient(circle at 35% 35%, #fff8b0, #ffcc00, #ff9800);
-      box-shadow: 0 0 25px 10px rgba(255,180,0,0.7);
+      box-shadow: 0 0 25px 12px rgba(255,180,0,0.8);
+      animation: sunPulse 5s ease-in-out infinite;
+    }
+
+    @keyframes sunPulse {
+      0% { box-shadow: 0 0 20px 8px rgba(255,180,0,0.6); }
+      50% { box-shadow: 0 0 32px 14px rgba(255,204,0,0.9); }
+      100% { box-shadow: 0 0 20px 8px rgba(255,180,0,0.6); }
     }
 
     .moon {
       background: radial-gradient(circle at 40% 40%, #ffffff, #cfd8dc);
-      box-shadow: 0 0 20px 8px rgba(200,200,255,0.4);
+      box-shadow: 0 0 18px 8px rgba(200,200,255,0.5);
+      animation: moonGlow 6s ease-in-out infinite;
+    }
+
+    @keyframes moonGlow {
+      0% { box-shadow: 0 0 14px 6px rgba(200,200,255,0.4); }
+      50% { box-shadow: 0 0 22px 10px rgba(220,220,255,0.7); }
+      100% { box-shadow: 0 0 14px 6px rgba(200,200,255,0.4); }
+    }
+
+    /* FASE LUNARE: overlay scuro che cambia forma */
+    .moon-phase-mask {
+      position:absolute;
+      inset:0;
+      border-radius:50%;
+      background:#020520;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+      transform-origin:center center;
+    }
+
+    /* 8 fasi (molto semplificate ma belle) */
+    .moon.phase-0 .moon-phase-mask { /* nuova */
+      transform: scaleX(1);
+    }
+    .moon.phase-1 .moon-phase-mask { /* crescente sottile */
+      transform: translateX(-35%) scaleX(0.2);
+    }
+    .moon.phase-2 .moon-phase-mask { /* primo quarto */
+      transform: translateX(-15%) scaleX(0.5);
+    }
+    .moon.phase-3 .moon-phase-mask { /* gibbosa crescente */
+      transform: translateX(-8%) scaleX(0.8);
+    }
+    .moon.phase-4 .moon-phase-mask { /* piena (quasi niente ombra) */
+      transform: scaleX(0.02);
+    }
+    .moon.phase-5 .moon-phase-mask { /* gibbosa calante */
+      transform: translateX(8%) scaleX(0.8);
+    }
+    .moon.phase-6 .moon-phase-mask { /* ultimo quarto */
+      transform: translateX(15%) scaleX(0.5);
+    }
+    .moon.phase-7 .moon-phase-mask { /* calante sottile */
+      transform: translateX(35%) scaleX(0.2);
     }
 
     .content {
@@ -94,7 +301,7 @@
       margin: 0 auto;
       padding: 16px;
       position: relative;
-      z-index: 3;
+      z-index: 5;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -348,14 +555,27 @@
 </head>
 <body>
   <div class="sky" id="sky">
+    <!-- Layer animazioni cielo -->
+    <div class="cloud-layer back" id="cloudBack"></div>
+    <div class="cloud-layer front" id="cloudFront"></div>
+    <div class="aurora" id="aurora"></div>
+    <div class="fog" id="fog"></div>
+    <div class="lightning" id="lightning"></div>
+    <div class="shooting-star" id="shootingStar"></div>
+
     <!-- Sole/Luna animati -->
-    <div class="sunmoon" id="sunMoon"></div>
+    <div class="sunmoon" id="sunMoon">
+      <div class="moon-phase-mask" id="moonMask"></div>
+    </div>
 
     <div class="stars"></div>
+
     <div class="content">
       <header>
-        <h1>🌟 Langini Meteo – Dashboard <span class="version">V8.0</span></h1>
-        <div class="subtitle">Meteo + Vento + Pioggia (storico) + Dati immediati + Cielo dinamico</div>
+        <h1>🌟 Langini Meteo – Dashboard <span class="version">V8.1</span></h1>
+        <div class="subtitle">
+          Meteo + Vento + Pioggia (storico) + Dati immediati + Sky PRO + fasi lunari
+        </div>
 
         <!-- Pulsante dati in tempo reale -->
         <a href="http://192.168.1.20" class="btn-realtime">
@@ -530,6 +750,20 @@
     }
 
     // ================================
+    //  FASE LUNARE
+    // ================================
+    function getMoonPhaseIndex(date) {
+      // Algoritmo semplice (0..7)
+      const lp = 2551443; // lunghezza ciclo in secondi
+      const new_moon = Date.UTC(1970, 0, 7, 20, 35, 0); // riferimento
+      const now = date.getTime();
+      const phase = ((now - new_moon) / 1000) % lp;
+      const phaseFrac = phase / lp; // 0..1
+      const idx = Math.floor(phaseFrac * 8 + 0.5) & 7;
+      return idx; // 0..7
+    }
+
+    // ================================
     //  ALBA / TRAMONTO + CIELO
     // ================================
     function updateSunTimes() {
@@ -552,17 +786,15 @@
         sunTimesEl.innerHTML =
           `<span>🌅 <strong>Alba:</strong> ${sunriseStr}</span>` +
           `<span>🌇 <strong>Tramonto:</strong> ${sunsetStr}</span>`;
-
-        // Cielo giorno/notte gestito da updateSunMoonPosition
       } catch (e) {
         console.error("Errore SunCalc:", e);
       }
     }
 
     // ================================
-    //  SOLE / LUNA IN MOVIMENTO
+    //  SOLE / LUNA IN MOVIMENTO + LAYERS CIELO
     // ================================
-    function updateSunMoonPosition() {
+    function updateSunMoonPositionAndSky() {
       try {
         const now = new Date();
         const times = SunCalc.getTimes(now, LAT, LON);
@@ -571,6 +803,7 @@
 
         const sky = document.getElementById("sky");
         const sunMoon = document.getElementById("sunMoon");
+        const moonMask = document.getElementById("moonMask");
 
         const isDay = now >= sunrise && now <= sunset;
 
@@ -578,18 +811,26 @@
         if (isDay) {
           sunMoon.classList.add("sun");
           sunMoon.classList.remove("moon");
+          moonMask.style.display = "none";
         } else {
           sunMoon.classList.add("moon");
           sunMoon.classList.remove("sun");
+          moonMask.style.display = "block";
+
+          // Fase lunare (classe phase-0..7)
+          const idx = getMoonPhaseIndex(now);
+          for (let i = 0; i < 8; i++) {
+            sunMoon.classList.remove("phase-" + i);
+          }
+          sunMoon.classList.add("phase-" + idx);
         }
 
-        // Calcolo delta tempo
+        // Calcolo delta tempo per la traiettoria
         let start = isDay ? sunrise : sunset;
         let end   = isDay ? sunset : new Date(sunrise.getTime() + 24*60*60*1000);
 
         let total = end - start;
         let current = now - start;
-
         let pct = total > 0 ? current / total : 0.5;
         if (pct < 0) pct = 0;
         if (pct > 1) pct = 1;
@@ -598,7 +839,7 @@
         const screenWidth = window.innerWidth;
         const x = pct * (screenWidth + 160) - 80;
 
-        // Curva verticale ad arco
+        // Curva verticale
         const maxHeight = window.innerHeight * 0.35;
         const y = maxHeight - Math.sin(pct * Math.PI) * maxHeight;
 
@@ -611,6 +852,7 @@
         } else {
           sky.classList.add("night");
         }
+
       } catch (e) {
         console.error("Errore updateSunMoonPosition:", e);
       }
@@ -731,6 +973,36 @@
         qBanner.classList.add(qInfo.cls);
         qBanner.querySelector("#qualityLabel").textContent = qInfo.label;
 
+        // ===== ANIMAZIONI METEO BASATE SU HUM / AQI / RAIN =====
+        const aurora = document.getElementById("aurora");
+        const fog = document.getElementById("fog");
+        const lightning = document.getElementById("lightning");
+
+        const now = new Date();
+        const hour = now.getHours();
+
+        // Aurora: notte, aria buona, umidità non altissima
+        const times = SunCalc.getTimes(now, LAT, LON);
+        const isNight = now < times.sunrise || now > times.sunset;
+        if (isNight && aqi < 80 && hum < 85) {
+          aurora.style.opacity = 0.5;
+        } else {
+          aurora.style.opacity = 0;
+        }
+
+        // Nebbia: mattino presto + umidità alta
+        if (hour < 9 && hum > 85) {
+          fog.style.opacity = 0.6;
+        } else {
+          fog.style.opacity = 0;
+        }
+
+        // Fulmine: se pioggia e vento sostenuto, flash casuale
+        if (rainFlag >= 1 && wind > 20 && Math.random() < 0.2) {
+          lightning.classList.add("flash");
+          setTimeout(() => lightning.classList.remove("flash"), 150);
+        }
+
       } catch (err) {
         console.error("Errore aggiornamento dashboard:", err);
         document.getElementById("statusText").textContent =
@@ -738,18 +1010,33 @@
       }
     }
 
+    // STELLA CADENTE RANDOM
+    function maybeShootStar() {
+      const shootingStar = document.getElementById("shootingStar");
+      // solo di notte e con piccola probabilità
+      const now = new Date();
+      const times = SunCalc.getTimes(now, LAT, LON);
+      const isNight = now < times.sunrise || now > times.sunset;
+      if (!isNight) return;
+      if (Math.random() < 0.4) {
+        shootingStar.classList.add("active");
+        setTimeout(() => shootingStar.classList.remove("active"), 1300);
+      }
+    }
+
     // ================================
     //  AVVIO
     // ================================
     updateSunTimes();
-    updateSunMoonPosition();
+    updateSunMoonPositionAndSky();
     updateDashboard();
 
     setInterval(updateDashboard, 20000);        // dati ogni 20s
     setInterval(updateSunTimes, 5 * 60 * 1000); // alba/tramonto ogni 5 min
-    setInterval(updateSunMoonPosition, 10000);  // posizione sole/luna ogni 10s
+    setInterval(updateSunMoonPositionAndSky, 10000);  // posizione sole/luna ogni 10s
+    setInterval(maybeShootStar, 15000); // stella cadente ogni tanto
 
-    window.addEventListener("resize", updateSunMoonPosition);
+    window.addEventListener("resize", updateSunMoonPositionAndSky);
   </script>
 </body>
 </html>
