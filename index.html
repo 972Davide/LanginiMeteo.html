@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8" />
-<title>Langini Meteo – Dashboard V8.3 CLEAN SKY</title>
+<title>Langini Meteo – Dashboard V8.4 CLEAN SKY</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
@@ -29,13 +29,13 @@
   .sky {
     position:relative;
     flex:1;
-    background:#1f2b3a;    /* GIORNO */
+    background:#1f2b3a;           /* GIORNO */
     transition: background 1.2s linear;
     overflow:hidden;
   }
 
   .sky.night {
-    background:#000814;    /* NOTTE */
+    background:#000814;           /* NOTTE */
   }
 
   /* ================= NUVOLE (DISATTIVATE) ================= */
@@ -44,7 +44,7 @@
     position:absolute;
     inset:0;
     pointer-events:none;
-    opacity:0 !important;   /* INVISIBILI */
+    opacity:0 !important;         /* INVISIBILI */
   }
 
   /* ================= AURORA ================= */
@@ -136,7 +136,7 @@
 
   .sunmoon {
     position:absolute;
-    top:20%;
+    top:10%;
     left:-80px;
     width:70px;
     height:70px;
@@ -194,8 +194,8 @@
     margin:0 auto;
     padding:16px;
 
-    /* 🔥 Sposta i dati molto più in basso */
-    margin-top:20vh;   /* 20% dell’altezza dello schermo */
+    /* B≈ come da tua immagine */
+    margin-top:35vh;
   }
 
   h1 { text-align:center; margin-bottom:8px; font-size:1.3rem; }
@@ -216,6 +216,7 @@
     font-weight:700;
     text-decoration:none;
     box-shadow:0 0 12px rgba(255,149,0,0.7);
+    text-align:center;
   }
 
   .status-bar { text-align:center; margin-bottom:12px; }
@@ -279,7 +280,7 @@
 
   <!-- CONTENT -->
   <div class="content">
-    <h1>🌟 Langini Meteo – Dashboard V8.3 CLEAN SKY</h1>
+    <h1>🌟 Langini Meteo – Dashboard V8.4 CLEAN SKY</h1>
     <div class="subtitle">Cielo uniforme + transizione realistica + fasi lunari + meteo completo</div>
 
     <a href="http://192.168.1.20" class="btn-realtime">⚡ Dati immediati</a>
@@ -333,8 +334,9 @@
 
 <script>
 /* CONFIG */
-const METEO_CHANNEL = 3149218;
-const WIND_CHANNEL  = 2956240;
+const METEO_CHANNEL = 3149218;   // pressione, temp, umidità, MQ135
+const WIND_CHANNEL  = 2956240;   // vento, pioggia
+
 const LAT = 45.7525;
 const LON = 8.8975;
 
@@ -361,10 +363,10 @@ function moonPhaseIndex(date){
   return Math.floor((phase/lp)*8+0.5)&7;
 }
 
-/* CIELO */
+/* CIELO: sole/luna che si muovono con alba/tramonto */
 function updateSky(){
   const now=new Date();
-  const t=SunCalc.getTimes(now,LAT,LON);
+  const times=SunCalc.getTimes(now,LAT,LON);
   const pos=SunCalc.getPosition(now,LAT,LON);
   const alt=pos.altitude*180/Math.PI;
 
@@ -372,7 +374,7 @@ function updateSky(){
   const SM=document.getElementById("sunMoon");
   const MASK=document.getElementById("moonMask");
 
-  const isDay=now>=t.sunrise && now<=t.sunset;
+  const isDay = now>=times.sunrise && now<=times.sunset;
 
   if(isDay){
     SM.classList.add("sun");
@@ -388,21 +390,25 @@ function updateSky(){
     SM.classList.add("phase-"+idx);
   }
 
-  /* Posizione Sole/Luna */
-  const start=isDay ? t.sunrise : t.sunset;
-  const end  =isDay ? t.sunset : new Date(t.sunrise.getTime()+86400000);
+  // percorso orizzontale da sinistra a destra
+  const start = isDay ? times.sunrise : times.sunset;
+  const end   = isDay ? times.sunset  : new Date(times.sunrise.getTime()+86400000);
   let p=(now-start)/(end-start);
   p=clamp(p,0,1);
 
-  const W=window.innerWidth;
-  const H=window.innerHeight*0.35;
+  const W = window.innerWidth;
 
-  SM.style.left=`${p*(W+160)-80}px`;
-  SM.style.top =`${H - Math.sin(p*Math.PI)*H}px`;
+  // arco verticale: tra ~5vh e ~25vh
+  const baseTop = window.innerHeight * 0.05;
+  const amp     = window.innerHeight * 0.20;
+  const y       = baseTop + (1 - Math.sin(p*Math.PI)) * amp;
 
-  /* Colore cielo */
-  const DAY="#1f2b3a";
-  const NIGHT="#000814";
+  SM.style.left = `${p*(W+160)-80}px`;
+  SM.style.top  = `${y}px`;
+
+  // colore cielo in base all'altitudine
+  const DAY   = "#1f2b3a";
+  const NIGHT = "#000814";
 
   let blend;
   const ALT_N=-12, ALT_D=45;
@@ -411,7 +417,7 @@ function updateSky(){
   else if(alt>=ALT_D) blend=1;
   else blend=(alt-ALT_N)/(ALT_D-ALT_N);
 
-  SKY.style.background=interpolateColor(NIGHT,DAY,blend);
+  SKY.style.background = interpolateColor(NIGHT,DAY,blend);
 
   if(alt<=0) SKY.classList.add("night");
   else SKY.classList.remove("night");
@@ -420,9 +426,9 @@ function updateSky(){
 /* STELLA CADENTE */
 function maybeStar(){
   const now=new Date();
-  const t=SunCalc.getTimes(now,LAT,LON);
-  const night=now<t.sunrise || now>t.sunset;
-  if(!night) return;
+  const hour=now.getHours();
+  const isNight = hour < 6 || hour > 20;
+  if(!isNight) return;
   if(Math.random()<0.25){
     const s=document.getElementById("shootingStar");
     s.classList.add("active");
@@ -435,37 +441,39 @@ let windMax=parseFloat(localStorage.getItem("windMax")||"0");
 let windMaxTime=localStorage.getItem("windMaxTime")||"--";
 
 function updateWindMaxDisp(){
-  document.getElementById("windMaxValue").textContent=
-    windMax>0?windMax.toFixed(1)+" km/h":"--";
-  document.getElementById("windMaxTime").textContent=windMaxTime;
+  document.getElementById("windMaxValue").textContent =
+    windMax>0 ? windMax.toFixed(1)+" km/h" : "--";
+  document.getElementById("windMaxTime").textContent = windMaxTime;
 }
-
 updateWindMaxDisp();
 
 async function updateDashboard(){
   try{
-    const meteo=await fetch(`https://api.thingspeak.com/channels/${METEO_CHANNEL}/feeds.json?results=60`)
+    const meteo = await fetch(`https://api.thingspeak.com/channels/${METEO_CHANNEL}/feeds.json?results=60`)
       .then(r=>r.json());
-    const wind =await fetch(`https://api.thingspeak.com/channels/${WIND_CHANNEL}/feeds.json?results=60`)
+    const wind  = await fetch(`https://api.thingspeak.com/channels/${WIND_CHANNEL}/feeds.json?results=60`)
       .then(r=>r.json());
 
-    const m=meteo.feeds?.at(-1)||{};
-    const w=wind.feeds?.at(-1)||{};
+    const m = meteo.feeds?.at(-1) || {};
+    const w = wind.feeds?.at(-1)  || {};
 
-    const pressure=toNum(m.field1);
-    const temp    =toNum(m.field2);
-    const hum     =toNum(m.field3);
-    const aqi     =toNum(m.field4);
+    const pressure = toNum(m.field1);
+    const temp     = toNum(m.field2);
+    const hum      = toNum(m.field3);
+    const aqi      = toNum(m.field4);
 
-    document.getElementById("pressureValue").textContent=pressure.toFixed(0);
-    document.getElementById("tempValue").textContent=temp.toFixed(0);
-    document.getElementById("humValue").textContent=hum.toFixed(0);
-    document.getElementById("aqValue").textContent=aqi.toFixed(0);
+    document.getElementById("pressureValue").textContent = pressure.toFixed(0);
+    document.getElementById("tempValue").textContent     = temp.toFixed(0);
+    document.getElementById("humValue").textContent      = hum.toFixed(0);
+    document.getElementById("aqValue").textContent       = aqi.toFixed(0);
 
-    document.getElementById("gaugePressure").style.width=clamp((pressure-950)/100*100,0,100)+"%";
-    document.getElementById("gaugeTemp").style.width    =clamp((temp+10)/60*100,0,100)+"%";
-    document.getElementById("gaugeHum").style.width     =hum+"%";
-    document.getElementById("gaugeAQ").style.width      =clamp(aqi/500*100,0,100)+"%";
+    document.getElementById("gaugePressure").style.width =
+      clamp((pressure-950)/100*100,0,100)+"%";
+    document.getElementById("gaugeTemp").style.width     =
+      clamp((temp+10)/60*100,0,100)+"%";
+    document.getElementById("gaugeHum").style.width      = hum+"%";
+    document.getElementById("gaugeAQ").style.width       =
+      clamp(aqi/500*100,0,100)+"%";
 
     /* Pioggia */
     const rain=toNum(w.field2);
@@ -486,31 +494,26 @@ async function updateDashboard(){
     if(windVal>windMax){
       windMax=windVal;
       const now=new Date();
-      windMaxTime=
+      windMaxTime =
         now.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})+
         " - "+now.toLocaleDateString("it-IT");
-
       localStorage.setItem("windMax",windMax.toFixed(1));
       localStorage.setItem("windMaxTime",windMaxTime);
     }
-
     updateWindMaxDisp();
 
-    document.getElementById("statusText").textContent=
-      "Aggiornato: "+new Date(w.created_at||m.created_at).toLocaleTimeString("it-IT");
+    document.getElementById("statusText").textContent =
+      "Aggiornato: "+new Date(w.created_at || m.created_at).toLocaleTimeString("it-IT");
 
-    /* Effetti */
+    /* Effetti meteo leggeri */
     const aur=document.getElementById("aurora");
     const fog=document.getElementById("fog");
     const lightning=document.getElementById("lightning");
-
     const hour=(new Date()).getHours();
 
-    if((now<t.sunrise || now>t.sunset) && aqi<80) aur.style.opacity=0.45;
-    else aur.style.opacity=0;
-
-    if(hour<9 && hum>85) fog.style.opacity=0.55;
-    else fog.style.opacity=0;
+    const isNight = hour < 6 || hour > 20;
+    aur.style.opacity = (isNight && aqi<80) ? 0.45 : 0;
+    fog.style.opacity = (hour < 9 && hum>85) ? 0.55 : 0;
 
     if(rain>=1 && windVal>20 && Math.random()<0.15){
       lightning.classList.add("flash");
@@ -518,7 +521,7 @@ async function updateDashboard(){
     }
 
   }catch(e){
-    console.log("Errore:",e);
+    console.log("Errore updateDashboard:",e);
   }
 }
 
