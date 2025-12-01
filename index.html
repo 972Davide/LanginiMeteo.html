@@ -51,28 +51,7 @@
       background: #000814;   /* colore notte base */
     }
 
-    .stars {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.8s ease;
-      background-image: radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px);
-      background-size: 3px 3px;
-      mix-blend-mode: screen;
-      z-index: 1;
-      animation: twinkle 6s infinite alternate;
-    }
 
-    .sky.night .stars {
-      opacity: 0.35;
-    }
-
-    @keyframes twinkle {
-      0% { opacity: 0.15; }
-      50% { opacity: 0.35; }
-      100% { opacity: 0.25; }
-    }
 
     /* NUVOLE */
     .cloud-layer {
@@ -567,8 +546,6 @@
     <div class="sunmoon" id="sunMoon">
       <div class="moon-phase-mask" id="moonMask"></div>
     </div>
-
-    <div class="stars"></div>
 
     <div class="content">
       <header>
