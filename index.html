@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Langini Meteo – Dashboard V7.8</title>
+  <title>Langini Meteo – Dashboard V7.9</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- SunCalc per alba/tramonto -->
@@ -100,8 +100,26 @@
       opacity: 0.9;
     }
 
+    .btn-realtime {
+      display: inline-block;
+      padding: 10px 24px;
+      margin-top: 10px;
+      background:#ff9500;
+      color:#fff;
+      font-weight:700;
+      border-radius:14px;
+      text-decoration:none;
+      box-shadow:0 0 12px rgba(255,149,0,0.7);
+      transition:0.2s;
+      font-size:0.9rem;
+    }
+    .btn-realtime:hover {
+      background:#ffb13c;
+      box-shadow:0 0 18px rgba(255,149,0,1);
+    }
+
     .status-bar {
-      margin-top: 4px;
+      margin-top: 8px;
       font-size: 0.85rem;
       background: rgba(0, 0, 0, 0.25);
       padding: 6px 12px;
@@ -120,7 +138,7 @@
     }
 
     .quality-banner {
-      margin: 4px auto 0;
+      margin: 6px auto 0;
       padding: 10px 24px;
       border-radius: 999px;
       background: #ffc400;
@@ -176,26 +194,30 @@
     }
 
     .cards {
-      margin-top: 24px;
+      margin-top: 20px;
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 14px;
     }
 
-    @media (max-width: 1100px) {
-      .cards {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
+    .cards-top {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    @media (max-width: 720px) {
-      .cards {
+    .cards-bottom {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    @media (max-width: 1100px) {
+      .cards-bottom {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
-    @media (max-width: 480px) {
-      .cards {
+    @media (max-width: 720px) {
+      .cards-top {
+        grid-template-columns: 1fr;
+      }
+      .cards-bottom {
         grid-template-columns: 1fr;
       }
     }
@@ -210,7 +232,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      min-height: 150px;
+      min-height: 140px;
     }
 
     .card-header {
@@ -265,32 +287,38 @@
       color: var(--text-muted);
     }
 
-    .rain-status {
-      font-size: 1.3rem;
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+    .windmax-title {
+      font-size: 0.95rem;
       font-weight: 600;
+      display:flex;
+      align-items:center;
+      gap:6px;
     }
 
-    .rain-status span.icon {
-      font-size: 1.4rem;
+    .windmax-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-top: 10px;
     }
 
-    .rain-status.wet {
-      color: #1565c0;
+    .windmax-time {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
     }
 
-    .rain-status.dry {
+    .rainstate-value {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-top: 14px;
+    }
+
+    .rainstate-value.asciutto {
       color: #f57c00;
     }
 
-    .wind-label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 2px;
+    .rainstate-value.bagnato {
+      color: #1565c0;
     }
   </style>
 </head>
@@ -299,8 +327,13 @@
     <div class="stars"></div>
     <div class="content">
       <header>
-        <h1>🌟 Langini Meteo – Dashboard <span class="version">V7.8</span></h1>
-        <div class="subtitle">Meteo + Vento + Pioggia</div>
+        <h1>🌟 Langini Meteo – Dashboard <span class="version">V7.9</span></h1>
+        <div class="subtitle">Meteo + Vento + Pioggia (storico) + Dati immediati</div>
+
+        <!-- Pulsante dati in tempo reale -->
+        <a href="http://192.168.1.20" class="btn-realtime">
+          ⚡ Dati immediati (vento + pioggia)
+        </a>
 
         <div class="status-bar" id="statusBar">
           <span class="status-dot"></span>
@@ -318,12 +351,33 @@
         </div>
       </header>
 
-      <section class="cards">
+      <!-- RIGA SUPERIORE: VENTO MAX + PIOGGIA -->
+      <section class="cards cards-top">
+        <!-- Velocità Max -->
+        <article class="card">
+          <div class="windmax-title">
+            <span>🌀 Velocità Max Raggiunta</span>
+          </div>
+          <div class="windmax-value" id="windMaxValue">-- km/h</div>
+          <div class="windmax-time" id="windMaxTime">--</div>
+        </article>
+
+        <!-- Stato Pioggia -->
+        <article class="card">
+          <div class="card-header">
+            <span>🌧️ Pioggia</span>
+          </div>
+          <div class="rainstate-value" id="rainState">--</div>
+        </article>
+      </section>
+
+      <!-- RIGA METEO: 4 CARD PRINCIPALI -->
+      <section class="cards cards-bottom">
         <!-- Pressione -->
         <article class="card">
           <div class="card-header">
             <span>Pressione (hPa)</span>
-            <span class="icon">💧</span>
+            <span class="icon">📈</span>
           </div>
           <div class="gauge">
             <div class="gauge-track">
@@ -390,57 +444,23 @@
           <div class="value-unit">AQI</div>
           <div class="card-footer">Media oraria: <span id="aqAvg">0.0</span></div>
         </article>
-
-        <!-- Vento -->
-        <article class="card">
-          <div class="card-header">
-            <span>Vento (km/h)</span>
-            <span class="icon">💨</span>
-          </div>
-          <div class="gauge">
-            <div class="gauge-track">
-              <div class="gauge-fill" id="gaugeWind"></div>
-            </div>
-          </div>
-          <div class="value">
-            <span id="windValue">0</span>
-          </div>
-          <div class="value-unit">km/h</div>
-          <div class="card-footer">
-            Media: <span id="windAvg">0.0</span>
-          </div>
-        </article>
-
-        <!-- Pioggia -->
-        <article class="card">
-          <div class="card-header">
-            <span>Pioggia</span>
-            <span class="icon">🌧️</span>
-          </div>
-          <div class="rain-status dry" id="rainStatus">
-            <span class="icon">🌞</span><span id="rainText">Asciutto</span>
-          </div>
-          <div class="card-footer">
-            Ultimo rilevamento: <span id="rainTime">--:--:--</span>
-          </div>
-        </article>
       </section>
     </div>
   </div>
 
   <script>
-    // ====================================
+    // ================================
     //  CONFIG
-    // ====================================
+    // ================================
     const METEO_CHANNEL = 3149218;   // pressione, temp, umidità, MQ135
     const WIND_CHANNEL  = 2956240;   // vento, pioggia
 
     const LAT = 45.7525;
     const LON = 8.8975;
 
-    // ====================================
-    //  FUNZIONI UTILITARIE
-    // ====================================
+    // ================================
+    //  UTIL
+    // ================================
     function toNumber(v, fallback = 0) {
       const n = parseFloat(v);
       return isNaN(n) ? fallback : n;
@@ -482,9 +502,9 @@
       return { label: "Aria pessima", cls: "very-bad" };
     }
 
-    // ====================================
-    //  ALBA / TRAMONTO CON SUNCALC
-    // ====================================
+    // ================================
+    //  ALBA / TRAMONTO + CIELO
+    // ================================
     function updateSunTimes() {
       try {
         const now = new Date();
@@ -506,7 +526,6 @@
           `<span>🌅 <strong>Alba:</strong> ${sunriseStr}</span>` +
           `<span>🌇 <strong>Tramonto:</strong> ${sunsetStr}</span>`;
 
-        // Aggiorna cielo giorno/notte
         const sky = document.getElementById("sky");
         if (now < sunrise || now > sunset) {
           sky.classList.add("night");
@@ -518,9 +537,23 @@
       }
     }
 
-    // ====================================
-    //  FETCH & AGGIORNAMENTO DASHBOARD
-    // ====================================
+    // ================================
+    //  VENTO MAX (localStorage)
+    // ================================
+    let windMax = parseFloat(localStorage.getItem("windMax") || "0");
+    let windMaxDate = localStorage.getItem("windMaxDate") || "--";
+
+    function updateWindMaxDisplay() {
+      document.getElementById("windMaxValue").textContent =
+        windMax > 0 ? windMax.toFixed(1) + " km/h" : "-- km/h";
+      document.getElementById("windMaxTime").textContent = windMaxDate;
+    }
+
+    updateWindMaxDisplay();
+
+    // ================================
+    //  FETCH THINGSPEAK & UPDATE UI
+    // ================================
     async function fetchJson(url) {
       const res = await fetch(url);
       if (!res.ok) throw new Error("HTTP " + res.status);
@@ -581,37 +614,40 @@
         const wind = toNumber(lastWind.field1);
         const rainFlag = toNumber(lastWind.field2);
 
-        document.getElementById("windValue").textContent = wind.toFixed(0);
-        document.getElementById("windAvg").textContent =
-          averageField(feedsWind, "field1").toFixed(1);
-
-        const windPct = clamp((wind / 120) * 100, 0, 100);
-        document.getElementById("gaugeWind").style.width = windPct + "%";
-
-        const rainStatusEl = document.getElementById("rainStatus");
-        const rainTextEl = document.getElementById("rainText");
-        const rainTimeEl = document.getElementById("rainTime");
-
+        // Aggiorna stato pioggia (solo Asciutto/Bagnato)
+        const rainStateEl = document.getElementById("rainState");
         if (rainFlag >= 1) {
-          rainStatusEl.classList.remove("dry");
-          rainStatusEl.classList.add("wet");
-          rainStatusEl.innerHTML = `<span class="icon">🌧️</span><span id="rainText">Pioggia</span>`;
+          rainStateEl.textContent = "Bagnato";
+          rainStateEl.classList.remove("asciutto");
+          rainStateEl.classList.add("bagnato");
         } else {
-          rainStatusEl.classList.remove("wet");
-          rainStatusEl.classList.add("dry");
-          rainStatusEl.innerHTML = `<span class="icon">🌞</span><span id="rainText">Asciutto</span>`;
+          rainStateEl.textContent = "Asciutto";
+          rainStateEl.classList.remove("bagnato");
+          rainStateEl.classList.add("asciutto");
         }
-        rainTimeEl.textContent = formatTime(lastWind.created_at);
+
+        // Aggiorna vento massimo (in base all'ultimo valore > max)
+        if (wind > windMax) {
+          windMax = wind;
+          const now = new Date();
+          const hhmm = now.toLocaleTimeString("it-IT", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          const dstr = now.toLocaleDateString("it-IT");
+          windMaxDate = `${hhmm} - ${dstr}`;
+          localStorage.setItem("windMax", windMax.toFixed(1));
+          localStorage.setItem("windMaxDate", windMaxDate);
+        }
+        updateWindMaxDisplay();
 
         // ---- STATUS BAR ----
-        const lastTime = lastMeteo.created_at || lastWind.created_at;
+        const lastTime = lastWind.created_at || lastMeteo.created_at;
         const timeStr = formatTime(lastTime);
         const statusText = document.getElementById("statusText");
-        statusText.textContent = `Aggiornato: ${timeStr} • Vento: ${wind.toFixed(
-          1
-        )} km/h • Stato: ${
-          rainFlag >= 1 ? "Pioggia" : "Asciutto"
-        }`;
+        statusText.textContent =
+          `Aggiornato: ${timeStr} • Vento attuale: ${wind.toFixed(1)} km/h • Stato: ` +
+          (rainFlag >= 1 ? "Pioggia" : "Asciutto");
 
         // ---- QUALITÀ ARIA BANNER ----
         const qInfo = classifyAir(aqi);
@@ -627,12 +663,12 @@
       }
     }
 
-    // ====================================
+    // ================================
     //  AVVIO
-    // ====================================
+    // ================================
     updateSunTimes();
     updateDashboard();
-    setInterval(updateDashboard, 20000);  // ogni 20 secondi
+    setInterval(updateDashboard, 20000);       // ogni 20 secondi
     setInterval(updateSunTimes, 5 * 60 * 1000); // ogni 5 minuti
   </script>
 </body>
