@@ -1,383 +1,639 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Langini Meteo – Dashboard V7.7</title>
+  <meta charset="UTF-8" />
+  <title>Langini Meteo – Dashboard V7.8</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/justgage@1.5.0/justgage.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+  <!-- SunCalc per alba/tramonto -->
+  <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
-<style>
-body{
-  margin:0;font-family:"Poppins",sans-serif;color:white;text-align:center;
-  overflow-x:hidden;transition:background 2s;
-  background:linear-gradient(to bottom,#001b3a 0%,#004a8d 40%,#0066b2 100%);
-}
-header{
-  background:rgba(0,0,30,0.7);
-  color:#fff;
-  padding:16px 0 10px;
-  font-weight:600;
-  box-shadow:0 2px 10px rgba(0,0,0,0.25);
-  text-align:center;
-}
-header .mainTitle{
-  font-size:1.7em;
-  display:inline-block;
-  vertical-align:middle;
-}
-header .subTitle{
-  font-size:1.05em;
-  font-weight:400;
-  color:#a9c9ff;
-  margin-left:12px;
-  vertical-align:middle;
-  opacity:0.9;
-}
-#statusBar{
-  background:rgba(0,0,0,0.15);
-  font-size:0.93em;
-  color:#a9c9ff;
-  padding:6px;
-}
-
-/* SKY */
-#sky{
-  position:relative;height:46vh;overflow:hidden;border-bottom:4px solid #048;
-}
-#stars{position:absolute;inset:0;opacity:0;z-index:1;}
-.star{
-  position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
-  animation:twinkle 4s infinite;
-}
-@keyframes twinkle{0%,100%{opacity:0.2}50%{opacity:1}}
-
-#sun,#moon{
-  position:absolute;top:53%;left:50%;width:110px;height:110px;border-radius:50%;
-  transform:translate(-50%,-50%);transition:left 1.5s,top 1.5s,opacity 2s;
-  z-index:2;opacity:0;
-}
-#sun{
-  background:radial-gradient(circle,#fff600 20%,#ffcc00 70%,#ffaa00 100%);
-  box-shadow:0 0 40px 10px #ffcc00;
-}
-#moon{
-  background:radial-gradient(circle at 31% 32%,#f0f0f0 40%,#bdbdbd 100%);
-  box-shadow:0 0 25px 5px #ccc;
-}
-
-.cloud{
-  position:absolute;background:rgba(255,255,255,0.9);
-  border-radius:50%;
-  box-shadow:-40px 10px 60px rgba(255,255,255,0.6),
-              60px 20px 80px rgba(255,255,255,0.5),
-              120px 30px 100px rgba(255,255,255,0.4);
-  animation:fluttuare 6s ease-in-out infinite alternate;
-  z-index:2;
-}
-@keyframes fluttuare{from{transform:translateY(0)}to{transform:translateY(8px)}}
-
-/* Helicopter */
-#helicopter{
-  position:absolute;top:25%;left:-180px;width:130px;height:70px;
-  z-index:6;opacity:0.96;
-  filter:drop-shadow(0 0 8px rgba(0,0,0,0.7));
-  transition:transform 2s ease-out,left 25s linear;
-}
-#helicopter svg{width:100%;height:100%;display:block;}
-#helicopter path{fill:#111;stroke:#666;stroke-width:8;}
-
-.trail{
-  position:absolute;height:4px;
-  background:linear-gradient(90deg,rgba(255,255,255,0.65),rgba(255,255,255,0));
-  border-radius:3px;z-index:4;opacity:0.4;
-}
-
-/* Birds */
-.bird{
-  position:absolute;width:32px;height:24px;
-  background:url('https://upload.wikimedia.org/wikipedia/commons/6/6b/Bird_silhouette.svg') no-repeat center/contain;
-  opacity:0.85;z-index:3;animation:birdFlap 1.2s infinite;
-}
-@keyframes birdFlap{
-  0%,100%{transform:translateY(0) scale(1);}
-  50%{transform:translateY(-4px) scale(1.05);}
-}
-
-/* AQI Banner */
-#ariaAlert{
-  display:block;margin:18px auto;padding:10px 32px;border-radius:22px;
-  font-size:1.35em;font-weight:700;color:#fff;background:#00e400;
-  box-shadow:0 0 25px rgba(0,255,0,0.5);
-  width:fit-content;transition:all 0.8s ease;
-}
-
-/* Alba/Tramonto */
-#sunMoonTimes{
-  display:block;margin:0 auto 14px auto;font-size:1em;color:#000;
-  background:rgba(255,255,255,0.65);padding:5px 14px;border-radius:12px;
-  box-shadow:0 0 6px rgba(0,0,0,0.25);font-weight:600;width:fit-content;
-}
-
-/* Gauges */
-#gauges{
-  display:flex;flex-wrap:wrap;justify-content:center;gap:22px;
-  padding:20px 0 30px;background:linear-gradient(to bottom,#002850,#00142c);
-  border-top:3px solid #004b8d;
-}
-.gaugeBox{
-  background:linear-gradient(to bottom,#f8fbff,#e6edf5);
-  border-radius:16px;width:230px;height:235px;padding:8px;
-  color:#003366;box-shadow:0 0 10px rgba(0,0,0,0.14);position:relative;
-}
-.gaugeBox img{
-  position:absolute;top:8px;right:8px;width:34px;opacity:0.84;
-}
-.label{font-size:1.05em;font-weight:600;margin-top:6px;}
-.mean{font-size:0.88em;color:#444;margin-top:6px;}
-
-#rainStatus{
-  height:130px;display:flex;align-items:center;justify-content:center;
-  font-size:1.9em;font-weight:700;
-}
-#rainTime{font-weight:600;}
-
-footer{
-  font-size:0.9em;color:#a9c9ff;background:#001b3a;padding:10px;
-}
-
-</style>
-</head>
-
-<body>
-
-<header>🌤️ <span class="mainTitle">Langini Meteo – Dashboard V7.7</span>
-<span class="subTitle">Meteo + Vento + Pioggia</span></header>
-
-<div id="statusBar">Caricamento dati...</div>
-
-<div id="sky">
-  <div id="stars"></div>
-  <div id="sun"></div>
-  <div id="moon"></div>
-  <div id="helicopter">
-    <svg viewBox="0 0 640 512" xmlns="http://www.w3.org/2000/svg">
-      <path fill="#111" stroke="#666" stroke-width="8"
-        d="M528 224H448v-48c0-26.5-21.5-48-48-48H288V96h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H80c-8.8 0-16 7.2-16 16s7.2 16 16 16h80v32h-16c-26.5 0-48 21.5-48 48v96h-8c-17.7 0-32 14.3-32 32v32h32l32 64h32l32-64h64l32 64h32l32-64h32l32 64h32l32-64h32v-32h-16v-48h80v48h-16v32h48c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16z"/>
-      <rect x="260" y="58" width="120" height="6" fill="#222" stroke="#666" stroke-width="2">
-        <animateTransform attributeName="transform" type="rotate"
-          from="0 320 60" to="360 320 60" dur="0.25s" repeatCount="indefinite"/>
-      </rect>
-    </svg>
-  </div>
-</div>
-
-<div id="ariaAlert">🌿 Aria eccellente</div>
-<div id="sunMoonTimes">☀️ Alba: --:-- • 🌇 Tramonto: --:--</div>
-
-<div id="gauges">
-
-  <!-- METEO -->
-  <div class="gaugeBox">
-    <img src="https://img.icons8.com/fluency/48/barometer.png">
-    <div id="g1" style="height:130px"></div>
-    <div class="label">Pressione (hPa)</div>
-    <div class="mean">Media oraria: <span id="m1">--</span></div>
-  </div>
-
-  <div class="gaugeBox">
-    <img src="https://img.icons8.com/fluency/48/temperature.png">
-    <div id="g2" style="height:130px"></div>
-    <div class="label">Temperatura (°C)</div>
-    <div class="mean">Media oraria: <span id="m2">--</span></div>
-  </div>
-
-  <div class="gaugeBox">
-    <img src="https://img.icons8.com/fluency/48/hygrometer.png">
-    <div id="g3" style="height:130px"></div>
-    <div class="label">Umidità (%)</div>
-    <div class="mean">Media oraria: <span id="m3">--</span></div>
-  </div>
-
-  <div class="gaugeBox">
-    <img src="https://img.icons8.com/fluency/48/smelling.png">
-    <div id="g4" style="height:130px"></div>
-    <div class="label">Qualità Aria (MQ135)</div>
-    <div class="mean">Media oraria: <span id="m4">--</span></div>
-  </div>
-
-  <!-- VENTO -->
-  <div class="gaugeBox">
-    <img src="https://img.icons8.com/fluency/48/wind.png">
-    <div id="g5" style="height:130px"></div>
-    <div class="label">Vento (km/h)</div>
-    <div class="mean">Media: <span id="m5">--</span></div>
-  </div>
-
-  <!-- PIOGGIA -->
-  <div class="gaugeBox">
-    <img src="https://img.icons8.com/fluency/48/rain.png">
-    <div id="rainStatus">--</div>
-    <div class="label">Pioggia</div>
-    <div class="mean">Ultimo rilevamento: <span id="rainTime">--</span></div>
-  </div>
-
-</div>
-
-<footer>© 2025 Langini Meteo • V7.7 • 2 Canali: Meteo + Vento-Pioggia</footer>
-
-<script>
-/* -----------------------
-        CHANNELS
------------------------- */
-const METEO_CHANNEL = 3149218;
-const WIND_CHANNEL  = 2956240;
-
-const LAT = 45.77;
-const LON = 8.88;
-
-/* Gauges */
-const g1 = new JustGage({id:"g1",value:0,min:950,max:1050,pointer:true});
-const g2 = new JustGage({id:"g2",value:0,min:-10,max:50,pointer:true});
-const g3 = new JustGage({id:"g3",value:0,min:0,max:100,pointer:true});
-const g4 = new JustGage({id:"g4",value:0,min:0,max:500,pointer:true});
-const g5 = new JustGage({id:"g5",value:0,min:0,max:120,pointer:true});
-
-/* -----------------------
-       Sky Init
------------------------- */
-
-function creaNuvola(){ /* ... identico ... */ }
-function volaElicottero(){ /* ... identico ... */ }
-function creaUccello(){ /* ... identico ... */ }
-function aggiornaCielo(){ /* ... identico ... */ }
-
-document.addEventListener("DOMContentLoaded",()=>{
-  initCielo();
-});
-
-function initCielo(){
-  for(let i=0;i<40;i++){
-    let e=document.createElement('div');
-    e.className='star';
-    e.style.left=Math.random()*100+'%';
-    e.style.top=Math.random()*100+'%';
-    e.style.animationDelay=Math.random()*3+'s';
-    document.getElementById('stars').appendChild(e);
-  }
-  for(let i=0;i<5;i++)setTimeout(creaNuvola,Math.random()*6000);
-  for(let i=0;i<3;i++)setTimeout(creaUccello,Math.random()*8000);
-  volaElicottero();
-  aggiornaCielo();
-  setInterval(aggiornaCielo,60000);
-}
-
-/* ----------------------------------------------------
-               LETTURA 2 CANALI THINGSPEAK
----------------------------------------------------- */
-async function aggiorna(){
-
-  try{
-    /* ==============================
-           CANALE METEO
-    ============================== */
-    const r1 = await fetch(`https://api.thingspeak.com/channels/${METEO_CHANNEL}/feeds.json?results=60`);
-    const d1 = await r1.json();
-    if (!d1.feeds || !d1.feeds.length) return;
-
-    const a1 = d1.feeds.map(e => ({
-      p:+e.field1,
-      t:+e.field2,
-      u:+e.field3,
-      q:+e.field4
-    }));
-
-    const u1 = a1.at(-1);
-
-    g1.refresh(u1.p);
-    g2.refresh(u1.t);
-    g3.refresh(u1.u);
-    g4.refresh(u1.q);
-
-    const avg = arr => {
-      const f = arr.filter(v=>!isNaN(v));
-      return f.length ? (f.reduce((a,b)=>a+b,0)/f.length).toFixed(1) : "--";
-    };
-
-    document.getElementById("m1").textContent = avg(a1.map(x=>x.p));
-    document.getElementById("m2").textContent = avg(a1.map(x=>x.t));
-    document.getElementById("m3").textContent = avg(a1.map(x=>x.u));
-    document.getElementById("m4").textContent = avg(a1.map(x=>x.q));
-
-    /* Qualità aria banner */
-    const aqi = u1.q;
-    const alert = document.getElementById("ariaAlert");
-    let txt="--", bg="#00e400", anim="none";
-
-    if(aqi<=50){txt="🌿 Aria eccellente";bg="#00e400";}
-    else if(aqi<=100){txt="😊 Aria buona";bg="#9cff00";}
-    else if(aqi<=150){txt="⚠️ Qualità moderata";bg="#ffde33";anim="blinkAir 1.4s infinite alternate";}
-    else if(aqi<=200){txt="😷 Aria scadente";bg="#ff9933";}
-    else if(aqi<=300){txt="☠️ Aria molto scarsa";bg="#cc0033";}
-    else{txt="💀 Aria pericolosa";bg="#660099";anim="pulseDanger 2.5s infinite alternate";}
-
-    alert.textContent = txt;
-    alert.style.background = bg;
-    alert.style.boxShadow = `0 0 25px ${bg}`;
-    alert.style.animation = anim;
-
-
-    /* ==============================
-           CANALE VENTO / PIOGGIA
-    ============================== */
-    const r2 = await fetch(`https://api.thingspeak.com/channels/${WIND_CHANNEL}/feeds.json?results=60`);
-    const d2 = await r2.json();
-
-    if (d2.feeds && d2.feeds.length){
-      const a2 = d2.feeds.map(e => ({
-        w:+e.field1,
-        r:+e.field2
-      }));
-
-      const u2 = a2.at(-1);
-
-      /* Gauge vento */
-      g5.refresh(u2.w);
-      document.getElementById("m5").textContent = avg(a2.map(x=>x.w));
-
-      /* Pioggia */
-      const rainEl = document.getElementById("rainStatus");
-      if (u2.r >= 1){
-        rainEl.textContent = "🌧️ Pioggia";
-        rainEl.style.background = "#0077be";
-        rainEl.style.color = "#fff";
-      } else {
-        rainEl.textContent = "☀️ Asciutto";
-        rainEl.style.background = "#f5faff";
-        rainEl.style.color = "#003366";
-      }
-
-      const ts = new Date(d2.feeds[d2.feeds.length-1].created_at);
-      document.getElementById("rainTime").textContent =
-        ts.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-
-      /* StatusBar */
-      document.getElementById("statusBar").textContent =
-        `Aggiornato: ${ts.toLocaleTimeString("it-IT")} • Vento: ${u2.w} km/h • Stato: ${u2.r>=1?"Pioggia":"Asciutto"}`;
-
+  <style>
+    :root {
+      --bg-top: #021b3c;
+      --bg-bottom: #034f9a;
+      --card-bg: #f8fbff;
+      --card-border: #d0e0ff;
+      --text-main: #0b1b3a;
+      --text-muted: #6b7a99;
+      --accent: #ffc107;
+      --good: #00c853;
+      --moderate: #ffca28;
+      --bad: #ff7043;
+      --danger: #d50000;
     }
 
-  }catch(e){
-    document.getElementById("statusBar").textContent = "⚠️ Errore connessione";
-  }
-}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-aggiorna();
-setInterval(aggiorna, 20000);
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
+      background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-</script>
+    .sky {
+      position: relative;
+      flex: 1;
+      background: linear-gradient(to bottom, #01224f, #0760c5);
+      transition: background 0.8s ease;
+    }
+
+    .sky.night {
+      background: radial-gradient(circle at 20% 0%, #243b6b, #020520 60%);
+    }
+
+    .stars {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px);
+      background-size: 3px 3px;
+      mix-blend-mode: screen;
+    }
+
+    .sky.night .stars {
+      opacity: 0.35;
+    }
+
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    header h1 span.version {
+      font-size: 0.95rem;
+      opacity: 0.7;
+      margin-left: 4px;
+    }
+
+    header .subtitle {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .status-bar {
+      margin-top: 4px;
+      font-size: 0.85rem;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #0f0;
+      box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+    }
+
+    .quality-banner {
+      margin: 4px auto 0;
+      padding: 10px 24px;
+      border-radius: 999px;
+      background: #ffc400;
+      color: #202020;
+      font-weight: 600;
+      font-size: 0.95rem;
+      box-shadow: 0 0 20px rgba(255, 196, 0, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quality-banner.good {
+      background: #00e676;
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.6);
+    }
+
+    .quality-banner.moderate {
+      background: #ffeb3b;
+      box-shadow: 0 0 20px rgba(255, 235, 59, 0.6);
+    }
+
+    .quality-banner.bad {
+      background: #ff9100;
+      box-shadow: 0 0 20px rgba(255, 145, 0, 0.6);
+    }
+
+    .quality-banner.very-bad {
+      background: #ff1744;
+      box-shadow: 0 0 20px rgba(255, 23, 68, 0.7);
+      color: #fff;
+    }
+
+    .quality-banner span.icon {
+      font-size: 1.1rem;
+    }
+
+    .sun-times {
+      margin: 6px auto 0;
+      padding: 6px 14px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      font-size: 0.85rem;
+      display: inline-flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .sun-times span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cards {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 1100px) {
+      .cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      color: var(--text-main);
+      border-radius: 16px;
+      padding: 14px 14px 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 150px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .card-header span.icon {
+      font-size: 1.1rem;
+    }
+
+    .gauge {
+      position: relative;
+      height: 80px;
+      margin-top: 4px;
+    }
+
+    .gauge-track {
+      position: absolute;
+      inset: auto 0 0;
+      height: 16px;
+      border-radius: 999px;
+      background: #eceff4;
+      overflow: hidden;
+    }
+
+    .gauge-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ffb300, #ff6d00);
+      transition: width 0.4s ease-out;
+    }
+
+    .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .value-unit {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .card-footer {
+      margin-top: auto;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .rain-status {
+      font-size: 1.3rem;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .rain-status span.icon {
+      font-size: 1.4rem;
+    }
+
+    .rain-status.wet {
+      color: #1565c0;
+    }
+
+    .rain-status.dry {
+      color: #f57c00;
+    }
+
+    .wind-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sky" id="sky">
+    <div class="stars"></div>
+    <div class="content">
+      <header>
+        <h1>🌟 Langini Meteo – Dashboard <span class="version">V7.8</span></h1>
+        <div class="subtitle">Meteo + Vento + Pioggia</div>
+
+        <div class="status-bar" id="statusBar">
+          <span class="status-dot"></span>
+          <span id="statusText">Aggiornamento in corso…</span>
+        </div>
+
+        <div class="quality-banner moderate" id="qualityBanner">
+          <span class="icon">⚠️</span>
+          <span id="qualityLabel">Qualità aria: --</span>
+        </div>
+
+        <div class="sun-times" id="sunTimes">
+          <span>🌅 <strong>Alba:</strong> --:--</span>
+          <span>🌇 <strong>Tramonto:</strong> --:--</span>
+        </div>
+      </header>
+
+      <section class="cards">
+        <!-- Pressione -->
+        <article class="card">
+          <div class="card-header">
+            <span>Pressione (hPa)</span>
+            <span class="icon">💧</span>
+          </div>
+          <div class="gauge">
+            <div class="gauge-track">
+              <div class="gauge-fill" id="gaugePressure"></div>
+            </div>
+          </div>
+          <div class="value">
+            <span id="pressureValue">0</span>
+          </div>
+          <div class="value-unit">hPa</div>
+          <div class="card-footer">Media oraria: <span id="pressureAvg">0.0</span></div>
+        </article>
+
+        <!-- Temperatura -->
+        <article class="card">
+          <div class="card-header">
+            <span>Temperatura (°C)</span>
+            <span class="icon">🌡️</span>
+          </div>
+          <div class="gauge">
+            <div class="gauge-track">
+              <div class="gauge-fill" id="gaugeTemp"></div>
+            </div>
+          </div>
+          <div class="value">
+            <span id="tempValue">0</span>
+          </div>
+          <div class="value-unit">°C</div>
+          <div class="card-footer">Media oraria: <span id="tempAvg">0.0</span></div>
+        </article>
+
+        <!-- Umidità -->
+        <article class="card">
+          <div class="card-header">
+            <span>Umidità (%)</span>
+            <span class="icon">💧</span>
+          </div>
+          <div class="gauge">
+            <div class="gauge-track">
+              <div class="gauge-fill" id="gaugeHum"></div>
+            </div>
+          </div>
+          <div class="value">
+            <span id="humValue">0</span>
+          </div>
+          <div class="value-unit">% UR</div>
+          <div class="card-footer">Media oraria: <span id="humAvg">0.0</span></div>
+        </article>
+
+        <!-- Qualità Aria -->
+        <article class="card">
+          <div class="card-header">
+            <span>Qualità Aria (MQ135)</span>
+            <span class="icon">🌱</span>
+          </div>
+          <div class="gauge">
+            <div class="gauge-track">
+              <div class="gauge-fill" id="gaugeAQ"></div>
+            </div>
+          </div>
+          <div class="value">
+            <span id="aqValue">0</span>
+          </div>
+          <div class="value-unit">AQI</div>
+          <div class="card-footer">Media oraria: <span id="aqAvg">0.0</span></div>
+        </article>
+
+        <!-- Vento -->
+        <article class="card">
+          <div class="card-header">
+            <span>Vento (km/h)</span>
+            <span class="icon">💨</span>
+          </div>
+          <div class="gauge">
+            <div class="gauge-track">
+              <div class="gauge-fill" id="gaugeWind"></div>
+            </div>
+          </div>
+          <div class="value">
+            <span id="windValue">0</span>
+          </div>
+          <div class="value-unit">km/h</div>
+          <div class="card-footer">
+            Media: <span id="windAvg">0.0</span>
+          </div>
+        </article>
+
+        <!-- Pioggia -->
+        <article class="card">
+          <div class="card-header">
+            <span>Pioggia</span>
+            <span class="icon">🌧️</span>
+          </div>
+          <div class="rain-status dry" id="rainStatus">
+            <span class="icon">🌞</span><span id="rainText">Asciutto</span>
+          </div>
+          <div class="card-footer">
+            Ultimo rilevamento: <span id="rainTime">--:--:--</span>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ====================================
+    //  CONFIG
+    // ====================================
+    const METEO_CHANNEL = 3149218;   // pressione, temp, umidità, MQ135
+    const WIND_CHANNEL  = 2956240;   // vento, pioggia
+
+    const LAT = 45.7525;
+    const LON = 8.8975;
+
+    // ====================================
+    //  FUNZIONI UTILITARIE
+    // ====================================
+    function toNumber(v, fallback = 0) {
+      const n = parseFloat(v);
+      return isNaN(n) ? fallback : n;
+    }
+
+    function averageField(feeds, fieldName) {
+      if (!feeds || !feeds.length) return 0;
+      let sum = 0;
+      let count = 0;
+      for (const f of feeds) {
+        const v = toNumber(f[fieldName], NaN);
+        if (!isNaN(v)) {
+          sum += v;
+          count++;
+        }
+      }
+      return count ? sum / count : 0;
+    }
+
+    function formatTime(dateStr) {
+      if (!dateStr) return "--:--:--";
+      const d = new Date(dateStr);
+      return d.toLocaleTimeString("it-IT", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    }
+
+    function clamp(val, min, max) {
+      return Math.min(max, Math.max(min, val));
+    }
+
+    function classifyAir(aqi) {
+      if (aqi <= 50) return { label: "Aria eccellente", cls: "good" };
+      if (aqi <= 100) return { label: "Aria buona", cls: "good" };
+      if (aqi <= 150) return { label: "Qualità moderata", cls: "moderate" };
+      if (aqi <= 200) return { label: "Aria scadente", cls: "bad" };
+      return { label: "Aria pessima", cls: "very-bad" };
+    }
+
+    // ====================================
+    //  ALBA / TRAMONTO CON SUNCALC
+    // ====================================
+    function updateSunTimes() {
+      try {
+        const now = new Date();
+        const times = SunCalc.getTimes(now, LAT, LON);
+        const sunrise = times.sunrise;
+        const sunset = times.sunset;
+
+        const sunriseStr = sunrise.toLocaleTimeString("it-IT", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const sunsetStr = sunset.toLocaleTimeString("it-IT", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const sunTimesEl = document.getElementById("sunTimes");
+        sunTimesEl.innerHTML =
+          `<span>🌅 <strong>Alba:</strong> ${sunriseStr}</span>` +
+          `<span>🌇 <strong>Tramonto:</strong> ${sunsetStr}</span>`;
+
+        // Aggiorna cielo giorno/notte
+        const sky = document.getElementById("sky");
+        if (now < sunrise || now > sunset) {
+          sky.classList.add("night");
+        } else {
+          sky.classList.remove("night");
+        }
+      } catch (e) {
+        console.error("Errore SunCalc:", e);
+      }
+    }
+
+    // ====================================
+    //  FETCH & AGGIORNAMENTO DASHBOARD
+    // ====================================
+    async function fetchJson(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }
+
+    async function updateDashboard() {
+      try {
+        const [meteoData, windData] = await Promise.all([
+          fetchJson(
+            `https://api.thingspeak.com/channels/${METEO_CHANNEL}/feeds.json?results=60`
+          ),
+          fetchJson(
+            `https://api.thingspeak.com/channels/${WIND_CHANNEL}/feeds.json?results=60`
+          ),
+        ]);
+
+        const feedsMeteo = meteoData.feeds || [];
+        const feedsWind = windData.feeds || [];
+
+        const lastMeteo = feedsMeteo[feedsMeteo.length - 1] || {};
+        const lastWind = feedsWind[feedsWind.length - 1] || {};
+
+        // ---- METEO ----
+        const pressure = toNumber(lastMeteo.field1);
+        const temp = toNumber(lastMeteo.field2);
+        const hum = toNumber(lastMeteo.field3);
+        const aqi = toNumber(lastMeteo.field4);
+
+        document.getElementById("pressureValue").textContent =
+          pressure.toFixed(0);
+        document.getElementById("tempValue").textContent = temp.toFixed(0);
+        document.getElementById("humValue").textContent = hum.toFixed(0);
+        document.getElementById("aqValue").textContent = aqi.toFixed(0);
+
+        document.getElementById("pressureAvg").textContent =
+          averageField(feedsMeteo, "field1").toFixed(1);
+        document.getElementById("tempAvg").textContent =
+          averageField(feedsMeteo, "field2").toFixed(1);
+        document.getElementById("humAvg").textContent =
+          averageField(feedsMeteo, "field3").toFixed(1);
+        document.getElementById("aqAvg").textContent =
+          averageField(feedsMeteo, "field4").toFixed(1);
+
+        // Gauge percentuali
+        const pressurePct = clamp(((pressure - 950) / (1050 - 950)) * 100, 0, 100);
+        const tempPct = clamp(((temp + 10) / (50 + 10)) * 100, 0, 100);
+        const humPct = clamp(hum, 0, 100);
+        const aqPct = clamp((aqi / 500) * 100, 0, 100);
+
+        document.getElementById("gaugePressure").style.width =
+          pressurePct + "%";
+        document.getElementById("gaugeTemp").style.width = tempPct + "%";
+        document.getElementById("gaugeHum").style.width = humPct + "%";
+        document.getElementById("gaugeAQ").style.width = aqPct + "%";
+
+        // ---- VENTO + PIOGGIA ----
+        const wind = toNumber(lastWind.field1);
+        const rainFlag = toNumber(lastWind.field2);
+
+        document.getElementById("windValue").textContent = wind.toFixed(0);
+        document.getElementById("windAvg").textContent =
+          averageField(feedsWind, "field1").toFixed(1);
+
+        const windPct = clamp((wind / 120) * 100, 0, 100);
+        document.getElementById("gaugeWind").style.width = windPct + "%";
+
+        const rainStatusEl = document.getElementById("rainStatus");
+        const rainTextEl = document.getElementById("rainText");
+        const rainTimeEl = document.getElementById("rainTime");
+
+        if (rainFlag >= 1) {
+          rainStatusEl.classList.remove("dry");
+          rainStatusEl.classList.add("wet");
+          rainStatusEl.innerHTML = `<span class="icon">🌧️</span><span id="rainText">Pioggia</span>`;
+        } else {
+          rainStatusEl.classList.remove("wet");
+          rainStatusEl.classList.add("dry");
+          rainStatusEl.innerHTML = `<span class="icon">🌞</span><span id="rainText">Asciutto</span>`;
+        }
+        rainTimeEl.textContent = formatTime(lastWind.created_at);
+
+        // ---- STATUS BAR ----
+        const lastTime = lastMeteo.created_at || lastWind.created_at;
+        const timeStr = formatTime(lastTime);
+        const statusText = document.getElementById("statusText");
+        statusText.textContent = `Aggiornato: ${timeStr} • Vento: ${wind.toFixed(
+          1
+        )} km/h • Stato: ${
+          rainFlag >= 1 ? "Pioggia" : "Asciutto"
+        }`;
+
+        // ---- QUALITÀ ARIA BANNER ----
+        const qInfo = classifyAir(aqi);
+        const qBanner = document.getElementById("qualityBanner");
+        qBanner.classList.remove("good", "moderate", "bad", "very-bad");
+        qBanner.classList.add(qInfo.cls);
+        qBanner.querySelector("#qualityLabel").textContent = qInfo.label;
+
+      } catch (err) {
+        console.error("Errore aggiornamento dashboard:", err);
+        document.getElementById("statusText").textContent =
+          "Errore lettura dati ThingSpeak";
+      }
+    }
+
+    // ====================================
+    //  AVVIO
+    // ====================================
+    updateSunTimes();
+    updateDashboard();
+    setInterval(updateDashboard, 20000);  // ogni 20 secondi
+    setInterval(updateSunTimes, 5 * 60 * 1000); // ogni 5 minuti
+  </script>
 </body>
 </html>
