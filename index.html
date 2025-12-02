@@ -262,7 +262,6 @@
       20%{opacity:1;}
       100%{opacity:0; transform:translate(40vw,40vh) rotate(25deg);}
     }
-
     /* ====== SOLE / LUNA ====== */
 
     .sunmoon {
@@ -326,7 +325,7 @@
       max-width:1200px;
       margin:0 auto;
       padding:16px;
-      margin-top:35vh;   /* dati più in basso */
+      margin-top:35vh;
     }
 
     h1 {
@@ -459,6 +458,7 @@
   <!-- CONTENUTO -->
   <div class="content">
     <h1>🌟 Langini Meteo – Dashboard V8.7 CHRISTMAS SKY</h1>
+
     <div class="sun-times" id="sunTimes">Alba: --:-- • Tramonto: --:--</div>
 
     <a href="http://192.168.1.20" class="btn-realtime">⚡ Dati immediati</a>
@@ -466,19 +466,30 @@
     <div class="status-bar" id="statusText">Caricamento dati…</div>
 
     <div class="cards top-cards">
+
+      <!-- VELOCITÀ MASSIMA -->
       <div class="card">
         <div class="card-header">🌀 Velocità Max</div>
         <div class="windmax-value" id="windMaxValue">--</div>
         <div id="windMaxTime" style="font-size:0.8rem; color:#666;"></div>
       </div>
 
+      <!-- VENTO REAL-TIME (NUOVO) -->
+      <div class="card">
+        <div class="card-header">🟢 Vento Real-Time</div>
+        <div class="windmax-value" id="windRealtime">--</div>
+      </div>
+
+      <!-- PIOGGIA -->
       <div class="card">
         <div class="card-header">🌧️ Pioggia</div>
         <div class="rainstate-value" id="rainState">--</div>
       </div>
+
     </div>
 
     <div class="cards bottom-cards">
+
       <div class="card">
         <div class="card-header">Pressione</div>
         <div class="value" id="pressureValue">--</div>
@@ -506,10 +517,11 @@
         <div class="value-unit">AQI</div>
         <div class="gauge"><div class="gauge-fill" id="gaugeAQ"></div></div>
       </div>
+
     </div>
+
   </div>
 </div>
-
 <script>
   const PASSWORD = "Doroty025";
 
@@ -602,7 +614,7 @@
     else SKY.classList.remove("night");
   }
 
-  /* ====== ORARI ALBA / TRAMONTO ====== */
+  /* ====== ALBA / TRAMONTO ====== */
   function updateSunTimes(){
     if(!unlocked) return;
 
@@ -627,7 +639,7 @@
     }
   }
 
-  /* ====== STELLE / METEORE IN BASE AD ALBA / TRAMONTO ====== */
+  /* ====== NOTTE TRUE/FALSE ====== */
   function isNightTime() {
     const now = new Date();
     const times = SunCalc.getTimes(now, LAT, LON);
@@ -639,6 +651,7 @@
     document.getElementById("stars").style.opacity = isNightTime() ? 1 : 0;
   }
 
+  /* ====== METEORE ====== */
   function triggerMeteor(id){
     if (!unlocked || !isNightTime()) return;
 
@@ -667,6 +680,7 @@
     }, delay);
   }
 
+  /* ====== SHOOTING STAR ====== */
   function maybeStar(){
     if (!unlocked || !isNightTime()) return;
     if (Math.random() < 0.20) {
@@ -721,7 +735,7 @@
   }
   updateWindMaxDisp();
 
-  /* ====== DASHBOARD THINGSPEAK ====== */
+  /* ====== DASHBOARD THINGSPEAK (20 sec) ====== */
   async function updateDashboard(){
     if(!unlocked) return;
     try{
@@ -798,6 +812,25 @@
     }
   }
 
+  /* ====== VENTO REAL-TIME (ogni 2s) ====== */
+  async function updateRealtimeWind() {
+    if (!unlocked) return;
+
+    try {
+      const wind = await fetch(`https://api.thingspeak.com/channels/${WIND_CHANNEL}/feeds.json?results=1`)
+        .then(r=>r.json());
+
+      const w = wind.feeds?.at(-1) || {};
+      const windVal = toNum(w.field1);
+
+      document.getElementById("windRealtime").textContent =
+        windVal ? windVal.toFixed(1) + " km/h" : "--";
+
+    } catch(e){
+      console.log("Errore updateRealtimeWind:", e);
+    }
+  }
+
   /* ====== LOOP PERIODICI ====== */
   function tickSky(){
     updateSky();
@@ -813,6 +846,7 @@
     localStorage.setItem("langini_auth", "ok");
     tickSky();
     updateDashboard();
+    updateRealtimeWind();
   }
 
   function handleLogin(){
@@ -841,8 +875,9 @@
   setInterval(tickSky,10000);
   setInterval(updateDashboard,20000);
   setInterval(maybeStar,15000);
+  setInterval(updateRealtimeWind,2000);
 
-  // Eventi login
+  // Login
   document.getElementById("lockButton").addEventListener("click", handleLogin);
   document.getElementById("lockPassword").addEventListener("keydown", (e)=>{
     if(e.key === "Enter") handleLogin();
