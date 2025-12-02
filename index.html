@@ -140,10 +140,14 @@
     }
 
     @keyframes meteorMove {
-      0%   { opacity:0; transform:translate(0,0) rotate(30deg); }
-      10%  { opacity:1; }
-      100% { opacity:0; transform:translate(600px,300px) rotate(30deg); }
-    }
+  0%   { opacity:0; transform:translate(0,0) rotate(28deg); }
+  10%  { opacity:1; }
+  100% {
+    opacity:0;
+    transform:translate(var(--mx), var(--my)) rotate(28deg);
+  }
+}
+
 
     /* ⭐ COMETA */
     .comet {
@@ -521,22 +525,37 @@
   }
 
   /* ====== METEORE ====== */
-  function triggerMeteor(id){
-    if(!unlocked || !isNightTime()) return;
+function triggerMeteor(id) {
+  if (!unlocked || !isNightTime()) return;
 
-    const el=document.getElementById(id);
-    const y=5+Math.random()*35;
-    const x=-200-Math.random()*200;
+  const el = document.getElementById(id);
 
-    el.style.top=y+"vh";
-    el.style.left=x+"px";
-    el.style.opacity=1;
-    el.style.animation="none";
-    void el.offsetWidth;
-    el.style.animation="meteorMove 1.2s linear forwards";
+  // Partenza: sempre da sinistra
+  const startX = -150 - Math.random() * 150;
 
-    setTimeout(()=>el.style.opacity=0,1300);
-  }
+  // Altezza variabile, così non cadono sempre dallo stesso punto
+  const startY = 2 + Math.random() * 40; // da 2vh a 42vh
+
+  // Caduta con angolazione diversa ogni volta
+  const dx = 500 + Math.random() * 400;  // quanto va a destra
+  const dy = 150 + Math.random() * 200;  // quanto "scende"
+
+  // Imposta posizioni iniziali
+  el.style.left = startX + "px";
+  el.style.top = startY + "vh";
+
+  // Imposta variazioni per animazione
+  el.style.setProperty("--mx", dx + "px");
+  el.style.setProperty("--my", dy + "px");
+
+  // Riproduci animazione
+  el.style.animation = "none";
+  void el.offsetWidth;  
+  el.style.animation = "meteorMove 1.3s linear forwards";
+
+  setTimeout(() => el.style.opacity = 0, 1400);
+}
+
 
   function scheduleMeteors(){
     const delay=5000+Math.random()*7000;
