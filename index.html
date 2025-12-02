@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Langini Meteo – Dashboard V8.7 CHRISTMAS SKY (Clean + SunMoon Fix)</title>
+  <title>Langini Meteo – Dashboard V9.0 CHRISTMAS SKY (Mobile App)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
@@ -15,6 +15,10 @@
 
     * { margin:0; padding:0; box-sizing:border-box; }
 
+    html, body {
+      overflow-x: hidden;
+    }
+
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto;
       background:#000814;
@@ -22,6 +26,7 @@
       height:100vh;
       display:flex;
       flex-direction:column;
+      padding-bottom:70px; /* spazio per il menu mobile */
     }
 
     /* ====== OVERLAY PASSWORD ====== */
@@ -139,14 +144,13 @@
     }
 
     @keyframes meteorMove {
-  0%   { opacity:0; transform:translate(0,0) rotate(28deg); }
-  10%  { opacity:1; }
-  100% {
-    opacity:0;
-    transform:translate(var(--mx), var(--my)) rotate(28deg);
-  }
-}
-
+      0%   { opacity:0; transform:translate(0,0) rotate(28deg); }
+      10%  { opacity:1; }
+      100% {
+        opacity:0;
+        transform:translate(var(--mx), var(--my)) rotate(28deg);
+      }
+    }
 
     /* ⭐ COMETA */
     .comet {
@@ -245,7 +249,7 @@
       max-width:1200px;
       margin:0 auto;
       padding:16px;
-      margin-top:35vh;
+      margin-top:30vh;
     }
 
     h1 {
@@ -322,6 +326,107 @@
       transition:width .3s;
       border-radius:inherit;
     }
+
+    /* ====== PULSANTE ESTERNO VENTO/PIOGGIA ====== */
+    .btn-wind-external {
+      display:block;
+      margin:14px auto 18px;
+      padding:12px 22px;
+      background:linear-gradient(135deg,#00aaff,#0077cc);
+      color:white;
+      font-size:1rem;
+      font-weight:700;
+      text-align:center;
+      border-radius:12px;
+      text-decoration:none;
+      box-shadow:0 0 14px rgba(0,150,255,0.7);
+      width:90%;
+      max-width:330px;
+      border:1px solid rgba(0,180,255,0.5);
+      transition:0.2s;
+    }
+
+    .btn-wind-external:hover {
+      filter:brightness(1.2);
+    }
+
+    /* ====== BOTTOM NAV (MENU MOBILE) ====== */
+    .bottom-nav {
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      background:rgba(15,23,42,0.96);
+      backdrop-filter:blur(14px);
+      border-top:1px solid rgba(148,163,184,0.35);
+      z-index:50;
+    }
+
+    .bottom-nav-inner {
+      max-width:900px;
+      margin:0 auto;
+      display:flex;
+      justify-content:space-around;
+      align-items:center;
+      padding:6px 10px 10px;
+    }
+
+    .nav-item {
+      flex:1;
+      text-align:center;
+      color:#9ca3af;
+      font-size:0.72rem;
+      text-decoration:none;
+      transition:color 0.2s, transform 0.2s;
+    }
+
+    .nav-icon {
+      font-size:1.3rem;
+      display:block;
+    }
+
+    .nav-label {
+      margin-top:2px;
+    }
+
+    .nav-item.active {
+      color:#f97316;
+    }
+    .nav-item.active .nav-icon {
+      transform:translateY(-1px);
+    }
+
+    @media (min-width: 900px){
+      .bottom-nav {
+        max-width:900px;
+        margin:0 auto;
+        left:50%;
+        transform:translateX(-50%);
+        border-radius:14px 14px 0 0;
+      }
+    }
+
+    /* ====== RESPONSIVE SPECIFICO MOBILE ====== */
+    @media (max-width: 600px){
+      .content {
+        margin-top:20vh;
+        padding:14px;
+      }
+      h1 {
+        font-size:1.1rem;
+      }
+      .value {
+        font-size:1.3rem;
+      }
+      .card {
+        padding:12px;
+      }
+      .sunmoon {
+        width:55px;
+        height:55px;
+        top:7%;
+      }
+    }
   </style>
 </head>
 
@@ -360,36 +465,15 @@
   </div>
 
   <!-- CONTENUTO -->
-  <div class="content">
-    <h1>🌟 Langini Meteo – Dashboard V8.7 CHRISTMAS SKY</h1>
+  <div class="content" id="home">
+    <h1>🌟 Langini Meteo – Dashboard V9.0 CHRISTMAS SKY</h1>
 
     <div class="sun-times" id="sunTimes">Alba: --:-- • Tramonto: --:--</div>
 
-<!-- PULSANTE DASHBOARD ESTERNA VENTO/PIOGGIA -->
-<a href="https://972davide.github.io/Langini_Meteo_Wind.html"
-   style="
-     display:block;
-     margin:14px auto 18px;
-     padding:12px 22px;
-     background:linear-gradient(135deg,#00aaff,#0077cc);
-     color:white;
-     font-size:1rem;
-     font-weight:700;
-     text-align:center;
-     border-radius:12px;
-     text-decoration:none;
-     box-shadow:0 0 14px rgba(0,150,255,0.7);
-     width:90%;
-     max-width:330px;
-     border:1px solid rgba(0,180,255,0.5);
-     transition:0.2s;
-   "
-   onmouseover="this.style.filter='brightness(1.2)'"
-   onmouseout="this.style.filter='brightness(1)'">
-   🌬️ Apri Dashboard Vento / Pioggia (Web Esterno)
-</a>
-
-
+    <!-- PULSANTE DASHBOARD ESTERNA VENTO/PIOGGIA -->
+    <a href="https://972davide.github.io/Langini_Meteo_Wind.html" class="btn-wind-external">
+      🌬️ Apri Dashboard Vento / Pioggia (Web Esterno)
+    </a>
 
     <div class="status-bar" id="statusText">Caricamento dati…</div>
 
@@ -429,6 +513,28 @@
 
   </div>
 </div>
+
+<!-- MENU MOBILE / BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="#home" class="nav-item active" id="navHome">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </a>
+    <a href="https://972davide.github.io/Langini_Meteo_Wind.html" class="nav-item" id="navWind">
+      <span class="nav-icon">🌬️</span>
+      <span class="nav-label">Vento</span>
+    </a>
+    <a href="#" class="nav-item" id="navHistory">
+      <span class="nav-icon">📈</span>
+      <span class="nav-label">Storico</span>
+    </a>
+    <a href="#" class="nav-item" id="navSettings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Impostazioni</span>
+    </a>
+  </div>
+</nav>
 
 <!-- SCRIPT -->
 <script>
@@ -547,37 +653,28 @@
   }
 
   /* ====== METEORE ====== */
-function triggerMeteor(id) {
-  if (!unlocked || !isNightTime()) return;
+  function triggerMeteor(id) {
+    if (!unlocked || !isNightTime()) return;
 
-  const el = document.getElementById(id);
+    const el = document.getElementById(id);
 
-  // Partenza: sempre da sinistra
-  const startX = -150 - Math.random() * 150;
+    const startX = -150 - Math.random() * 150;
+    const startY = 2 + Math.random() * 40;
 
-  // Altezza variabile, così non cadono sempre dallo stesso punto
-  const startY = 2 + Math.random() * 40; // da 2vh a 42vh
+    const dx = 500 + Math.random() * 400;
+    const dy = 150 + Math.random() * 200;
 
-  // Caduta con angolazione diversa ogni volta
-  const dx = 500 + Math.random() * 400;  // quanto va a destra
-  const dy = 150 + Math.random() * 200;  // quanto "scende"
+    el.style.left = startX + "px";
+    el.style.top = startY + "vh";
+    el.style.setProperty("--mx", dx + "px");
+    el.style.setProperty("--my", dy + "px");
 
-  // Imposta posizioni iniziali
-  el.style.left = startX + "px";
-  el.style.top = startY + "vh";
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "meteorMove 1.3s linear forwards";
 
-  // Imposta variazioni per animazione
-  el.style.setProperty("--mx", dx + "px");
-  el.style.setProperty("--my", dy + "px");
-
-  // Riproduci animazione
-  el.style.animation = "none";
-  void el.offsetWidth;  
-  el.style.animation = "meteorMove 1.3s linear forwards";
-
-  setTimeout(() => el.style.opacity = 0, 1400);
-}
-
+    setTimeout(() => el.style.opacity = 0, 1400);
+  }
 
   function scheduleMeteors(){
     const delay=5000+Math.random()*7000;
@@ -725,10 +822,27 @@ function triggerMeteor(id) {
     }
   }
 
+  /* ====== MENU BOTTOM: ATTIVA SOLO HOME VISIVA ====== */
+  function initNav(){
+    const navItems = document.querySelectorAll(".nav-item");
+    navItems.forEach(it => {
+      it.addEventListener("click", (e) => {
+        // se è link esterno (vento) lascio comportamento default
+        if(it.id === "navWind") return;
+        if(it.getAttribute("href") === "#"){
+          e.preventDefault();
+        }
+        navItems.forEach(n => n.classList.remove("active"));
+        it.classList.add("active");
+      });
+    });
+  }
+
   /* ====== START ====== */
   initStars();
   initAuth();
   scheduleMeteors();
+  initNav();
 
   setInterval(tickSky,10000);
   setInterval(updateDashboard,20000);
