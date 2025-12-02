@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Langini Meteo – Dashboard V8.7 CHRISTMAS SKY (Clean)</title>
+  <title>Langini Meteo – Dashboard V8.7 CHRISTMAS SKY (Clean + SunMoon Fix)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
@@ -80,9 +81,7 @@
       box-shadow:0 0 12px rgba(249,115,22,0.8);
     }
 
-    .lock-btn:hover {
-      filter:brightness(1.1);
-    }
+    .lock-btn:hover { filter:brightness(1.1); }
 
     .lock-error {
       margin-top:8px;
@@ -123,9 +122,9 @@
     }
 
     @keyframes twinkle {
-      0%   { opacity:0;   transform:scale(0.8); }
-      50%  { opacity:1;   transform:scale(1.5); }
-      100% { opacity:0;   transform:scale(0.8); }
+      0%   { opacity:0; transform:scale(0.8); }
+      50%  { opacity:1; transform:scale(1.5); }
+      100% { opacity:0; transform:scale(0.8); }
     }
 
     /* ⭐ METEORE */
@@ -146,7 +145,7 @@
       100% { opacity:0; transform:translate(600px,300px) rotate(30deg); }
     }
 
-    /* ⭐ STELLA COMETA */
+    /* ⭐ COMETA */
     .comet {
       position:absolute;
       top:12vh;
@@ -178,6 +177,63 @@
       filter:blur(8px);
       border-radius:40px;
     }
+
+    /* ====== SOLE / LUNA ====== */
+
+    .sunmoon {
+      position:absolute;
+      top:10%;
+      left:-80px;
+      width:70px;
+      height:70px;
+      border-radius:50%;
+      z-index:3;
+      transition:left 1.2s linear, top 1.2s linear;
+      overflow:hidden;
+    }
+
+    /* SOLE */
+    .sun {
+      background:radial-gradient(circle at 35% 35%, #fff8b0, #ffcc00, #ff9800);
+      box-shadow:0 0 25px 12px rgba(255,180,0,0.8);
+      animation:sunPulse 5s infinite;
+    }
+
+    @keyframes sunPulse {
+      0% {box-shadow:0 0 20px 8px rgba(255,180,0,0.5);}
+      50%{box-shadow:0 0 32px 14px rgba(255,204,0,0.9);}
+      100%{box-shadow:0 0 20px 8px rgba(255,180,0,0.5);}
+    }
+
+    /* LUNA */
+    .moon {
+      background:radial-gradient(circle at 40% 40%, #ffffff, #cfd8dc);
+      box-shadow:0 0 18px 8px rgba(200,200,255,0.5);
+      animation:moonGlow 6s infinite;
+      position:relative;
+    }
+
+    @keyframes moonGlow {
+      0% {box-shadow:0 0 14px 6px rgba(200,200,255,0.3);}
+      50%{box-shadow:0 0 20px 10px rgba(220,220,255,0.6);}
+      100%{box-shadow:0 0 14px 6px rgba(200,200,255,0.3);}
+    }
+
+    .moon-phase-mask {
+      position:absolute;
+      inset:0;
+      background:#000814;
+      border-radius:50%;
+    }
+
+    .moon.phase-0 .moon-phase-mask { transform:scaleX(1); }
+    .moon.phase-1 .moon-phase-mask { transform:translateX(-35%) scaleX(0.2); }
+    .moon.phase-2 .moon-phase-mask { transform:translateX(-15%) scaleX(0.5); }
+    .moon.phase-3 .moon-phase-mask { transform:translateX(-8%)  scaleX(0.8); }
+    .moon.phase-4 .moon-phase-mask { transform:scaleX(0.02); }
+    .moon.phase-5 .moon-phase-mask { transform:translateX(8%)  scaleX(0.8); }
+    .moon.phase-6 .moon-phase-mask { transform:translateX(15%) scaleX(0.5); }
+    .moon.phase-7 .moon-phase-mask { transform:translateX(35%) scaleX(0.2); }
 
     /* ====== CONTENUTO ====== */
     .content {
@@ -224,7 +280,6 @@
 
     .cards { display:grid; gap:14px; }
 
-    /* La sezione TOP-CARDS ora è vuota */
     .top-cards { grid-template-columns:1fr; }
 
     .bottom-cards {
@@ -235,7 +290,7 @@
       .bottom-cards { grid-template-columns:1fr 1fr; }
     }
     @media(max-width:600px){
-      .top-cards, .bottom-cards { grid-template-columns:1fr; }
+      .bottom-cards { grid-template-columns:1fr; }
     }
 
     .card {
@@ -291,9 +346,6 @@
   <div class="comet" id="comet">
     <div class="comet-tail"></div>
   </div>
-
-  <div class="cloud-layer"></div>
-  <div class="cloud-layer"></div>
 
   <div class="aurora" id="aurora"></div>
   <div class="fog" id="fog"></div>
@@ -354,8 +406,8 @@
 <!-- SCRIPT -->
 <script>
   const PASSWORD = "Doroty025";
-
   const METEO_CHANNEL = 3149218;
+
   const LAT = 45.7525;
   const LON = 8.8975;
 
@@ -364,18 +416,19 @@
   function clamp(v,a,b){ return Math.min(b,Math.max(a,v)); }
   function toNum(v){ const n=parseFloat(v); return isNaN(n)?0:n; }
 
-  /* ====== CIELO + SOLE/LUNA ====== */
+  /* ====== COLORI TRANSIZIONE CIELO ====== */
   function interpolateColor(c1,c2,t){
     const a=parseInt(c1.slice(1),16);
     const b=parseInt(c2.slice(1),16);
     const ar=(a>>16)&255, ag=(a>>8)&255, ab=a&255;
     const br=(b>>16)&255, bg=(b>>8)&255, bb=b&255;
-    const r=Math.round(ar + (br-ar)*t);
-    const g=Math.round(ag + (bg-ag)*t);
-    const b2=Math.round(ab + (bb-ab)*t);
+    const r=Math.round(ar+(br-ar)*t);
+    const g=Math.round(ag+(bg-ag)*t);
+    const b2=Math.round(ab+(bb-ab)*t);
     return `rgb(${r},${g},${b2})`;
   }
 
+  /* ====== FASE LUNARE ====== */
   function moonPhaseIndex(date){
     const lp=2551443;
     const nm=Date.UTC(1970,0,7,20,35,0);
@@ -384,6 +437,7 @@
     return Math.floor((phase/lp)*8+0.5)&7;
   }
 
+  /* ====== AGGIORNA CIELO ====== */
   function updateSky(){
     if(!unlocked) return;
 
@@ -402,12 +456,13 @@
       SM.classList.add("sun");
       SM.classList.remove("moon");
       MASK.style.display="none";
+
     } else {
       SM.classList.remove("sun");
       SM.classList.add("moon");
       MASK.style.display="block";
 
-      const idx=moonPhaseIndex(now);
+      const idx = moonPhaseIndex(now);
       for(let i=0;i<8;i++) SM.classList.remove("phase-"+i);
       SM.classList.add("phase-"+idx);
     }
@@ -437,8 +492,7 @@
 
     SKY.style.background=interpolateColor(NIGHT,DAY,blend);
 
-    if(alt<=0) SKY.classList.add("night");
-    else SKY.classList.remove("night");
+    SKY.classList.toggle("night", alt<=0);
   }
 
   /* ====== STELLE ====== */
@@ -454,13 +508,13 @@
     }
   }
 
-  function isNightTime() {
+  function isNightTime(){
     const now=new Date();
     const t=SunCalc.getTimes(now,LAT,LON);
     return now<t.sunrise || now>t.sunset;
   }
 
-  function toggleStars() {
+  function toggleStars(){
     if(!unlocked) return;
     document.getElementById("stars").style.opacity = isNightTime() ? 1 : 0;
   }
@@ -523,10 +577,11 @@
     c.style.opacity=1;
 
     if(day<25){
-      const progress=(day-1)/24;
+      const prog=(day-1)/24;
       c.classList.remove("big");
       c.style.top="12vh";
-      c.style.left=(-200 + progress*(width+200))+"px";
+      c.style.left=(-200 + prog*(width+200))+"px";
+
     } else {
       c.classList.add("big");
       const size=140;
@@ -581,7 +636,7 @@
         "Aggiornato: " + new Date(m.created_at).toLocaleTimeString("it-IT");
 
     } catch(e){
-      console.log("Errore updateDashboard:", e);
+      console.log("Errore updateDashboard:",e);
     }
   }
 
@@ -595,9 +650,10 @@
 
   function updateSunTimes(){
     if(!unlocked) return;
+
     const now=new Date();
     const t=SunCalc.getTimes(now,LAT,LON);
-    const f = d=>d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
+    const f=d=>d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
     document.getElementById("sunTimes").textContent =
       "Alba: "+f(t.sunrise)+" • Tramonto: "+f(t.sunset);
   }
@@ -607,6 +663,7 @@
     unlocked=true;
     document.getElementById("lockScreen").style.display="none";
     localStorage.setItem("langini_auth","ok");
+
     tickSky();
     updateDashboard();
   }
