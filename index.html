@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Langini Meteo – Dashboard V9.0 CHRISTMAS SKY (Mobile App)</title>
+  <title>Langini Meteo – Dashboard V9.1 CHRISTMAS SKY (Mobile Optimized)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
@@ -26,7 +26,6 @@
       height:100vh;
       display:flex;
       flex-direction:column;
-      padding-bottom:70px; /* spazio per il menu mobile */
     }
 
     /* ====== OVERLAY PASSWORD ====== */
@@ -249,7 +248,7 @@
       max-width:1200px;
       margin:0 auto;
       padding:16px;
-      margin-top:30vh;
+      margin-top:28vh;
     }
 
     h1 {
@@ -266,17 +265,27 @@
       opacity:0.9;
     }
 
-    .btn-realtime {
+    /* ====== PULSANTE ESTERNO VENTO/PIOGGIA ====== */
+    .btn-wind-external {
       display:block;
-      margin:0 auto 12px;
-      padding:10px 20px;
-      background:#ff9500;
-      border-radius:12px;
-      color:#fff;
+      margin:14px auto 18px;
+      padding:12px 22px;
+      background:linear-gradient(135deg,#00aaff,#0077cc);
+      color:white;
+      font-size:1rem;
       font-weight:700;
-      text-decoration:none;
-      box-shadow:0 0 12px rgba(255,149,0,0.7);
       text-align:center;
+      border-radius:12px;
+      text-decoration:none;
+      box-shadow:0 0 14px rgba(0,150,255,0.7);
+      width:90%;
+      max-width:330px;
+      border:1px solid rgba(0,180,255,0.5);
+      transition:0.2s;
+    }
+
+    .btn-wind-external:hover {
+      filter:brightness(1.2);
     }
 
     .status-bar {
@@ -298,6 +307,11 @@
     }
     @media(max-width:600px){
       .bottom-cards { grid-template-columns:1fr; }
+      .content { margin-top:20vh; }
+      h1 { font-size:1.1rem; }
+      .value { font-size:1.3rem; }
+      .card { padding:12px; }
+      .sunmoon { width:55px; height:55px; top:7%; }
     }
 
     .card {
@@ -327,109 +341,8 @@
       border-radius:inherit;
     }
 
-    /* ====== PULSANTE ESTERNO VENTO/PIOGGIA ====== */
-    .btn-wind-external {
-      display:block;
-      margin:14px auto 18px;
-      padding:12px 22px;
-      background:linear-gradient(135deg,#00aaff,#0077cc);
-      color:white;
-      font-size:1rem;
-      font-weight:700;
-      text-align:center;
-      border-radius:12px;
-      text-decoration:none;
-      box-shadow:0 0 14px rgba(0,150,255,0.7);
-      width:90%;
-      max-width:330px;
-      border:1px solid rgba(0,180,255,0.5);
-      transition:0.2s;
-    }
-
-    .btn-wind-external:hover {
-      filter:brightness(1.2);
-    }
-
-    /* ====== BOTTOM NAV (MENU MOBILE) ====== */
-    .bottom-nav {
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      background:rgba(15,23,42,0.96);
-      backdrop-filter:blur(14px);
-      border-top:1px solid rgba(148,163,184,0.35);
-      z-index:50;
-    }
-
-    .bottom-nav-inner {
-      max-width:900px;
-      margin:0 auto;
-      display:flex;
-      justify-content:space-around;
-      align-items:center;
-      padding:6px 10px 10px;
-    }
-
-    .nav-item {
-      flex:1;
-      text-align:center;
-      color:#9ca3af;
-      font-size:0.72rem;
-      text-decoration:none;
-      transition:color 0.2s, transform 0.2s;
-    }
-
-    .nav-icon {
-      font-size:1.3rem;
-      display:block;
-    }
-
-    .nav-label {
-      margin-top:2px;
-    }
-
-    .nav-item.active {
-      color:#f97316;
-    }
-    .nav-item.active .nav-icon {
-      transform:translateY(-1px);
-    }
-
-    @media (min-width: 900px){
-      .bottom-nav {
-        max-width:900px;
-        margin:0 auto;
-        left:50%;
-        transform:translateX(-50%);
-        border-radius:14px 14px 0 0;
-      }
-    }
-
-    /* ====== RESPONSIVE SPECIFICO MOBILE ====== */
-    @media (max-width: 600px){
-      .content {
-        margin-top:20vh;
-        padding:14px;
-      }
-      h1 {
-        font-size:1.1rem;
-      }
-      .value {
-        font-size:1.3rem;
-      }
-      .card {
-        padding:12px;
-      }
-      .sunmoon {
-        width:55px;
-        height:55px;
-        top:7%;
-      }
-    }
   </style>
 </head>
-
 <body>
 
 <!-- PASSWORD -->
@@ -455,29 +368,23 @@
     <div class="comet-tail"></div>
   </div>
 
-  <div class="aurora" id="aurora"></div>
-  <div class="fog" id="fog"></div>
-  <div class="lightning" id="lightning"></div>
-  <div class="shooting-star" id="shootingStar"></div>
-
   <div class="sunmoon" id="sunMoon">
     <div class="moon-phase-mask" id="moonMask"></div>
   </div>
 
   <!-- CONTENUTO -->
-  <div class="content" id="home">
-    <h1>🌟 Langini Meteo – Dashboard V9.0 CHRISTMAS SKY</h1>
+  <div class="content">
+    <h1>🌟 Langini Meteo – Dashboard V9.1</h1>
 
     <div class="sun-times" id="sunTimes">Alba: --:-- • Tramonto: --:--</div>
 
-    <!-- PULSANTE DASHBOARD ESTERNA VENTO/PIOGGIA -->
-    <a href="https://972davide.github.io/Langini_Meteo_Wind.html" class="btn-wind-external">
-      🌬️ Apri Dashboard Vento / Pioggia (Web Esterno)
+    <!-- PULSANTE LINK ESTERNO VENTO/PIOGGIA -->
+    <a href="https://972davide.github.io/Langini_Meteo_Wind.html"
+       class="btn-wind-external">
+       🌬️ Apri Dashboard Vento / Pioggia (Web Esterno)
     </a>
 
     <div class="status-bar" id="statusText">Caricamento dati…</div>
-
-    <div class="cards top-cards"></div>
 
     <div class="cards bottom-cards">
 
@@ -514,28 +421,6 @@
   </div>
 </div>
 
-<!-- MENU MOBILE / BOTTOM NAV -->
-<nav class="bottom-nav">
-  <div class="bottom-nav-inner">
-    <a href="#home" class="nav-item active" id="navHome">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-label">Home</span>
-    </a>
-    <a href="https://972davide.github.io/Langini_Meteo_Wind.html" class="nav-item" id="navWind">
-      <span class="nav-icon">🌬️</span>
-      <span class="nav-label">Vento</span>
-    </a>
-    <a href="#" class="nav-item" id="navHistory">
-      <span class="nav-icon">📈</span>
-      <span class="nav-label">Storico</span>
-    </a>
-    <a href="#" class="nav-item" id="navSettings">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-label">Impostazioni</span>
-    </a>
-  </div>
-</nav>
-
 <!-- SCRIPT -->
 <script>
   const PASSWORD = "Doroty025";
@@ -548,18 +433,6 @@
 
   function clamp(v,a,b){ return Math.min(b,Math.max(a,v)); }
   function toNum(v){ const n=parseFloat(v); return isNaN(n)?0:n; }
-
-  /* ====== COLORI TRANSIZIONE CIELO ====== */
-  function interpolateColor(c1,c2,t){
-    const a=parseInt(c1.slice(1),16);
-    const b=parseInt(c2.slice(1),16);
-    const ar=(a>>16)&255, ag=(a>>8)&255, ab=a&255;
-    const br=(b>>16)&255, bg=(b>>8)&255, bb=b&255;
-    const r=Math.round(ar+(br-ar)*t);
-    const g=Math.round(ag+(bg-ag)*t);
-    const b2=Math.round(ab+(bb-ab)*t);
-    return `rgb(${r},${g},${b2})`;
-  }
 
   /* ====== FASE LUNARE ====== */
   function moonPhaseIndex(date){
@@ -613,18 +486,6 @@
     SM.style.left=`${p*(W+160)-80}px`;
     SM.style.top =`${y}px`;
 
-    const DAY="#1f2b3a";
-    const NIGHT="#000814";
-
-    let blend;
-    const ALT_N=-12, ALT_D=45;
-
-    if(alt<=ALT_N) blend=0;
-    else if(alt>=ALT_D) blend=1;
-    else blend=(alt-ALT_N)/(ALT_D-ALT_N);
-
-    SKY.style.background=interpolateColor(NIGHT,DAY,blend);
-
     SKY.classList.toggle("night", alt<=0);
   }
 
@@ -666,6 +527,7 @@
 
     el.style.left = startX + "px";
     el.style.top = startY + "vh";
+
     el.style.setProperty("--mx", dx + "px");
     el.style.setProperty("--my", dy + "px");
 
@@ -685,16 +547,6 @@
       }
       scheduleMeteors();
     },delay);
-  }
-
-  /* ====== SHOOTING STAR ====== */
-  function maybeStar(){
-    if(!unlocked || !isNightTime()) return;
-    if(Math.random()<0.2){
-      const s=document.getElementById("shootingStar");
-      s.classList.add("active");
-      setTimeout(()=>s.classList.remove("active"),1300);
-    }
   }
 
   /* ====== COMETA ====== */
@@ -737,7 +589,7 @@
 
     try{
       const meteo = await fetch(
-        `https://api.thingspeak.com/channels/${METEO_CHANNEL}/feeds.json?results=60`
+        `https://api.thingspeak.com/channels/${METeo_CHANNEL}/feeds.json?results=60`
       ).then(r=>r.json());
 
       const m = meteo.feeds?.at(-1) || {};
@@ -822,31 +674,13 @@
     }
   }
 
-  /* ====== MENU BOTTOM: ATTIVA SOLO HOME VISIVA ====== */
-  function initNav(){
-    const navItems = document.querySelectorAll(".nav-item");
-    navItems.forEach(it => {
-      it.addEventListener("click", (e) => {
-        // se è link esterno (vento) lascio comportamento default
-        if(it.id === "navWind") return;
-        if(it.getAttribute("href") === "#"){
-          e.preventDefault();
-        }
-        navItems.forEach(n => n.classList.remove("active"));
-        it.classList.add("active");
-      });
-    });
-  }
-
   /* ====== START ====== */
   initStars();
   initAuth();
   scheduleMeteors();
-  initNav();
 
   setInterval(tickSky,10000);
   setInterval(updateDashboard,20000);
-  setInterval(maybeStar,15000);
 
   document.getElementById("lockButton").addEventListener("click", handleLogin);
   document.getElementById("lockPassword").addEventListener("keydown", e=>{
