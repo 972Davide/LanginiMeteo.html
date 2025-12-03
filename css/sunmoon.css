@@ -1,15 +1,13 @@
 /* =====================================================
-   SOLE & LUNA – Stile Grafico + Fasi Lunari
-   Dimensione ridotta per un look più realistico
+   SOLE & LUNA – Dimensione 80px + glow medio
 ===================================================== */
 
 #sunMoon {
     position: absolute;
-    width: 55px;          /* 🔥 dimensione Sole/Luna */
-    height: 55px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     overflow: hidden;
-    mix-blend-mode: normal;
     pointer-events: none;
     z-index: 5;
 
@@ -19,45 +17,30 @@
         left 0.4s linear;
 }
 
-/* SOLE */
+/* ---------------- SOLE ---------------- */
 #sunMoon.sun {
-    background: radial-gradient(circle at 30% 30%, #ffe08a, #ffca36, #d38b00);
-    box-shadow: 0 0 18px 6px rgba(255, 200, 80, 0.7);
+    background: radial-gradient(circle at 35% 35%, #fff5b0, #ffd34f, #f7a600);
+    box-shadow: 0 0 28px 10px rgba(255, 200, 80, 0.55); /* glow medio */
 }
 
-/* LUNA */
+/* ---------------- LUNA ---------------- */
 #sunMoon.moon {
-    background: radial-gradient(circle at 40% 40%, #f5f5f5, #bdbdbd, #7e7e7e);
-    box-shadow: 0 0 10px 4px rgba(150, 150, 150, 0.4);
+    background: radial-gradient(circle at 40% 40%, #f8f8f8, #bfbfbf, #7d7d7d);
+    box-shadow: 0 0 18px 6px rgba(180, 180, 255, 0.4); /* glow medio */
 }
 
-/* MASCHERA PER LE FASI LUNARI */
+/* maschera per fasi lunari */
 .moon-phase-mask {
     position: absolute;
-    width: 55px;          /* deve combaciare con sunMoon */
-    height: 55px;
+    inset: 0;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     background: #000;
-    top: 0;
-    left: 0;
     mix-blend-mode: multiply;
-    opacity: 0.9;
+    opacity: 0.88;
 }
 
-/* MODALITÀ NOTTE (sole invisibile, luna attiva) */
-.night #sunMoon.sun {
-    opacity: 0;
-}
-
-.night #sunMoon.moon {
-    opacity: 1;
-}
-
-/* MODALITÀ GIORNO (luna quasi invisibile) */
-.day #sunMoon.moon {
-    opacity: 0;
-}
-
-.day #sunMoon.sun {
-    opacity: 1;
-}
+/* visibilità */
+.night #sunMoon.sun { opacity: 0; }
+.day   #sunMoon.moon { opacity: 0; }
