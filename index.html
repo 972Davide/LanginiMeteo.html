@@ -512,90 +512,134 @@ function updateSky() {
 }
 </script>
 <script>
+<script>
 /* ============================================================
-   ORBITA SOLE/LUNA REALISTICA basata su alba/tramonto veri
-   Orbita corretta per layout 1920×1080
-   ============================================================ */
+   CONFIGURAZIONE POSIZIONE (Venegono Superiore)
+============================================================ */
+const LAT = 45.7525;
+const LON = 8.8975;
 
+/* ============================================================
+   FUNZIONE: controllo notte/giorno con ORA LOCALE CORRETTA
+============================================================ */
+function isNightTime() {
+    const now = new Date(); // ORA LOCALE REALE
+    const t = SunCalc.getTimes(now, LAT, LON);
+    return now < t.sunrise || now > t.sunset;
+}
+
+/* ============================================================
+   MOSTRA / NASCONDE LE STELLE CORRETTAMENTE
+============================================================ */
+function toggleStars() {
+    const stars = document.getElementById("stars");
+    if (!stars) return;
+    stars.style.opacity = isNightTime() ? 1 : 0;
+}
+
+/* ============================================================
+   FUNZIONE PRINCIPALE: ORBITA SOLE/LUNA REALISTICA
+============================================================ */
 function updateSky() {
     if (!unlocked) return;
 
-    /* ----- ORA LOCALE ----- */
+    /* ORA LOCALE REALE */
     const now = new Date();
-    const nowL = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    const times = SunCalc.getTimes(now, LAT, LON);
 
-    /* ----- POSIZIONE (Venegono Superiore) ----- */
-    const LAT = 45.7525;
-    const LON = 8.8975;
-
-    const times = SunCalc.getTimes(nowL, LAT, LON);
-    const pos   = SunCalc.getPosition(nowL, LAT, LON);
-    const alt   = pos.altitude * 180 / Math.PI;
-
-    const SKY = document.getElementById("sky");
-    const SM  = document.getElementById("sunMoon");
-
-    if (!SM || !SKY) return;
-
-    /* ============================================================
+    /* =====================================================
        CALCOLO PROGRESSIONE GIORNO/NOTTE
-       p = 0 → alba
-       p = 1 → tramonto
-       ============================================================ */
+       p = 0 → inizio orbita
+       p = 1 → fine orbita
+    ===================================================== */
     let p = 0;
+    let isDay = now >= times.sunrise && now <= times.sunset;
 
-    if (nowL < times.sunrise) {
-        p = 0; // notte prima dell’alba
-    } else if (nowL > times.sunset) {
-        p = 1; // dopo il tramonto
+    if (isDay) {
+        // SOLE → da alba a tramonto
+        p = (now - times.sunrise) / (times.sunset - times.sunrise);
     } else {
-        p = (nowL - times.sunrise) / (times.sunset - times.sunrise);
+        // LUNA → da tramonto ad alba successiva
+        let nextSunrise = new Date(times.sunrise);
+        if (now > times.sunset) nextSunrise.setDate(nextSunrise.getDate() + 1);
+        p = (now - times.sunset) / (nextSunrise - times.sunset);
     }
 
-    /* Clamp di sicurezza */
-    p = Math.max(0, Math.min(1, p));
+    /* Sicurezza */
+    p = Math.min(1, Math.max(0, p));
 
-    /* ============================================================
+    /* =====================================================
        ORBITA PERFETTA PER 1920×1080
-       Sole/Luna passano ESATTAMENTE al centro verticale
-       ============================================================ */
-
+    ===================================================== */
     const W = window.innerWidth;
     const H = window.innerHeight;
 
-    /* Centro orbita e raggio verticale */
-    const centerY = H * 0.38;   // posizione verticale del centro curva
-    const radiusY = H * 0.28;   // ampiezza dell’arco
+    const centerY = H * 0.38;   // centro curva
+    const radiusY = H * 0.28;   // ampiezza curva
 
-    /* Calcolo posizione */
+    const x = p * (W + 200) - 100;              // SEMPRE sinistra → destra
     const y = centerY - Math.sin(p * Math.PI) * radiusY;
-    const x = p * (W + 200) - 100;
 
+    const SM = document.getElementById("sunMoon");
     SM.style.left = `${x}px`;
     SM.style.top  = `${y}px`;
 
-    /* ============================================================
+    /* =====================================================
        COMMUTAZIONE SOLE / LUNA
-       ============================================================ */
-    const isDay = nowL >= times.sunrise && nowL <= times.sunset;
+    ===================================================== */
     SM.className = isDay ? "sun" : "moon";
 
-    /* ============================================================
-       COLORE CIELO in base all’altitudine del sole
-       ============================================================ */
+    /* =====================================================
+       COLORE DEL CIELO REALISTICO
+    ===================================================== */
+    const pos = SunCalc.getPosition(now, LAT, LON);
+    const alt = pos.altitude * 180 / Math.PI;
 
     const NIGHT = "#000814";
     const DAY   = "#1f2b3a";
 
-    const ALT_N = -8;   // inizia blu notte
-    const ALT_D =  35;  // cielo pieno giorno
+    const ALT_N = -12; // notte
+    const ALT_D =  35; // pieno giorno
 
     let blend = (alt - ALT_N) / (ALT_D - ALT_N);
-    blend = Math.max(0, Math.min(1, blend));
+    blend = Math.min(1, Math.max(0, blend));
 
-    SKY.style.background = `linear-gradient(${DAY}, ${NIGHT})`;
+    SKY.style.background = `linear-gradient(
+        to bottom,
+        ${DAY} ${blend * 100}%,
+        ${NIGHT} 100%
+    )`;
 }
+
+/* ============================================================
+   AGGIORNA ALBA/TRAMONTO
+============================================================ */
+function updateSunTimes() {
+    const now = new Date();
+    const t = SunCalc.getTimes(now, LAT, LON);
+
+    const fmt = d => d.toLocaleTimeString("it-IT", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    document.getElementById("sunTimes").textContent =
+        `Alba: ${fmt(t.sunrise)} • Tramonto: ${fmt(t.sunset)}`;
+}
+
+/* ============================================================
+   LOOP PRINCIPALE
+============================================================ */
+setInterval(() => {
+    if (!unlocked) return;
+    updateSky();
+    toggleStars();
+    updateSunTimes();
+    updateDashboard();
+}, 3000); // aggiornamento fluido ogni 3 secondi
+
 </script>
+
 <script>
 /* ============================================================
    ORBITA SOLE/LUNA REALISTICA — SEMPRE DA SINISTRA A DESTRA
