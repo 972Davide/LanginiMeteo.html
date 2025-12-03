@@ -604,8 +604,13 @@ function updateSky() {
 function updateSky() {
     if (!unlocked) return;
 
-    const now = new Date();
-    const nowL = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  // ORA LOCALE ESATTA
+const nowL = new Date();
+
+// SunCalc vuole un oggetto Date con fuso locale → ora funziona bene
+const times = SunCalc.getTimes(nowL, LAT, LON);
+const pos   = SunCalc.getPosition(nowL, LAT, LON);
+
 
     const LAT = 45.7525;
     const LON = 8.8975;
