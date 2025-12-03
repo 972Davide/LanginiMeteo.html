@@ -1,141 +1,88 @@
-/* ============================================
-   SFONDO CIELO – VERSIONE PC FULLSCREEN
-   ============================================ */
+function updateSky() {
+    if (!unlocked) return;
 
-.sky {
-  position:relative;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#1f2b3a;
-  transition:background 1.2s ease;
-}
+    const now = new Date();
+    const times = SunCalc.getTimes(now, LAT, LON);
 
-/* Quando è notte */
-.sky.night {
-  background:#000814;
-}
+    const SKY = document.getElementById("sky");
+    const SM = document.getElementById("sunMoon");
+    const MASK = document.getElementById("moonMask");
 
-/* ============================================
-   STELLE
-   ============================================ */
+    const isDay = now >= times.sunrise && now <= times.sunset;
 
-.stars {
-  position:absolute;
-  inset:0;
-  z-index:1;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 1s ease;
-}
+    /* =====================================================
+       DETERMINIAMO QUALE ASTRO MOSTRARE
+    ===================================================== */
+    if (isDay) {
+        SM.className = "sun";
+        MASK.style.display = "none";
+    } else {
+        SM.className = "moon";
+        MASK.style.display = "block";
+    }
 
-.star {
-  position:absolute;
-  width:2px;
-  height:2px;
-  background:white;
-  border-radius:50%;
-  opacity:0;
-  animation: twinkle 3s ease-in-out infinite;
-}
+    /* =====================================================
+       CALCOLO ORBITA – ANGOLAZIONE REALISTICA
+       - Sole al centro a mezzogiorno
+       - Luna al centro a mezzanotte
+    ===================================================== */
 
-@keyframes twinkle {
-  0%   { opacity:0; transform:scale(0.8); }
-  50%  { opacity:1; transform:scale(1.5); }
-  100% { opacity:0; transform:scale(0.8); }
-}
+    let start, end;
 
-/* ============================================
-   METEORE
-   ============================================ */
+    if (isDay) {
+        start = times.sunrise;
+        end   = times.sunset;
+    } else {
+        // notte → dall’ultimo tramonto alla prossima alba
+        const nextSunrise = new Date(times.sunrise.getTime() + 86400000);
+        start = times.sunset;
+        end   = nextSunrise;
+    }
 
-.meteor {
-  position:absolute;
-  width:160px;
-  height:3px;
-  opacity:0;
-  background:linear-gradient(90deg, rgba(255,255,255,1), transparent);
-  transform:rotate(30deg);
-  pointer-events:none;
-  z-index:4;
-}
+    let p = (now - start) / (end - start);
+    p = clamp(p, 0, 1);
 
-@keyframes meteorMove {
-  0%   { opacity:0; transform:translate(0,0) rotate(28deg); }
-  15%  { opacity:1; }
-  100% { opacity:0; transform:translate(var(--mx), var(--my)) rotate(28deg); }
-}
+    /* =====================================================
+       POSIZIONE ORBITALE – MEZZOGIORNO/MIDNIGHT AL CENTRO
+       Descrizione:
+       - p=0 → orizzonte sinistro
+       - p=0.5 → ZENIT (centro schermo)
+       - p=1 → orizzonte destro
+    ===================================================== */
 
-/* ============================================
-   AURORA (effetto decorativo)
-   ============================================ */
+    const W = window.innerWidth;
+    const H = window.innerHeight;
 
-.aurora {
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:250px;
-  background:radial-gradient(ellipse at top, rgba(0,255,180,0.15), transparent);
-  z-index:2;
-  pointer-events:none;
-  filter:blur(12px);
-}
+    const orbitWidth = W + 200;   // margine extra per entrare in scena
+    const baseY = H * 0.75;       // altezza orizzonte
+    const zenithHeight = H * 0.25; // punto più alto
 
-/* ============================================
-   FOSCHIA
-   ============================================ */
+    // Movimento orizzontale lineare
+    const x = p * orbitWidth - 100;
 
-.fog {
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-  height:140px;
-  background:linear-gradient(to top, rgba(255,255,255,0.06), transparent);
-  z-index:2;
-  pointer-events:none;
-}
+    // Curva verticale: sinusoide
+    const y = baseY - Math.sin(Math.PI * p) * (baseY - zenithHeight);
 
-/* ============================================
-   FULMINI
-   ============================================ */
+    SM.style.left = `${x}px`;
+    SM.style.top  = `${y}px`;
 
-.lightning {
-  position:absolute;
-  inset:0;
-  background:rgba(255,255,255,0.15);
-  opacity:0;
-  z-index:5;
-  pointer-events:none;
-  transition:opacity 0.15s ease;
-}
+    /* =====================================================
+       SFUMATURA DEL CIELO
+    ===================================================== */
+    const pos = SunCalc.getPosition(now, LAT, LON);
+    const alt = pos.altitude * 180 / Math.PI;
 
-/* ============================================
-   STELLA CADENTE SPECIALE
-   ============================================ */
+    const NIGHT = "#000814";
+    const DAY = "#1f2b3a";
 
-.shooting-star {
-  position:absolute;
-  width:100px;
-  height:3px;
-  background:linear-gradient(90deg, white, transparent);
-  opacity:0;
-  transform:rotate(25deg);
-  top:20vh;
-  left:-200px;
-  z-index:5;
-  pointer-events:none;
-}
+    let blend = 0;
 
-.shooting-star.active {
-  animation: shooting 1.2s linear forwards;
-}
+    if (alt <= -12) blend = 0;
+    else if (alt >= 45) blend = 1;
+    else blend = (alt + 12) / (45 + 12);
 
-@keyframes shooting {
-  0%   { opacity:1; transform:translateX(0) translateY(0) rotate(25deg); }
-  100% {
-    opacity:0;
-    transform:translateX(600px) translateY(200px) rotate(25deg);
-  }
+    SKY.style.background = interpolateColor(NIGHT, DAY, blend);
+
+    SKY.classList.toggle("night", !isDay);
+    SKY.classList.toggle("day", isDay);
 }
