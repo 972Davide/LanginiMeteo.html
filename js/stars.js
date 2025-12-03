@@ -1,34 +1,26 @@
-/* ====================================================
-   STARS.JS – GENERAZIONE STELLE + VISIBILITÀ NOTTE
-   ==================================================== */
+/* =====================================================
+   STARS.JS – Stelle animate + visibilità notte
+===================================================== */
 
-/* --------------------------------------------
-   CREA TUTTE LE STELLE (una sola volta)
--------------------------------------------- */
-function initStars() {
+(function () {
   const container = document.getElementById("stars");
+  if (!container) return;
 
-  // Numero stelle – regolabile
-  const STAR_COUNT = 140;
+  const STAR_COUNT = 90;
 
   for (let i = 0; i < STAR_COUNT; i++) {
     const s = document.createElement("div");
     s.className = "star";
-
     s.style.top = Math.random() * 100 + "%";
     s.style.left = Math.random() * 100 + "%";
     s.style.animationDelay = Math.random() * 3 + "s";
-
     container.appendChild(s);
   }
-}
 
-/* --------------------------------------------
-   MOSTRA / NASCONDE STELLE IN BASE ALLA NOTTE
--------------------------------------------- */
-function toggleStars() {
-  if (!unlocked) return;
-
-  const stars = document.getElementById("stars");
-  stars.style.opacity = isNightTime() ? 1 : 0;
-}
+  // Funzione globale usata da main.js
+  window.toggleStars = function () {
+    if (!window.isNightTime) return;
+    const night = window.isNightTime();
+    container.style.opacity = night ? 1 : 0;
+  };
+})();
