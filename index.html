@@ -368,59 +368,59 @@ scheduleMeteors();
 /* =============================================================
    SOLE / LUNA ORBITA ULTRA PRECISA
 ============================================================= */
-function updateSky(){
-  if(!unlocked) return;
 
-  const now=new Date();
-  const times=SunCalc.getTimes(now,45.7525,8.8975);
-  const pos=SunCalc.getPosition(now,45.7525,8.8975);
-  const alt=pos.altitude*180/Math.PI;
+function updateSky() {
+    if (!unlocked) return;
 
-  const SM=document.getElementById("sunMoon");
-  const isDay = now>=times.sunrise && now<=times.sunset;
+    const now = new Date();
+    const times = SunCalc.getTimes(now, 45.7525, 8.8975);
+    const pos = SunCalc.getPosition(now, 45.7525, 8.8975);
+    const alt = pos.altitude * 180 / Math.PI;
 
-  /* Tipo di corpo celeste */
-  SM.className = isDay ? "sun" : "moon";
+    const SM = document.getElementById("sunMoon");
+    const isDay = now >= times.sunrise && now <= times.sunset;
 
-  /* Calcolo orbita precisa */
-  const W = window.innerWidth;
-  const H = window.innerHeight;
+    // Sole o luna
+    SM.className = isDay ? "sun" : "moon";
 
-  const titoloY = H * 0.20;
-  const cardsY  = H * 0.55;
+    // DIMENSIONI SCHERMO
+    const W = window.innerWidth;
+    const H = window.innerHeight;
 
-  const zenithY = (titoloY + cardsY) / 2;
-  const horizonY = cardsY + 40;
+    // POSIZIONI RELATIVE DEL TUO LAYOUT
+    const titoloY = H * 0.08;   // titolo
+    const pulsanteY = H * 0.16; // pulsante vento
+    const cardsY = H * 0.63;    // riquadri meteo
 
-  const start = isDay ? times.sunrise : times.sunset;
-  const end   = isDay ? times.sunset : new Date(times.sunrise.getTime()+86400000);
+    // ORBITA TRA QUESTE DUE LINEE VISIVE
+    const topOrbit = (titoloY + pulsanteY) / 2;  // metà tra titolo e pulsante
+    const bottomOrbit = (pulsanteY + cardsY) / 2; // metà tra pulsante e cards
 
-  let p = (now - start)/(end - start);
-  p = Math.min(1,Math.max(0,p));
+    // CALCOLO PROGRESSO ORBITA
+    const start = isDay ? times.sunrise : times.sunset;
+    const end   = isDay ? times.sunset : new Date(times.sunrise.getTime() + 86400000);
 
-  const y = horizonY - Math.sin(p*Math.PI)*(horizonY - zenithY);
-  const x = p*(W+200)-100;
+    let p = (now - start) / (end - start);
+    p = Math.min(1, Math.max(0, p));
 
-  SM.style.left=x+"px";
-  SM.style.top =y+"px";
+    // CURVA DELL’ORBITA (sinusoide)
+    const y = bottomOrbit - Math.sin(p * Math.PI) * (bottomOrbit - topOrbit);
 
-  /* Colore cielo */
-  const NIGHT="#000814", DAY="#1f2b3a";
-  let blend = (alt + 12) / (45 + 12);
-  blend = Math.min(1,Math.max(0,blend));
-  document.getElementById("sky").style.background =
-    interpolate(NIGHT,DAY,blend);
+    // MOVIMENTO ORIZZONTALE
+    const x = p * (W + 200) - 100;
+
+    SM.style.left = x + "px";
+    SM.style.top = y + "px";
+
+    // COLORE CIELO
+    const NIGHT = "#000814", DAY = "#1f2b3a";
+    let blend = (alt + 12) / (45 + 12);
+    blend = Math.min(1, Math.max(0, blend));
+    document.getElementById("sky").style.background =
+        interpolate(NIGHT, DAY, blend);
 }
 
-function interpolate(c1,c2,t){
-  const a=parseInt(c1.slice(1),16);
-  const b=parseInt(c2.slice(1),16);
-  const r=((a>>16)&255)+(((b>>16)&255)-((a>>16)&255))*t;
-  const g=((a>>8)&255)+(((b>>8)&255)-((a>>8)&255))*t;
-  const bl=(a&255)+((b&255)-(a&255))*t;
-  return `rgb(${r},${g},${bl})`;
-}
-
+   
 /* =============================================================
    ALBA / TRAMONTO
 ============================================================= */
