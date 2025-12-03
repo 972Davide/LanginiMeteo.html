@@ -1,95 +1,96 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <title>Langini Meteo – PC Dashboard Modular</title>
+    <meta charset="UTF-8">
+    <title>Langini Meteo – Desktop Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Libreria SunCalc -->
-  <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+    <!-- Libreria SunCalc -->
+    <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
-  <!-- CSS MODULARI -->
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/sky.css">
-  <link rel="stylesheet" href="css/sunmoon.css">
-  <link rel="stylesheet" href="css/password.css">
+    <!-- CSS MODULARI -->
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/sky.css">
+    <link rel="stylesheet" href="css/sunmoon.css">
+    <link rel="stylesheet" href="css/password.css">
 </head>
 
 <body>
 
-<!-- ========== LOCK SCREEN ========== -->
-<div id="lockScreen" class="lock-screen">
-  <div class="lock-card">
-    <div class="lock-title">🔐 Accesso Dashboard</div>
-    <div class="lock-sub">Inserisci la password</div>
-    <input type="password" id="lockPassword" class="lock-input">
-    <button id="lockButton" class="lock-btn">Entra</button>
-    <div id="lockError" class="lock-error"></div>
-  </div>
+<!-- 🔐 SCHERMATA PASSWORD -->
+<div id="lockScreen">
+    <div class="lock-card">
+        <div class="lock-title">🔐 Langini Meteo – Accesso</div>
+        <div class="lock-sub">Inserisci la password per visualizzare la dashboard.</div>
+
+        <input type="password" id="lockPassword" class="lock-input" placeholder="Password">
+        <button id="lockButton" class="lock-btn">Entra</button>
+
+        <div id="lockError" class="lock-error"></div>
+    </div>
 </div>
 
-<!-- ========== SKY BACKGROUND ========== -->
-<div class="sky" id="sky">
+<!-- 🌌 SFONDO CIELO -->
+<div id="sky" class="sky">
 
-  <div class="stars" id="stars"></div>
+    <!-- ⭐ Stelle -->
+    <div id="stars" class="stars"></div>
 
-  <div class="meteor" id="meteor1"></div>
-  <div class="meteor" id="meteor2"></div>
+    <!-- 🌠 Meteore -->
+    <div id="meteor1" class="meteor"></div>
+    <div id="meteor2" class="meteor"></div>
 
-  <div class="aurora" id="aurora"></div>
-  <div class="fog" id="fog"></div>
-  <div class="lightning" id="lightning"></div>
-  <div class="shooting-star" id="shootingStar"></div>
-
-  <!-- SUN / MOON -->
-  <div class="sunmoon" id="sunMoon">
-    <div class="sun" id="sunMoonBody">
-      <div class="moon-phase-mask" id="moonMask"></div>
+    <!-- 🌞/🌙 Sole & Luna -->
+    <div id="sunMoon" class="sunmoon">
+        <div id="moonMask" class="moon-phase-mask"></div>
     </div>
-  </div>
 
-  <!-- CONTENT -->
-  <div class="content">
-    <h1>🌟 Langini Meteo – Desktop Edition</h1>
+    <!-- 📄 CONTENUTO -->
+    <div class="content">
 
-    <div class="sun-times" id="sunTimes">Alba --:-- • Tramonto --:--</div>
+        <h1>🌟 Langini Meteo – Desktop Edition</h1>
+        <div id="sunTimes" class="sun-times">Alba: --:-- • Tramonto: --:--</div>
+        <div id="statusText" class="status-bar">Caricamento dati…</div>
 
-    <div class="status-bar" id="statusText">Caricamento...</div>
+        <!-- 🌡 CARDS -->
+        <div class="cards bottom-cards">
 
-    <div class="cards bottom-cards">
+            <div class="card">
+                <div class="card-header">Pressione</div>
+                <div id="pressureValue" class="value">--</div>
+                <div class="value-unit">hPa</div>
+                <div class="gauge"><div id="gaugePressure" class="gauge-fill"></div></div>
+            </div>
 
-      <div class="card">
-        <div class="card-header">Pressione</div>
-        <div class="value" id="pressureValue">--</div>
-        <div class="value-unit">hPa</div>
-        <div class="gauge"><div class="gauge-fill" id="gaugePressure"></div></div>
-      </div>
+            <div class="card">
+                <div class="card-header">Temperatura</div>
+                <div id="tempValue" class="value">--</div>
+                <div class="value-unit">°C</div>
+                <div class="gauge"><div id="gaugeTemp" class="gauge-fill"></div></div>
+            </div>
 
-      <div class="card">
-        <div class="card-header">Temperatura</div>
-        <div class="value" id="tempValue">--</div>
-        <div class="value-unit">°C</div>
-        <div class="gauge"><div class="gauge-fill" id="gaugeTemp"></div></div>
-      </div>
+            <div class="card">
+                <div class="card-header">Umidità</div>
+                <div id="humValue" class="value">--</div>
+                <div class="value-unit">%</div>
+                <div class="gauge"><div id="gaugeHum" class="gauge-fill"></div></div>
+            </div>
 
-      <div class="card">
-        <div class="card-header">Umidità</div>
-        <div class="value" id="humValue">--</div>
-        <div class="value-unit">%</div>
-        <div class="gauge"><div class="gauge-fill" id="gaugeHum"></div></div>
-      </div>
+            <div class="card">
+                <div class="card-header">Qualità Aria</div>
+                <div id="aqValue" class="value">--</div>
+                <div class="value-unit">AQI</div>
+                <div class="gauge"><div id="gaugeAQ" class="gauge-fill"></div></div>
+            </div>
 
-      <div class="card">
-        <div class="card-header">Qualità Aria</div>
-        <div class="value" id="aqValue">--</div>
-        <div class="value-unit">AQI</div>
-        <div class="gauge"><div class="gauge-fill" id="gaugeAQ"></div></div>
-      </div>
-
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- JS MODULARI -->
+<!-- ===========================
+     SCRIPT MODULARI
+=========================== -->
+
 <script src="js/sky.js"></script>
 <script src="js/stars.js"></script>
 <script src="js/meteors.js"></script>
