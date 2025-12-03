@@ -237,19 +237,6 @@
       opacity:0.9;
     }
 
-    .btn-realtime {
-      display:block;
-      margin:0 auto 12px;
-      padding:10px 20px;
-      background:#ff9500;
-      border-radius:12px;
-      color:#fff;
-      font-weight:700;
-      text-decoration:none;
-      box-shadow:0 0 12px rgba(255,149,0,0.7);
-      text-align:center;
-    }
-
     .status-bar {
       text-align:center;
       margin-bottom:12px;
@@ -458,7 +445,6 @@
       ORB.classList.remove("moon");
       MASK.style.display="none";
 
-      // rimuovi eventuali fasi residue
       for(let i=0;i<8;i++) ORB.classList.remove("phase-"+i);
 
     } else {
@@ -539,7 +525,7 @@
     el.style.top = startY + "vh";
 
     el.style.setProperty("--mx", dx + "px");
-    el.style.setProperty("--my", dy + "px";
+    el.style.setProperty("--my", dy + "px");
 
     el.style.animation = "none";
     void el.offsetWidth;
