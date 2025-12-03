@@ -2,9 +2,6 @@
       SOLE / LUNA – ANIMAZIONE ALBA / TRAMONTO
    ===================================================== */
 
-const LAT = 45.7525;
-const LON = 8.8975;
-
 /* Utility */
 function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
 
