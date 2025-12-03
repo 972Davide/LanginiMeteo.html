@@ -1,3 +1,4 @@
+/*
 /* =====================================================
       SOLE / LUNA – ANIMAZIONE ALBA / TRAMONTO
    ===================================================== */
@@ -115,3 +116,4 @@ function getMoonPhaseIndex(date) {
 function tickSunMoon() {
     updateSunMoon();
 }
+*/
