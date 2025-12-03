@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Langini Meteo – Desktop Edition</title>
 
-    <!-- CSS PRINCIPALI -->
+    <!-- CSS -->
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/stars.css">
     <link rel="stylesheet" href="css/meteors.css">
@@ -15,28 +15,20 @@
     <!-- SunCalc -->
     <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
-    <!-- Google Fonts -->
+    <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-    <!-- ================= SFONDO (SKY) ================= -->
+    <!-- SFONDO -->
     <div id="sky"></div>
-
-    <!-- STELLE -->
     <div id="stars"></div>
-
-    <!-- STELLE LAMPEGGIANTI -->
     <div id="twinkling"></div>
-
-    <!-- METEORE -->
     <div id="meteors"></div>
-
-    <!-- SOLE / LUNA -->
     <div id="sunMoon"></div>
 
-    <!-- ================= LOCKSCREEN PASSWORD ================= -->
+    <!-- PASSWORD -->
     <div id="lockScreen">
         <div class="lockBox">
             <h2>Inserisci Password</h2>
@@ -46,67 +38,67 @@
         </div>
     </div>
 
-    <!-- ================= DASHBOARD ================= -->
+    <!-- CONTENUTO PRINCIPALE -->
     <div id="mainContent">
 
         <h1 class="title">
             <span class="sunIcon">☀️</span> Langini Meteo – Desktop Edition
         </h1>
 
+        <!-- ALBA / TRAMONTO (ID ORIGINALI) -->
         <div id="sunTimes">
-            Alba: <span id="alba">--:--</span> • Tramonto: <span id="tramonto">--:--</span>
+            Alba: <span id="sunriseTime">--:--</span> • Tramonto: <span id="sunsetTime">--:--</span>
         </div>
 
+        <!-- ULTIMO AGGIORNAMENTO (ID ORIGINALE) -->
         <div id="updateTime">
-            Aggiornato: <span id="lastUpdate">--:--:--</span>
+            Aggiornato: <span id="lastUpdateTime">--:--:--</span>
         </div>
 
         <!-- CARDS DATI -->
         <div class="cards">
+
+            <!-- PRESSIONE -->
             <div class="card">
                 <h3>Pressione</h3>
-                <div id="pressione" class="value">--</div>
+                <div id="pValue" class="value">--</div>
                 <div class="um">hPa</div>
-                <div class="bar"><div id="pressBar"></div></div>
+                <div class="bar"><div id="pBar"></div></div>
             </div>
 
+            <!-- TEMPERATURA -->
             <div class="card">
                 <h3>Temperatura</h3>
-                <div id="temperatura" class="value">--</div>
+                <div id="tValue" class="value">--</div>
                 <div class="um">°C</div>
-                <div class="bar"><div id="tempBar"></div></div>
+                <div class="bar"><div id="tBar"></div></div>
             </div>
 
+            <!-- UMIDITÀ -->
             <div class="card">
                 <h3>Umidità</h3>
-                <div id="umidita" class="value">--</div>
+                <div id="hValue" class="value">--</div>
                 <div class="um">%</div>
-                <div class="bar"><div id="humBar"></div></div>
+                <div class="bar"><div id="hBar"></div></div>
             </div>
 
+            <!-- QUALITÀ ARIA -->
             <div class="card">
                 <h3>Qualità Aria</h3>
-                <div id="aqi" class="value">--</div>
+                <div id="aValue" class="value">--</div>
                 <div class="um">AQI</div>
-                <div class="bar"><div id="aqiBar"></div></div>
+                <div class="bar"><div id="aBar"></div></div>
             </div>
+
         </div>
     </div>
 
-    <!-- ================= JAVASCRIPT ================= -->
-
-    <!-- Moduli Effetto Cielo -->
+    <!-- JS -->
     <script src="js/stars.js"></script>
     <script src="js/meteors.js"></script>
-    <script src="js/sunmoon.js"></script> <!-- per animazioni luna/ombre -->
-
-    <!-- Script Orbita Sole-Luna -->
+    <script src="js/sunmoon.js"></script>
     <script src="js/sky.js"></script>
-
-    <!-- Script Dashboard -->
     <script src="js/dashboard.js"></script>
-
-    <!-- Main Controller -->
     <script src="js/main.js"></script>
 
 </body>
