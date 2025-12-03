@@ -1,0 +1,78 @@
+/* ============================================
+   SOLE / LUNA E FASI LUNARI
+   ============================================ */
+
+/* Contenitore che si muove lungo l'orbita */
+.sunmoon {
+  position:absolute;
+  width:90px;
+  height:90px;
+  left:-120px;       /* parte fuori dallo schermo */
+  top:120px;
+  z-index:5;
+  transition:left 1.2s linear, top 1.2s linear;
+}
+
+/* Corpo dell'astro */
+.sun,
+.moon {
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  position:relative;
+}
+
+/* ============================================
+   SOLE
+   ============================================ */
+
+.sun {
+  background:radial-gradient(circle at 35% 35%, #fff8b0, #ffcc00, #ff9800);
+  box-shadow:0 0 40px 12px rgba(255,200,0,0.7);
+  animation:sunPulse 5s infinite;
+}
+
+@keyframes sunPulse {
+  0%   { box-shadow:0 0 25px 8px rgba(255,200,0,0.4); }
+  50%  { box-shadow:0 0 40px 16px rgba(255,225,0,0.9); }
+  100% { box-shadow:0 0 25px 8px rgba(255,200,0,0.4); }
+}
+
+/* ============================================
+   LUNA
+   ============================================ */
+
+.moon {
+  background:radial-gradient(circle at 40% 40%, #ffffff, #cfd8dc);
+  box-shadow:0 0 30px 10px rgba(200,200,255,0.5);
+  animation:moonGlow 6s infinite;
+  overflow:hidden;
+}
+
+@keyframes moonGlow {
+  0%   { box-shadow:0 0 18px 6px rgba(200,200,255,0.3); }
+  50%  { box-shadow:0 0 26px 12px rgba(220,220,255,0.6); }
+  100% { box-shadow:0 0 18px 6px rgba(200,200,255,0.3); }
+}
+
+/* Maschera della fase lunare */
+.moon-phase-mask {
+  position:absolute;
+  inset:0;
+  background:#000814;
+  border-radius:50%;
+  transition:transform 0.8s ease;
+}
+
+/* ============================================
+   FASI LUNARI (8 fasi)
+   ============================================ */
+
+.moon.phase-0 .moon-phase-mask { transform:scaleX(1); }             /* Luna nuova */
+.moon.phase-1 .moon-phase-mask { transform:translateX(-35%) scaleX(0.2); }
+.moon.phase-2 .moon-phase-mask { transform:translateX(-15%) scaleX(0.5); }
+.moon.phase-3 .moon-phase-mask { transform:translateX(-8%)  scaleX(0.8); }
+.moon.phase-4 .moon-phase-mask { transform:scaleX(0.02); }          /* Luna piena */
+.moon.phase-5 .moon-phase-mask { transform:translateX(8%)  scaleX(0.8); }
+.moon.phase-6 .moon-phase-mask { transform:translateX(15%) scaleX(0.5); }
+.moon.phase-7 .moon-phase-mask { transform:translateX(35%) scaleX(0.2); }
