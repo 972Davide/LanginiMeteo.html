@@ -1,132 +1,104 @@
-/* =====================================================
-   SKY.JS – Orbita realistica Sole/Luna (sinusoidale)
-   Dimensione astro 80px – Glow medio – Alba/Tramonto reali
-===================================================== */
+/* ====================================================
+   SKY.JS – CIELO DINAMICO + SOLE/LUNA IN ORBITA
+   ==================================================== */
 
 const LAT = 45.7525;
 const LON = 8.8975;
 
-/* ----- UTILITY ----- */
-function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
-
-function interpolateColor(c1, c2, t) {
-  const a = parseInt(c1.slice(1), 16);
-  const b = parseInt(c2.slice(1), 16);
-  const ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
-  const br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
-  const r = Math.round(ar + (br - ar) * t);
-  const g = Math.round(ag + (bg - ag) * t);
-  const bl = Math.round(ab + (bb - ab) * t);
-  return `rgb(${r}, ${g}, ${bl})`;
+/* ----------------------------------------------------
+   CORREZIONE FUSO ORARIO (GitHub Pages → UTC)
+---------------------------------------------------- */
+function localDate(d) {
+    return new Date(d.getTime() - (d.getTimezoneOffset() * 60000));
 }
 
-/* ----- GLOBALE: usato da stars.js e main.js ----- */
-window.isNightTime = function () {
-  const now = new Date();
-  const t = SunCalc.getTimes(now, LAT, LON);
-  return now < t.sunrise || now > t.sunset;
-};
+/* ----------------------------------------------------
+   Utility clamp
+---------------------------------------------------- */
+function clamp(v, a, b) {
+    return Math.min(b, Math.max(a, v));
+}
 
-/* ----- SCRIVI ALBA/TRAMONTO ----- */
-window.updateSunTimes = function () {
-  const now = new Date();
-  const t = SunCalc.getTimes(now, LAT, LON);
-  const el = document.getElementById("sunTimes");
-  if (!el) return;
+/* ----------------------------------------------------
+   Interpolazione colori notte → giorno
+---------------------------------------------------- */
+function interpolateColor(c1, c2, t) {
+    const a = parseInt(c1.slice(1), 16);
+    const b = parseInt(c2.slice(1), 16);
 
-  const fmt = d =>
-    d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+    const ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+    const br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
 
-  el.textContent = `Alba: ${fmt(t.sunrise)} • Tramonto: ${fmt(t.sunset)}`;
-};
+    const r = Math.round(ar + (br - ar) * t);
+    const g = Math.round(ag + (bg - ag) * t);
+    const bl = Math.round(ab + (bb - ab) * t);
 
-/* =====================================================
-   ORBITA REALISTICA SOLE/LUNA
-===================================================== */
+    return `rgb(${r}, ${g}, ${bl})`;
+}
 
-window.tickSky = function () {
-  if (!unlocked) return;
+/* ----------------------------------------------------
+   Controllo se è notte
+---------------------------------------------------- */
+function isNightTime() {
+    const now = localDate(new Date());
+    const t = SunCalc.getTimes(now, LAT, LON);
+    return now < t.sunrise || now > t.sunset;
+}
 
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+/* ----------------------------------------------------
+   AGGIORNA CIELO + ORBITA ASTRO (SOLE/LUNA)
+---------------------------------------------------- */
+function updateSky() {
+    if (!unlocked) return;
 
-  const tToday = SunCalc.getTimes(today, LAT, LON);
-  const tTomorrow = SunCalc.getTimes(new Date(today.getTime() + 86400000), LAT, LON);
-  const tYesterday = SunCalc.getTimes(new Date(today.getTime() - 86400000), LAT, LON);
+    const now = new Date();
+    const nowL = localDate(now);
+    const times = SunCalc.getTimes(nowL, LAT, LON);
+    const pos = SunCalc.getPosition(nowL, LAT, LON);
+    const alt = pos.altitude * 180 / Math.PI;
 
-  let isDay, start, end;
+    const SKY = document.getElementById("sky");
+    const SM = document.getElementById("sunMoon");
 
-  if (now >= tToday.sunrise && now <= tToday.sunset) {
-    // giorno
-    isDay = true;
-    start = tToday.sunrise;
-    end = tToday.sunset;
-  } else {
-    // notte
-    isDay = false;
-    if (now < tToday.sunrise) {
-      start = tYesterday.sunset;
-      end   = tToday.sunrise;
-    } else {
-      start = tToday.sunset;
-      end   = tTomorrow.sunrise;
-    }
-  }
+    if (!SKY || !SM) return;
 
-  let p = (now - start) / (end - start);
-  p = clamp(p, 0, 1);
+    /* --- Determina se è giorno --- */
+    const isDay = nowL >= times.sunrise && nowL <= times.sunset;
 
-  const SKY = document.getElementById("sky");
-  const SM  = document.getElementById("sunMoon");
-  const MASK = document.getElementById("moonMask");
+    /* --- ORBITA ASTRO --- */
+    const start = isDay ? times.sunrise : times.sunset;
+    const end   = isDay ? times.sunset  : new Date(times.sunrise.getTime() + 86400000);
 
-  // seleziona Sole/Luna
-  if (isDay) {
-    SM.classList.add("sun");
-    SM.classList.remove("moon");
-    MASK.style.display = "none";
-  } else {
-    SM.classList.add("moon");
-    SM.classList.remove("sun");
-    MASK.style.display = "block";
-  }
+    let p = (nowL - start) / (end - start);
+    p = clamp(p, 0, 1);
 
-  /* =====================================================
-      TRAIETTORIA REALISTICA (sinusoidale)
-      - p = 0   -> orizzonte sinistro
-      - p = 0.5 -> zenit (mezzogiorno / mezzanotte)
-      - p = 1   -> orizzonte destro
-  ===================================================== */
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
 
-  const W = window.innerWidth;
-  const H = window.innerHeight;
+    const orbitHeight = screenH * 0.30; // altezza orbita
+    const baseY = screenH * 0.35;
 
-  const astroSize = 80;
+    const y = baseY - Math.sin(p * Math.PI) * orbitHeight;
 
-  const orbitW = W + astroSize * 2;
-  const horizonY = H * 0.80;
-  const zenithY  = H * 0.28;
+    SM.style.left = `${p * (screenW + 200) - 100}px`;
+    SM.style.top  = `${y}px`;
 
-  const x = p * orbitW - astroSize;
-  const y = horizonY - Math.sin(Math.PI * p) * (horizonY - zenithY);
+    /* --- SOLE o LUNA --- */
+    SM.className = isDay ? "sun" : "moon";
 
-  SM.style.left = `${x}px`;
-  SM.style.top  = `${y}px`;
+    /* --- COLORE CIELO --- */
+    const NIGHT = "#000814";
+    const DAY   = "#1f2b3a";
 
-  /* ----- COLORE CIELO ----- */
-  const posSun = SunCalc.getPosition(now, LAT, LON);
-  const alt = (posSun.altitude * 180) / Math.PI;
+    const ALT_N = -12;
+    const ALT_D = 45;
 
-  const NIGHT = "#000814";
-  const DAY   = "#1f2b3a";
+    let blend = 0;
+    if (alt <= ALT_N) blend = 0;
+    else if (alt >= ALT_D) blend = 1;
+    else blend = (alt - ALT_N) / (ALT_D - ALT_N);
 
-  let blend = 0;
-  if (alt <= -12) blend = 0;
-  else if (alt >= 45) blend = 1;
-  else blend = (alt + 12) / (45 + 12);
+    SKY.style.background = interpolateColor(NIGHT, DAY, blend);
 
-  SKY.style.background = interpolateColor(NIGHT, DAY, blend);
-
-  SKY.classList.toggle("night", !isDay);
-  SKY.classList.toggle("day", isDay);
-};
+    SKY.classList.toggle("night", !isDay);
+}
