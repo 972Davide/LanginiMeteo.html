@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Langini Meteo – Dashboard V8.7 CHRISTMAS SKY (Clean + SunMoon Fix)</title>
+  <title>Langini Meteo – Dashboard V8.7 CHRISTMAS SKY (Sun/Moon + Fasi OK)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
@@ -139,46 +139,12 @@
     }
 
     @keyframes meteorMove {
-  0%   { opacity:0; transform:translate(0,0) rotate(28deg); }
-  10%  { opacity:1; }
-  100% {
-    opacity:0;
-    transform:translate(var(--mx), var(--my)) rotate(28deg);
-  }
-}
-
-
-    /* ⭐ COMETA */
-    .comet {
-      position:absolute;
-      top:12vh;
-      left:-200px;
-      width:60px;
-      height:60px;
-      border-radius:50%;
-      background:radial-gradient(circle, #ffffff, #ffe9a3, #ffcc00);
-      box-shadow:0 0 25px 12px rgba(255,200,0,0.7);
-      opacity:0;
-      z-index:9;
-      transition:left 2s linear, top 2s linear, opacity 1.2s ease;
-    }
-
-    .comet.big {
-      width:140px;
-      height:140px;
-      box-shadow:0 0 55px 28px rgba(255,240,0,1);
-    }
-
-    .comet-tail {
-      position:absolute;
-      right:100%;
-      top:50%;
-      transform:translateY(-50%);
-      width:220px;
-      height:40px;
-      background:linear-gradient(90deg, rgba(255,255,200,0.5), rgba(255,255,200,0));
-      filter:blur(8px);
-      border-radius:40px;
+      0%   { opacity:0; transform:translate(0,0) rotate(28deg); }
+      10%  { opacity:1; }
+      100% {
+        opacity:0;
+        transform:translate(var(--mx), var(--my)) rotate(28deg);
+      }
     }
 
     /* ====== SOLE / LUNA ====== */
@@ -192,7 +158,14 @@
       border-radius:50%;
       z-index:3;
       transition:left 1.2s linear, top 1.2s linear;
-      overflow:hidden;
+      overflow:visible;
+    }
+
+    .sun,
+    .moon {
+      width:100%;
+      height:100%;
+      border-radius:50%;
     }
 
     /* SOLE */
@@ -214,6 +187,7 @@
       box-shadow:0 0 18px 8px rgba(200,200,255,0.5);
       animation:moonGlow 6s infinite;
       position:relative;
+      overflow:hidden;
     }
 
     @keyframes moonGlow {
@@ -227,13 +201,14 @@
       inset:0;
       background:#000814;
       border-radius:50%;
+      transition:transform 0.8s ease;
     }
 
-    .moon.phase-0 .moon-phase-mask { transform:scaleX(1); }
+    .moon.phase-0 .moon-phase-mask { transform:scaleX(1); }          /* Luna nuova */
     .moon.phase-1 .moon-phase-mask { transform:translateX(-35%) scaleX(0.2); }
     .moon.phase-2 .moon-phase-mask { transform:translateX(-15%) scaleX(0.5); }
     .moon.phase-3 .moon-phase-mask { transform:translateX(-8%)  scaleX(0.8); }
-    .moon.phase-4 .moon-phase-mask { transform:scaleX(0.02); }
+    .moon.phase-4 .moon-phase-mask { transform:scaleX(0.02); }       /* Luna piena */
     .moon.phase-5 .moon-phase-mask { transform:translateX(8%)  scaleX(0.8); }
     .moon.phase-6 .moon-phase-mask { transform:translateX(15%) scaleX(0.5); }
     .moon.phase-7 .moon-phase-mask { transform:translateX(35%) scaleX(0.2); }
@@ -346,17 +321,17 @@
   <div class="meteor" id="meteor1"></div>
   <div class="meteor" id="meteor2"></div>
 
-  <div class="comet" id="comet">
-    <div class="comet-tail"></div>
-  </div>
-
+  <!-- elementi grafici extra già presenti -->
   <div class="aurora" id="aurora"></div>
   <div class="fog" id="fog"></div>
   <div class="lightning" id="lightning"></div>
   <div class="shooting-star" id="shootingStar"></div>
 
+  <!-- SOLE / LUNA CON FASI -->
   <div class="sunmoon" id="sunMoon">
-    <div class="moon-phase-mask" id="moonMask"></div>
+    <div class="sun" id="sunMoonBody">
+      <div class="moon-phase-mask" id="moonMask"></div>
+    </div>
   </div>
 
   <!-- CONTENUTO -->
@@ -365,31 +340,29 @@
 
     <div class="sun-times" id="sunTimes">Alba: --:-- • Tramonto: --:--</div>
 
-<!-- PULSANTE DASHBOARD ESTERNA VENTO/PIOGGIA -->
-<a href="https://972davide.github.io/Langini_Meteo_Wind.html"
-   style="
-     display:block;
-     margin:14px auto 18px;
-     padding:12px 22px;
-     background:linear-gradient(135deg,#00aaff,#0077cc);
-     color:white;
-     font-size:1rem;
-     font-weight:700;
-     text-align:center;
-     border-radius:12px;
-     text-decoration:none;
-     box-shadow:0 0 14px rgba(0,150,255,0.7);
-     width:90%;
-     max-width:330px;
-     border:1px solid rgba(0,180,255,0.5);
-     transition:0.2s;
-   "
-   onmouseover="this.style.filter='brightness(1.2)'"
-   onmouseout="this.style.filter='brightness(1)'">
-   🌬️ Apri Dashboard Vento / Pioggia (Web Esterno)
-</a>
-
-
+    <!-- PULSANTE DASHBOARD ESTERNA VENTO/PIOGGIA -->
+    <a href="https://972davide.github.io/Langini_Meteo_Wind.html"
+       style="
+         display:block;
+         margin:14px auto 18px;
+         padding:12px 22px;
+         background:linear-gradient(135deg,#00aaff,#0077cc);
+         color:white;
+         font-size:1rem;
+         font-weight:700;
+         text-align:center;
+         border-radius:12px;
+         text-decoration:none;
+         box-shadow:0 0 14px rgba(0,150,255,0.7);
+         width:90%;
+         max-width:330px;
+         border:1px solid rgba(0,180,255,0.5);
+         transition:0.2s;
+       "
+       onmouseover="this.style.filter='brightness(1.2)'"
+       onmouseout="this.style.filter='brightness(1)'">
+       🌬️ Apri Dashboard Vento / Pioggia (Web Esterno)
+    </a>
 
     <div class="status-bar" id="statusText">Caricamento dati…</div>
 
@@ -464,7 +437,7 @@
     return Math.floor((phase/lp)*8+0.5)&7;
   }
 
-  /* ====== AGGIORNA CIELO ====== */
+  /* ====== AGGIORNA CIELO + SOLE/LUNA ====== */
   function updateSky(){
     if(!unlocked) return;
 
@@ -475,23 +448,27 @@
 
     const SKY=document.getElementById("sky");
     const SM=document.getElementById("sunMoon");
+    const ORB=document.getElementById("sunMoonBody");
     const MASK=document.getElementById("moonMask");
 
     const isDay = now>=times.sunrise && now<=times.sunset;
 
     if(isDay){
-      SM.classList.add("sun");
-      SM.classList.remove("moon");
+      ORB.classList.add("sun");
+      ORB.classList.remove("moon");
       MASK.style.display="none";
 
+      // rimuovi eventuali fasi residue
+      for(let i=0;i<8;i++) ORB.classList.remove("phase-"+i);
+
     } else {
-      SM.classList.remove("sun");
-      SM.classList.add("moon");
+      ORB.classList.remove("sun");
+      ORB.classList.add("moon");
       MASK.style.display="block";
 
       const idx = moonPhaseIndex(now);
-      for(let i=0;i<8;i++) SM.classList.remove("phase-"+i);
-      SM.classList.add("phase-"+idx);
+      for(let i=0;i<8;i++) ORB.classList.remove("phase-"+i);
+      ORB.classList.add("phase-"+idx);
     }
 
     const start=isDay ? times.sunrise : times.sunset;
@@ -547,37 +524,29 @@
   }
 
   /* ====== METEORE ====== */
-function triggerMeteor(id) {
-  if (!unlocked || !isNightTime()) return;
+  function triggerMeteor(id) {
+    if (!unlocked || !isNightTime()) return;
 
-  const el = document.getElementById(id);
+    const el = document.getElementById(id);
 
-  // Partenza: sempre da sinistra
-  const startX = -150 - Math.random() * 150;
+    const startX = -150 - Math.random() * 150;
+    const startY = 2 + Math.random() * 40;
 
-  // Altezza variabile, così non cadono sempre dallo stesso punto
-  const startY = 2 + Math.random() * 40; // da 2vh a 42vh
+    const dx = 500 + Math.random() * 400;
+    const dy = 150 + Math.random() * 200;
 
-  // Caduta con angolazione diversa ogni volta
-  const dx = 500 + Math.random() * 400;  // quanto va a destra
-  const dy = 150 + Math.random() * 200;  // quanto "scende"
+    el.style.left = startX + "px";
+    el.style.top = startY + "vh";
 
-  // Imposta posizioni iniziali
-  el.style.left = startX + "px";
-  el.style.top = startY + "vh";
+    el.style.setProperty("--mx", dx + "px");
+    el.style.setProperty("--my", dy + "px";
 
-  // Imposta variazioni per animazione
-  el.style.setProperty("--mx", dx + "px");
-  el.style.setProperty("--my", dy + "px");
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "meteorMove 1.3s linear forwards";
 
-  // Riproduci animazione
-  el.style.animation = "none";
-  void el.offsetWidth;  
-  el.style.animation = "meteorMove 1.3s linear forwards";
-
-  setTimeout(() => el.style.opacity = 0, 1400);
-}
-
+    setTimeout(() => el.style.opacity = 0, 1400);
+  }
 
   function scheduleMeteors(){
     const delay=5000+Math.random()*7000;
@@ -595,44 +564,11 @@ function triggerMeteor(id) {
     if(!unlocked || !isNightTime()) return;
     if(Math.random()<0.2){
       const s=document.getElementById("shootingStar");
+      if(!s) return;
       s.classList.add("active");
       setTimeout(()=>s.classList.remove("active"),1300);
     }
   }
-
-  /* ====== COMETA ====== */
-  function updateComet(){
-    if(!unlocked) return;
-
-    const c=document.getElementById("comet");
-    const d=new Date();
-    const m=d.getMonth();
-    const day=d.getDate();
-
-    if(m!==11 || day<1 || day>25){
-      c.style.opacity=0;
-      c.classList.remove("big");
-      return;
-    }
-
-    const width=window.innerWidth;
-    c.style.opacity=1;
-
-    if(day<25){
-      const prog=(day-1)/24;
-      c.classList.remove("big");
-      c.style.top="12vh";
-      c.style.left=(-200 + prog*(width+200))+"px";
-
-    } else {
-      c.classList.add("big");
-      const size=140;
-      c.style.top="15vh";
-      c.style.left=(width/2 - size/2)+"px";
-    }
-  }
-
-  window.addEventListener("resize", updateComet);
 
   /* ====== DASHBOARD ====== */
   async function updateDashboard(){
@@ -674,22 +610,22 @@ function triggerMeteor(id) {
       document.getElementById("gaugeAQ").style.width =
         clamp(aqi/500*100,0,100)+"%";
 
-      document.getElementById("statusText").textContent =
-        "Aggiornato: " + new Date(m.created_at).toLocaleTimeString("it-IT");
+      if(m.created_at){
+        document.getElementById("statusText").textContent =
+          "Aggiornato: " + new Date(m.created_at).toLocaleTimeString("it-IT");
+      } else {
+        document.getElementById("statusText").textContent =
+          "In attesa di nuovi dati…";
+      }
 
     } catch(e){
       console.log("Errore updateDashboard:",e);
+      document.getElementById("statusText").textContent =
+        "Errore lettura dati.";
     }
   }
 
-  /* ====== LOOP ====== */
-  function tickSky(){
-    updateSky();
-    toggleStars();
-    updateComet();
-    updateSunTimes();
-  }
-
+  /* ====== SUN TIMES ====== */
   function updateSunTimes(){
     if(!unlocked) return;
 
@@ -698,6 +634,13 @@ function triggerMeteor(id) {
     const f=d=>d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
     document.getElementById("sunTimes").textContent =
       "Alba: "+f(t.sunrise)+" • Tramonto: "+f(t.sunset);
+  }
+
+  /* ====== LOOP ====== */
+  function tickSky(){
+    updateSky();
+    toggleStars();
+    updateSunTimes();
   }
 
   /* ====== LOGIN ====== */
