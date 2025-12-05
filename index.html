@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Langini Meteo – Dashboard V8.9.1</title>
+  <title>Langini Meteo – Dashboard V9.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
@@ -198,7 +198,7 @@
     }
 
     .wind-value, .rain-value {
-      font-size:2rem;         /* ridotto del ~25% */
+      font-size:2rem;
       font-weight:700;
       margin-top:6px;
     }
@@ -238,7 +238,7 @@
     }
 
     .bottom-card .value {
-      font-size:1.6rem;      /* più piccole */
+      font-size:1.6rem;
       font-weight:700;
       margin-top:4px;
     }
@@ -285,7 +285,7 @@
      CONTENUTO
 ======================= -->
 <div class="content">
-  <h1>🌟 Langini Meteo – Dashboard V8.9.1</h1>
+  <h1>🌟 Langini Meteo – Dashboard V9.0</h1>
   <div id="sunTimes" class="sun-times">Alba: --:-- • Tramonto: --:--</div>
   <div id="statusText" class="status-bar">Caricamento dati…</div>
 
@@ -332,21 +332,20 @@
 </div>
 
 <script>
-  // ================== CONFIG THINGSPEAK ==================
-const WIND_JSON_URL = "https://raw.githubusercontent.com/972Davide/Langini_Meteo_Wind.html/main/data.json";
-
-  
-  const CH_METEO = 3149218;   // pressione, temp, umidità, AQI
-  const CH_WIND  = 2956240;   // vento, pioggia
-
-  // API READ KEY vento/pioggia (fix ufficiale)
-  const WIND_API_KEY = "2B5OCENVF8TW06WZ";
-
+  // ================== CONFIG ==================
+  const CH_METEO = 3149218;   // pressione, temp, umidità, AQI (ThingSpeak)
   const LAT = 45.7525;
   const LON = 8.8975;
 
+  // ESP32 locale con anemometro
+  const WIND_URL = "http://192.168.1.20/wind.json";
+
   function clamp(v,a,b){ return Math.min(b,Math.max(a,v)); }
   function toNum(v){ const n=parseFloat(v); return isNaN(n)?0:n; }
+
+  // storico locale per media vento
+  const windHistory = [];
+  const MAX_WIND_SAMPLES = 288; // ~48 minuti se leggiamo ogni 10s
 
   // ================== FASI LUNARI ==================
   function moonPhaseIndex(date){
@@ -362,7 +361,6 @@ const WIND_JSON_URL = "https://raw.githubusercontent.com/972Davide/Langini_Meteo
     const now=new Date();
     const times=SunCalc.getTimes(now,LAT,LON);
     const pos=SunCalc.getPosition(now,LAT,LON);
-    const alt=pos.altitude*180/Math.PI;
 
     const SKY=document.getElementById("sky");
     const SM=document.getElementById("sunMoon");
@@ -454,16 +452,14 @@ const WIND_JSON_URL = "https://raw.githubusercontent.com/972Davide/Langini_Meteo
     const A = 0.85 * 0.59;
     const rho = 1.225;
     const Cp = 0.25;
-    const P = 0.5 * rho * A * Cp * Math.pow(v,3);
+    const P = 0.5 * rho * A * Cp * Math.pow(v,3); // Watt
     const kWhAnno = P * 24 * 365 / 1000;
     return kWhAnno.toFixed(1);
   }
 
-  // ================== DASHBOARD (V8.9.2) ==================
+  // ================== METEO BASE (ThingSpeak) ==================
   async function updateDashboard(){
     try{
-
-      // --- METEO BASE ---
       const meteo = await fetch(
         `https://api.thingspeak.com/channels/${CH_METEO}/feeds.json?results=1`
       ).then(r=>r.json());
@@ -478,95 +474,64 @@ const WIND_JSON_URL = "https://raw.githubusercontent.com/972Davide/Langini_Meteo
         m.field3 ? parseFloat(m.field3).toFixed(0) : "--";
       document.getElementById("aqValue").textContent =
         m.field4 ? parseFloat(m.field4).toFixed(0) : "--";
-      
-// ================== WIND LOCAL JSON (ESP32) ==================
-const WIND_URL = "http://192.168.1.20/wind.json";
-
-async function caricaVento() {
-  try {
-    const d = await fetch(WIND_URL + "?t=" + Date.now())
-      .then(r => r.json());
-
-    const wind = parseFloat(d.wind_kmh || 0);
-    const rain = parseInt(d.rain || 0);
-
-    // aggiorna card vento
-    document.getElementById("windNow").textContent =
-      wind ? wind.toFixed(1) + " km/h" : "-- km/h";
-
-    // aggiorna stato pioggia
-    const rEl = document.getElementById("rainState");
-    if (rain > 0) {
-      rEl.textContent = "Pioggia";
-      rEl.style.color = "#ff7b7b";
-    } else {
-      rEl.textContent = "Asciutto";
-      rEl.style.color = "#7cd8ff";
-    }
-
-  } catch (e) {
-    console.log("Errore lettura vento ESP32:", e);
-  }
-}
-
-setInterval(caricaVento, 30000);
-caricaVento();
-
-      
-
-     // --- VENTO / PIOGGIA da GitHub JSON ---
-const windJson = await fetch(WIND_JSON_URL + "?t=" + Date.now()).then(r => r.json());
-
-const windNow = toNum(windJson.wind_kmh);
-document.getElementById("windNow").textContent =
-  windNow ? windNow.toFixed(1) + " km/h" : "-- km/h";
-
-// stato pioggia
-const rainVal = toNum(windJson.rain);
-const rEl = document.getElementById("rainState");
-if (rainVal >= 1) {
-  rEl.textContent = "Pioggia";
-  rEl.style.color = "#ff7b7b";
-  rEl.style.textShadow = "0 0 10px #ff4d4d";
-} else {
-  rEl.textContent = "Asciutto";
-  rEl.style.color = "#7cd8ff";
-  rEl.style.textShadow = "0 0 10px #29aaff";
-}
-
-// disattiva media 24h (nessuno storico GitHub disponibile)
-document.getElementById("windAvg").textContent = "Media 24h: -- km/h";
-document.getElementById("windKwh").textContent = "Energia annua stimata: -- kWh";
-
-// timestamp locale
-document.getElementById("statusText").textContent =
-  "Aggiornato: " + new Date().toLocaleTimeString("it-IT");
-    
-
-      // --- MEDIA 24H ---
-      const vals = feedsW
-        .map(f=>parseFloat(f.field1))
-        .filter(v=>!isNaN(v));
-
-      let media = vals.length
-        ? vals.reduce((a,b)=>a+b,0)/vals.length
-        : 0;
-
-      document.getElementById("windAvg").textContent =
-        "Media 24h: "+(media?media.toFixed(1):"--")+" km/h";
-
-      document.getElementById("windKwh").textContent =
-        media ? ("Energia annua stimata: "+calcKwh(media)+" kWh")
-              : "Energia annua stimata: -- kWh";
-
-      const ts = lastW.created_at || m.created_at || new Date().toISOString();
-      document.getElementById("statusText").textContent =
-        "Aggiornato: "+ new Date(ts).toLocaleTimeString("it-IT");
 
     }catch(e){
       console.log("Errore updateDashboard:", e);
+    }
+  }
+
+  // ================== VENTO / PIOGGIA DA ESP32 ==================
+  async function caricaVento() {
+    try {
+      const d = await fetch(WIND_URL + "?t=" + Date.now())
+        .then(r => r.json());
+
+      const wind = toNum(d.wind_kmh);
+      const rain = parseInt(d.rain || 0);
+
+      // aggiorna card vento
+      document.getElementById("windNow").textContent =
+        wind ? wind.toFixed(1) + " km/h" : "-- km/h";
+
+      // aggiorna storico per media (locale)
+      if (!isNaN(wind)) {
+        windHistory.push(wind);
+        if (windHistory.length > MAX_WIND_SAMPLES) windHistory.shift();
+      }
+
+      let media = 0;
+      if (windHistory.length) {
+        media = windHistory.reduce((a,b)=>a+b,0) / windHistory.length;
+      }
+
+      document.getElementById("windAvg").textContent =
+        media ? ("Media 24h: " + media.toFixed(1) + " km/h") :
+                "Media 24h: -- km/h";
+
+      document.getElementById("windKwh").textContent =
+        media ? ("Energia annua stimata: " + calcKwh(media) + " kWh") :
+                "Energia annua stimata: -- kWh";
+
+      // stato pioggia
+      const rEl = document.getElementById("rainState");
+      if (rain > 0) {
+        rEl.textContent = "Pioggia";
+        rEl.style.color = "#ff7b7b";
+        rEl.style.textShadow = "0 0 10px #ff4d4d";
+      } else {
+        rEl.textContent = "Asciutto";
+        rEl.style.color = "#7cd8ff";
+        rEl.style.textShadow = "0 0 10px #29aaff";
+      }
+
+      // timestamp globale
       document.getElementById("statusText").textContent =
-        "Errore connessione dati";
+        "Aggiornato: " + new Date().toLocaleTimeString("it-IT");
+
+    } catch (e) {
+      console.log("Errore lettura vento ESP32:", e);
+      document.getElementById("statusText").textContent =
+        "Errore connessione dati vento";
     }
   }
 
@@ -578,8 +543,11 @@ document.getElementById("statusText").textContent =
 
   tickSkyAll();
   updateDashboard();
+  caricaVento();
+
   setInterval(tickSkyAll, 12000);
-  setInterval(updateDashboard, 25000); // FIX UFFICIALE
+  setInterval(updateDashboard, 25000);
+  setInterval(caricaVento, 10000);
   setInterval(randomShootingStar, 8000);
 
   window.addEventListener("resize", ()=>{
@@ -587,7 +555,6 @@ document.getElementById("statusText").textContent =
     updateComet();
   });
 </script>
-
 
 </body>
 </html>
