@@ -333,6 +333,9 @@
 
 <script>
   // ================== CONFIG THINGSPEAK ==================
+const WIND_JSON_URL = "https://raw.githubusercontent.com/972Davide/Langini_Meteo_Wind.html/main/data.json";
+
+  
   const CH_METEO = 3149218;   // pressione, temp, umidità, AQI
   const CH_WIND  = 2956240;   // vento, pioggia
 
@@ -477,28 +480,25 @@
         m.field4 ? parseFloat(m.field4).toFixed(0) : "--";
 
       // --- VENTO / PIOGGIA con API KEY ---
-      const wind = await fetch(
-        `https://api.thingspeak.com/channels/${CH_WIND}/feeds.json?api_key=${WIND_API_KEY}&results=288`
-      ).then(r=>r.json());
+      // --- VENTO / PIOGGIA da GitHub JSON ---
+const windJson = await fetch(WIND_JSON_URL + "?t=" + Date.now()).then(r => r.json());
 
-      const feedsW = wind.feeds || [];
-      const lastW  = feedsW.at(-1) || {};
+const windNow = toNum(windJson.wind_kmh);
+document.getElementById("windNow").textContent =
+  windNow ? windNow.toFixed(1) + " km/h" : "-- km/h";
 
-      const windNow = toNum(lastW.field1);
-      document.getElementById("windNow").textContent =
-        windNow ? windNow.toFixed(1)+" km/h" : "-- km/h";
+const rainVal = toNum(windJson.rain);
+const rEl = document.getElementById("rainState");
+if (rainVal >= 1) {
+  rEl.textContent = "Pioggia";
+  rEl.style.color = "#ff7b7b";
+  rEl.style.textShadow = "0 0 10px #ff4d4d";
+} else {
+  rEl.textContent = "Asciutto";
+  rEl.style.color = "#7cd8ff";
+  rEl.style.textShadow = "0 0 10px #29aaff";
+}
 
-      const rainVal = toNum(lastW.field2);
-      const rEl = document.getElementById("rainState");
-      if(rainVal>=1){
-        rEl.textContent = "Pioggia";
-        rEl.style.color = "#ff7b7b";
-        rEl.style.textShadow = "0 0 10px #ff4d4d";
-      }else{
-        rEl.textContent = "Asciutto";
-        rEl.style.color = "#7cd8ff";
-        rEl.style.textShadow = "0 0 10px #29aaff";
-      }
 
       // --- MEDIA 24H ---
       const vals = feedsW
