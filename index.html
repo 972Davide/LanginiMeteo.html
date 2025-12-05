@@ -478,6 +478,41 @@ const WIND_JSON_URL = "https://raw.githubusercontent.com/972Davide/Langini_Meteo
         m.field3 ? parseFloat(m.field3).toFixed(0) : "--";
       document.getElementById("aqValue").textContent =
         m.field4 ? parseFloat(m.field4).toFixed(0) : "--";
+      
+// ================== WIND LOCAL JSON (ESP32) ==================
+const WIND_URL = "http://192.168.1.20/wind.json";
+
+async function caricaVento() {
+  try {
+    const d = await fetch(WIND_URL + "?t=" + Date.now())
+      .then(r => r.json());
+
+    const wind = parseFloat(d.wind_kmh || 0);
+    const rain = parseInt(d.rain || 0);
+
+    // aggiorna card vento
+    document.getElementById("windNow").textContent =
+      wind ? wind.toFixed(1) + " km/h" : "-- km/h";
+
+    // aggiorna stato pioggia
+    const rEl = document.getElementById("rainState");
+    if (rain > 0) {
+      rEl.textContent = "Pioggia";
+      rEl.style.color = "#ff7b7b";
+    } else {
+      rEl.textContent = "Asciutto";
+      rEl.style.color = "#7cd8ff";
+    }
+
+  } catch (e) {
+    console.log("Errore lettura vento ESP32:", e);
+  }
+}
+
+setInterval(caricaVento, 30000);
+caricaVento();
+
+      
 
      // --- VENTO / PIOGGIA da GitHub JSON ---
 const windJson = await fetch(WIND_JSON_URL + "?t=" + Date.now()).then(r => r.json());
